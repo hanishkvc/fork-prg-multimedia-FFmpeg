@@ -84,6 +84,8 @@ static int config_props(AVFilterLink *inlink)
 
     fbdetile->width = inlink->w;
     fbdetile->height = inlink->h;
+    fprintf(stderr,"DBUG:fbtile:config_props: %d x %d\n", fbdetile->width, fbdetile->height);
+
     return 0;
 }
 
@@ -96,6 +98,7 @@ static void detile_intelx(AVFilterContext *ctx, int w, int h,
     int tileH = 8;
     int numHTiles = w/tileW;
 
+    fprintf(stderr,"DBUG:fbtile:intelx: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
     int sO = 0;
     int dX = 0;
     int dY = 0;
@@ -136,7 +139,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     }
     av_frame_copy_props(out, in);
 
-    if (fbdetile->type = TYPE_INTELX) {
+    if (fbdetile->type == TYPE_INTELX) {
         detile_intelx(ctx, fbdetile->width, fbdetile->height,
                       out->data[0], out->linesize[0],
                       in->data[0], in->linesize[0]);
