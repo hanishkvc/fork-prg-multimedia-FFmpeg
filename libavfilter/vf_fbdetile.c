@@ -59,6 +59,13 @@ static av_cold int init(AVFilterContext *ctx)
 {
     FBDetileContext *fbdetile = ctx->priv;
 
+    if (fbdetile->type == TYPE_INTELX) {
+        fprintf(stderr,"INFO:fbdetile:init: Intel X-tile to linear\n");
+    } else if (fbdetile->type == TYPE_INTELY) {
+        fprintf(stderr,"WARN:fbdetile:init: Intel Y-tile to linear, not yet implemented\n");
+    } else {
+        fprintf(stderr,"ERRR:fbdetile:init: Unknown Tile format specified\n");
+    }
     fbdetile->width = 1920;
     fbdetile->height = 1080;
     return 0;
@@ -78,7 +85,6 @@ static int query_formats(AVFilterContext *ctx)
 
 static int config_props(AVFilterLink *inlink)
 {
-    int p;
     AVFilterContext *ctx = inlink->dst;
     FBDetileContext *fbdetile = ctx->priv;
 
@@ -98,7 +104,10 @@ static void detile_intelx(AVFilterContext *ctx, int w, int h,
     int tileH = 8;
     int numHTiles = w/tileW;
 
-    fprintf(stderr,"DBUG:fbtile:intelx: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
+    if (w*4 != srcLineSize) {
+        fprintf(stderr,"DBUG:fbtile:intelx: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
+        fprintf(stderr,"ERRR:fbtile:intelx: dont support LineSize | Pitch going beyond width\n");
+    }
     int sO = 0;
     int dX = 0;
     int dY = 0;
