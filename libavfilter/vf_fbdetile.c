@@ -116,6 +116,7 @@ static void detile_intelx(AVFilterContext *ctx, int w, int h,
     int k = 0;
     while (cTR < nTRows) {
         int dO = dY*dstLineSize + dX*8;
+        fprintf(stderr,"DBUG:fbtile:intelx: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
         memcpy(dst+dO+0*dstLineSize, src+sO+0*512, 512);
         memcpy(dst+dO+1*dstLineSize, src+sO+1*512, 512);
         memcpy(dst+dO+2*dstLineSize, src+sO+2*512, 512);
@@ -125,7 +126,7 @@ static void detile_intelx(AVFilterContext *ctx, int w, int h,
         memcpy(dst+dO+6*dstLineSize, src+sO+6*512, 512);
         memcpy(dst+dO+7*dstLineSize, src+sO+7*512, 512);
         dX += tileW;
-        if (dX > w) {
+        if (dX >= w) {
             dX = 0;
             dY += 8;
         }
