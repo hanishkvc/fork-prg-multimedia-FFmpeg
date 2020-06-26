@@ -223,6 +223,7 @@ extern AVFilter ff_vf_drawgraph;
 extern AVFilter ff_vf_drawgrid;
 extern AVFilter ff_vf_drawtext;
 extern AVFilter ff_vf_edgedetect;
+extern AVFilter ff_vf_fbdetile;
 extern AVFilter ff_vf_elbg;
 extern AVFilter ff_vf_entropy;
 extern AVFilter ff_vf_eq;
