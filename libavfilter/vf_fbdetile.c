@@ -106,7 +106,7 @@ static void detile_intelx(AVFilterContext *ctx, int w, int h,
     int cTR = 0;
     int k = 0;
     while (cTR < nTRows) {
-        int dO = dY*dstLineSize + dX;
+        int dO = dY*dstLineSize + dX*8;
         memcpy(dst+dO+0*dstLineSize, src+sO+0*512, 512);
         memcpy(dst+dO+1*dstLineSize, src+sO+1*512, 512);
         memcpy(dst+dO+2*dstLineSize, src+sO+2*512, 512);
