@@ -47,9 +47,9 @@ typedef struct FBDetileContext {
 #define OFFSET(x) offsetof(FBDetileContext, x)
 #define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM
 static const AVOption fbdetile_options[] = {
-    { "type", "set framebuffer format_modifier type", OFFSET(type), AV_OPT_TYPE_INT, {.i32=TYPE_INTELX}, 0, NB_TYPE-1, FLAGS, "type" },
-        { "intelx", "Intel XTiled layout", 0, AV_OPT_TYPE_CONST, {.i32=TYPE_INTELX}, INT_MIN, INT_MAX, FLAGS, "type" },
-        { "intely", "Intel YTiled layout", 0, AV_OPT_TYPE_CONST, {.i32=TYPE_INTELY}, INT_MIN, INT_MAX, FLAGS, "type" },
+    { "type", "set framebuffer format_modifier type", OFFSET(type), AV_OPT_TYPE_INT, {.i64=TYPE_INTELX}, 0, NB_TYPE-1, FLAGS, "type" },
+        { "intelx", "Intel XTiled layout", 0, AV_OPT_TYPE_CONST, {.i64=TYPE_INTELX}, INT_MIN, INT_MAX, FLAGS, "type" },
+        { "intely", "Intel YTiled layout", 0, AV_OPT_TYPE_CONST, {.i64=TYPE_INTELY}, INT_MIN, INT_MAX, FLAGS, "type" },
     { NULL }
 };
 
@@ -88,23 +88,22 @@ static int config_props(AVFilterLink *inlink)
 }
 
 static void detile_intelx(AVFilterContext *ctx, int w, int h,
-                                uint8_t *dst, int dstLinesize,
-                          const uint8_t *src, int srcLinesize)
+                                uint8_t *dst, int dstLineSize,
+                          const uint8_t *src, int srcLineSize)
 {
-    int i, j;
     // For a 32Bit / Pixel framebuffer
     int tileW = 128;
     int tileH = 8;
     int numHTiles = w/tileW;
 
-    sO = 0;
-    dX = 0;
-    dY = 0;
-    nTRows = (w*h)/tileW;
-    cTR = 0;
-    k = 0;
+    int sO = 0;
+    int dX = 0;
+    int dY = 0;
+    int nTRows = (w*h)/tileW;
+    int cTR = 0;
+    int k = 0;
     while (cTR < nTRows) {
-        dO = dY*dstLinesize + dX;
+        int dO = dY*dstLineSize + dX;
         memcpy(dst+dO+0*dstLineSize, src+sO+0*512, 512);
         memcpy(dst+dO+1*dstLineSize, src+sO+1*512, 512);
         memcpy(dst+dO+2*dstLineSize, src+sO+2*512, 512);
