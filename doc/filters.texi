@@ -12218,6 +12218,49 @@ It accepts the following optional parameters:
 The number of the CUDA device to use
 @end table
 
+@anchor{fbdetile}
+@section fbdetile
+
+Detiles the Framebuffer tile layout into a linear layout using CPU.
+
+It currently supports conversion from Intel legacy tile-x and tile-y layouts
+into a linear layout. This is useful if one is using kmsgrab and hwdownload
+to capture a screen which is using one of these non-linear layouts.
+
+Currently it expects the data to be a 32bit RGB based pixel format. However
+the logic doesnt do any pixel format conversion or so. Later will be enabling
+16bit RGB data also, as the logic is transparent to it at one level.
+
+One could either insert this into the filter chain while capturing itself,
+or else, if it is slowing things down or so, then one could instead insert
+it into the filter chain during playback or transcoding or so.
+
+It supports the following optional parameters
+
+@table @option
+@item type
+Specify which detiling conversion to apply. The supported values are
+@table @var
+@item 0
+intel tile-x to linear conversion (the default)
+@item 1
+intel tile-y to linear conversion.
+@end table
+@end table
+
+If one wants to convert during capture itself, one could do
+@example
+ffmpeg -f kmsgrab -i - -vf "hwdownload, fbdetile" OUTPUT
+@end example
+
+However if one wants to convert after the tiled data has been already captured
+@example
+ffmpeg -i INPUT -vf "fbdetile" OUTPUT
+@end example
+@example
+ffplay -i INPUT -vf "fbdetile"
+@end example
+
 @section hqx
 
 Apply a high-quality magnification filter designed for pixel art. This filter
