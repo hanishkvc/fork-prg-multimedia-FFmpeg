@@ -25,6 +25,21 @@
  *
  */
 
+/*
+ * ToThink|Check: Optimisations
+ *
+ * Does gcc setting used by ffmpeg allows memcpy | stringops inlining,
+ * loop unrolling, better native matching instructions, additional
+ * optimisations, ...
+ *
+ * Does gcc map to optimal memcpy logic, based on the situation it is
+ * used in.
+ *
+ * If not, may be look at vector_size or intrinsics or appropriate arch
+ * and cpu specific inline asm or ...
+ *
+ */
+
 #include "libavutil/avassert.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/opt.h"
@@ -145,12 +160,13 @@ static void detile_intelx(AVFilterContext *ctx, int w, int h,
  * currently done in a simple dumb way. Two low hanging optimisations
  * that could be readily applied are
  *
- * a) unrolling the inner for loop --- DONE
+ * a) unrolling the inner for loop
+ *    --- Given small size memcpy, should help, DONE
  *
  * b) using simd based 128bit loading and storing along with prefetch
  *    hinting.
  *
- *    TOTHINK|CHECK: Does memcpy already does this if situation
+ *    TOTHINK|CHECK: Does memcpy already does this and more if situation
  *    is right?!
  *
  *    As code (or even intrinsics) would be specific to each architecture,
@@ -159,11 +175,9 @@ static void detile_intelx(AVFilterContext *ctx, int w, int h,
  *    properly, such that it wont become worse than memcpy provided for that
  *    architecture.
  *
- * Or I could even merge the two intel detiling logics into one, as
+ * Or maybe I could even merge the two intel detiling logics into one, as
  * the semantic and flow is almost same for both logics.
  *
- * TOCHECK: Does gcc setting used by ffmpeg allows memcpy|stringops inlining
- * and loop unrolling.
  */
 static void detile_intely(AVFilterContext *ctx, int w, int h,
                                 uint8_t *dst, int dstLineSize,
