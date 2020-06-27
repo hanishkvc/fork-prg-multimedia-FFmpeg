@@ -73,7 +73,6 @@ static av_cold int init(AVFilterContext *ctx)
 
 static int query_formats(AVFilterContext *ctx)
 {
-    const FBDetileContext *fbdetile = ctx->priv;
     static const enum AVPixelFormat pix_fmts[] = {AV_PIX_FMT_RGB0, AV_PIX_FMT_0RGB, AV_PIX_FMT_BGR0, AV_PIX_FMT_0BGR, AV_PIX_FMT_NONE};
     AVFilterFormats *fmts_list;
 
@@ -102,7 +101,6 @@ static void detile_intelx(AVFilterContext *ctx, int w, int h,
     // For a 32Bit / Pixel framebuffer
     int tileW = 128;
     int tileH = 8;
-    int numHTiles = w/tileW;
 
     if (w*4 != srcLineSize) {
         fprintf(stderr,"DBUG:fbtile:intelx: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
@@ -113,7 +111,6 @@ static void detile_intelx(AVFilterContext *ctx, int w, int h,
     int dY = 0;
     int nTRows = (w*h)/tileW;
     int cTR = 0;
-    int k = 0;
     while (cTR < nTRows) {
         int dO = dY*dstLineSize + dX*4;
 #ifdef DEBUG_FBTILE
