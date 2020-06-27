@@ -20,7 +20,8 @@
 
 /**
  * @file
- * Detile the Frame buffers tile layout using the cpu
+ * Detile the Frame buffer's tile layout using the cpu
+ * Currently it supports the legacy Intel Tile X layout detiling.
  *
  */
 
@@ -48,8 +49,8 @@ typedef struct FBDetileContext {
 #define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM
 static const AVOption fbdetile_options[] = {
     { "type", "set framebuffer format_modifier type", OFFSET(type), AV_OPT_TYPE_INT, {.i64=TYPE_INTELX}, 0, NB_TYPE-1, FLAGS, "type" },
-        { "intelx", "Intel XTiled layout", 0, AV_OPT_TYPE_CONST, {.i64=TYPE_INTELX}, INT_MIN, INT_MAX, FLAGS, "type" },
-        { "intely", "Intel YTiled layout", 0, AV_OPT_TYPE_CONST, {.i64=TYPE_INTELY}, INT_MIN, INT_MAX, FLAGS, "type" },
+        { "intelx", "Intel Tile-X layout", 0, AV_OPT_TYPE_CONST, {.i64=TYPE_INTELX}, INT_MIN, INT_MAX, FLAGS, "type" },
+        { "intely", "Intel Tile-Y layout", 0, AV_OPT_TYPE_CONST, {.i64=TYPE_INTELY}, INT_MIN, INT_MAX, FLAGS, "type" },
     { NULL }
 };
 
@@ -60,11 +61,11 @@ static av_cold int init(AVFilterContext *ctx)
     FBDetileContext *fbdetile = ctx->priv;
 
     if (fbdetile->type == TYPE_INTELX) {
-        fprintf(stderr,"INFO:fbdetile:init: Intel X-tile to linear\n");
+        fprintf(stderr,"INFO:fbdetile:init: Intel tile-x to linear\n");
     } else if (fbdetile->type == TYPE_INTELY) {
-        fprintf(stderr,"WARN:fbdetile:init: Intel Y-tile to linear, not yet implemented\n");
+        fprintf(stderr,"WARN:fbdetile:init: Intel tile-y to linear, not yet implemented\n");
     } else {
-        fprintf(stderr,"ERRR:fbdetile:init: Unknown Tile format specified\n");
+        fprintf(stderr,"DBUG:fbdetile:init: Unknown Tile format specified, shouldnt reach here\n");
     }
     fbdetile->width = 1920;
     fbdetile->height = 1080;
@@ -73,7 +74,11 @@ static av_cold int init(AVFilterContext *ctx)
 
 static int query_formats(AVFilterContext *ctx)
 {
-    static const enum AVPixelFormat pix_fmts[] = {AV_PIX_FMT_RGB0, AV_PIX_FMT_0RGB, AV_PIX_FMT_BGR0, AV_PIX_FMT_0BGR, AV_PIX_FMT_NONE};
+    // Currently only RGB based 32bit formats are specified
+    // TODO: Technically the logic is transparent to 16bit RGB formats also
+    static const enum AVPixelFormat pix_fmts[] = {AV_PIX_FMT_RGB0, AV_PIX_FMT_0RGB, AV_PIX_FMT_BGR0, AV_PIX_FMT_0BGR,
+                                                  AV_PIX_FMT_RGBA, AV_PIX_FMT_ARGB, AV_PIX_FMT_BGRA, AV_PIX_FMT_ABGR,
+                                                  AV_PIX_FMT_NONE};
     AVFilterFormats *fmts_list;
 
     fmts_list = ff_make_format_list(pix_fmts);
@@ -89,7 +94,7 @@ static int config_props(AVFilterLink *inlink)
 
     fbdetile->width = inlink->w;
     fbdetile->height = inlink->h;
-    fprintf(stderr,"DBUG:fbtile:config_props: %d x %d\n", fbdetile->width, fbdetile->height);
+    fprintf(stderr,"DBUG:fbdetile:config_props: %d x %d\n", fbdetile->width, fbdetile->height);
 
     return 0;
 }
@@ -98,13 +103,13 @@ static void detile_intelx(AVFilterContext *ctx, int w, int h,
                                 uint8_t *dst, int dstLineSize,
                           const uint8_t *src, int srcLineSize)
 {
-    // For a 32Bit / Pixel framebuffer
-    int tileW = 128;
+    // Offsets and LineSize are in bytes
+    int tileW = 128; // For a 32Bit / Pixel framebuffer, 512/4
     int tileH = 8;
 
     if (w*4 != srcLineSize) {
-        fprintf(stderr,"DBUG:fbtile:intelx: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
-        fprintf(stderr,"ERRR:fbtile:intelx: dont support LineSize | Pitch going beyond width\n");
+        fprintf(stderr,"DBUG:fbdetile:intelx: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
+        fprintf(stderr,"ERRR:fbdetile:intelx: dont support LineSize | Pitch going beyond width\n");
     }
     int sO = 0;
     int dX = 0;
@@ -114,7 +119,7 @@ static void detile_intelx(AVFilterContext *ctx, int w, int h,
     while (cTR < nTRows) {
         int dO = dY*dstLineSize + dX*4;
 #ifdef DEBUG_FBTILE
-        fprintf(stderr,"DBUG:fbtile:intelx: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
+        fprintf(stderr,"DBUG:fbdetile:intelx: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
 #endif
         memcpy(dst+dO+0*dstLineSize, src+sO+0*512, 512);
         memcpy(dst+dO+1*dstLineSize, src+sO+1*512, 512);
@@ -183,7 +188,7 @@ static const AVFilterPad fbdetile_outputs[] = {
 
 AVFilter ff_vf_fbdetile = {
     .name          = "fbdetile",
-    .description   = NULL_IF_CONFIG_SMALL("Detile Framebuffer"),
+    .description   = NULL_IF_CONFIG_SMALL("Detile Framebuffer using CPU"),
     .priv_size     = sizeof(FBDetileContext),
     .init          = init,
     .uninit        = uninit,
