@@ -12299,6 +12299,11 @@ ffplay -i INPUT -vf "fbdetile"
 
 NOTE: While transcoding a test 1080p h264 stream, with 276 frames, with two
 runs of each situation, the performance was
+@example
+rm out.mp4; time ./ffmpeg -i input.mp4 out.mp4
+rm out.mp4; time ./ffmpeg -i input.mp4 -vf fbdetile=0 out.mp4
+rm out.mp4; time ./ffmpeg -i input.mp4 -vf fbdetile=1 out.mp4
+@end example
 @table @option
 @item with no fbdetile filter
 it took ~7.28 secs,
