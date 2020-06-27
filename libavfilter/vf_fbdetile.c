@@ -145,14 +145,25 @@ static void detile_intelx(AVFilterContext *ctx, int w, int h,
  * currently done in a simple dumb way. Two low hanging optimisations
  * that could be readily applied are
  *
- * a) unrolling the inner for loop
+ * a) unrolling the inner for loop --- DONE
  *
  * b) using simd based 128bit loading and storing along with prefetch
- *    hinting. TOTHINK|CHECK: Does memcpy already does this if situation
+ *    hinting.
+ *
+ *    TOTHINK|CHECK: Does memcpy already does this if situation
  *    is right?!
  *
+ *    As code (or even intrinsics) would be specific to each architecture,
+ *    avoiding for now. Later have to check if vector_size attribute and
+ *    corresponding implementation by gcc can handle different architectures
+ *    properly, such that it wont become worse than memcpy provided for that
+ *    architecture.
+ *
  * Or I could even merge the two intel detiling logics into one, as
- * the semantic and flow is the same for both logics.
+ * the semantic and flow is almost same for both logics.
+ *
+ * TOCHECK: Does gcc setting used by ffmpeg allows memcpy|stringops inlining
+ * and loop unrolling.
  */
 static void detile_intely(AVFilterContext *ctx, int w, int h,
                                 uint8_t *dst, int dstLineSize,
@@ -176,9 +187,40 @@ static void detile_intely(AVFilterContext *ctx, int w, int h,
 #ifdef DEBUG_FBTILE
         fprintf(stderr,"DBUG:fbdetile:intely: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
 #endif
-        for (int k = 0; k < 32; k++) {
-            memcpy(dst+dO+k*dstLineSize, src+sO+k*16, 16);
-        }
+
+        memcpy(dst+dO+0*dstLineSize, src+sO+0*16, 16);
+        memcpy(dst+dO+1*dstLineSize, src+sO+1*16, 16);
+        memcpy(dst+dO+2*dstLineSize, src+sO+2*16, 16);
+        memcpy(dst+dO+3*dstLineSize, src+sO+3*16, 16);
+        memcpy(dst+dO+4*dstLineSize, src+sO+4*16, 16);
+        memcpy(dst+dO+5*dstLineSize, src+sO+5*16, 16);
+        memcpy(dst+dO+6*dstLineSize, src+sO+6*16, 16);
+        memcpy(dst+dO+7*dstLineSize, src+sO+7*16, 16);
+        memcpy(dst+dO+8*dstLineSize, src+sO+8*16, 16);
+        memcpy(dst+dO+9*dstLineSize, src+sO+9*16, 16);
+        memcpy(dst+dO+10*dstLineSize, src+sO+10*16, 16);
+        memcpy(dst+dO+11*dstLineSize, src+sO+11*16, 16);
+        memcpy(dst+dO+12*dstLineSize, src+sO+12*16, 16);
+        memcpy(dst+dO+13*dstLineSize, src+sO+13*16, 16);
+        memcpy(dst+dO+14*dstLineSize, src+sO+14*16, 16);
+        memcpy(dst+dO+15*dstLineSize, src+sO+15*16, 16);
+        memcpy(dst+dO+16*dstLineSize, src+sO+16*16, 16);
+        memcpy(dst+dO+17*dstLineSize, src+sO+17*16, 16);
+        memcpy(dst+dO+18*dstLineSize, src+sO+18*16, 16);
+        memcpy(dst+dO+19*dstLineSize, src+sO+19*16, 16);
+        memcpy(dst+dO+20*dstLineSize, src+sO+20*16, 16);
+        memcpy(dst+dO+21*dstLineSize, src+sO+21*16, 16);
+        memcpy(dst+dO+22*dstLineSize, src+sO+22*16, 16);
+        memcpy(dst+dO+23*dstLineSize, src+sO+23*16, 16);
+        memcpy(dst+dO+24*dstLineSize, src+sO+24*16, 16);
+        memcpy(dst+dO+25*dstLineSize, src+sO+25*16, 16);
+        memcpy(dst+dO+26*dstLineSize, src+sO+26*16, 16);
+        memcpy(dst+dO+27*dstLineSize, src+sO+27*16, 16);
+        memcpy(dst+dO+28*dstLineSize, src+sO+28*16, 16);
+        memcpy(dst+dO+29*dstLineSize, src+sO+29*16, 16);
+        memcpy(dst+dO+30*dstLineSize, src+sO+30*16, 16);
+        memcpy(dst+dO+31*dstLineSize, src+sO+31*16, 16);
+
         dX += tileW;
         if (dX >= w) {
             dX = 0;
