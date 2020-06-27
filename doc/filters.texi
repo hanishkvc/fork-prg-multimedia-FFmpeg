@@ -12297,6 +12297,17 @@ ffmpeg -i INPUT -vf "fbdetile" OUTPUT
 ffplay -i INPUT -vf "fbdetile"
 @end example
 
+NOTE: While transcoding a test 1080p h264 stream, with 276 frames, with two
+runs of each situation, the performance was
+@table @option
+@item with no fbdetile filter
+it took ~7.28 secs,
+@item with fbdetile=0 filter
+it took ~8.69 secs,
+@item with fbdetile=1 filter
+it took ~9.20 secs.
+@end table
+
 @section hqx
 
 Apply a high-quality magnification filter designed for pixel art. This filter
