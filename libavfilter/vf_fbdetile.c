@@ -63,7 +63,7 @@ static av_cold int init(AVFilterContext *ctx)
     if (fbdetile->type == TYPE_INTELX) {
         fprintf(stderr,"INFO:fbdetile:init: Intel tile-x to linear\n");
     } else if (fbdetile->type == TYPE_INTELY) {
-        fprintf(stderr,"WARN:fbdetile:init: Intel tile-y to linear, not yet implemented\n");
+        fprintf(stderr,"INFO:fbdetile:init: Intel tile-y to linear\n");
     } else {
         fprintf(stderr,"DBUG:fbdetile:init: Unknown Tile format specified, shouldnt reach here\n");
     }
@@ -139,6 +139,41 @@ static void detile_intelx(AVFilterContext *ctx, int w, int h,
     }
 }
 
+static void detile_intely(AVFilterContext *ctx, int w, int h,
+                                uint8_t *dst, int dstLineSize,
+                          const uint8_t *src, int srcLineSize)
+{
+    // Offsets and LineSize are in bytes
+    int tileW = 4; // For a 32Bit / Pixel framebuffer, 16/4
+    int tileH = 32;
+
+    if (w*4 != srcLineSize) {
+        fprintf(stderr,"DBUG:fbdetile:intely: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
+        fprintf(stderr,"ERRR:fbdetile:intely: dont support LineSize | Pitch going beyond width\n");
+    }
+    int sO = 0;
+    int dX = 0;
+    int dY = 0;
+    int nTRows = (w*h)/tileW;
+    int cTR = 0;
+    while (cTR < nTRows) {
+        int dO = dY*dstLineSize + dX*4;
+#ifdef DEBUG_FBTILE
+        fprintf(stderr,"DBUG:fbdetile:intely: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
+#endif
+        for (int k = 0; k < 32; k++) {
+            memcpy(dst+dO+k*dstLineSize, src+sO+k*16, 16);
+        }
+        dX += tileW;
+        if (dX >= w) {
+            dX = 0;
+            dY += 32;
+        }
+        sO = sO + 32*16;
+        cTR += 32;
+    }
+}
+
 static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 {
     AVFilterContext *ctx = inlink->dst;
@@ -155,6 +190,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
     if (fbdetile->type == TYPE_INTELX) {
         detile_intelx(ctx, fbdetile->width, fbdetile->height,
+                      out->data[0], out->linesize[0],
+                      in->data[0], in->linesize[0]);
+    } else if (fbdetile->type == TYPE_INTELY) {
+        detile_intely(ctx, fbdetile->width, fbdetile->height,
                       out->data[0], out->linesize[0],
                       in->data[0], in->linesize[0]);
     }
