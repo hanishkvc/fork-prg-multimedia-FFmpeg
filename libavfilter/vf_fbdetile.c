@@ -139,6 +139,21 @@ static void detile_intelx(AVFilterContext *ctx, int w, int h,
     }
 }
 
+/*
+ * Intel Legacy Tile-Y layout conversion support
+ *
+ * currently done in a simple dumb way. Two low hanging optimisations
+ * that could be readily applied are
+ *
+ * a) unrolling the inner for loop
+ *
+ * b) using simd based 128bit loading and storing along with prefetch
+ *    hinting. TOTHINK|CHECK: Does memcpy already does this if situation
+ *    is right?!
+ *
+ * Or I could even merge the two intel detiling logics into one, as
+ * the semantic and flow is the same for both logics.
+ */
 static void detile_intely(AVFilterContext *ctx, int w, int h,
                                 uint8_t *dst, int dstLineSize,
                           const uint8_t *src, int srcLineSize)
