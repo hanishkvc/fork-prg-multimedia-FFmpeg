@@ -12298,7 +12298,10 @@ ffplay -i INPUT -vf "fbdetile"
 @end example
 
 NOTE: While transcoding a test 1080p h264 stream, with 276 frames, with two
-runs of each situation, the performance was
+runs of each situation, the performance was has given below. However this
+was for the older | initial version of the logic, as well as it was run on
+the default linux chromebook->vm->container, so the perf values need not be
+proper. But in a relative sense the overhead would be similar.
 @example
 rm out.mp4; time ./ffmpeg -i input.mp4 out.mp4
 rm out.mp4; time ./ffmpeg -i input.mp4 -vf fbdetile=0 out.mp4
