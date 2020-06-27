@@ -12210,6 +12210,68 @@ It accepts the following optional parameters:
 The number of the CUDA device to use
 @end table
 
+@anchor{fbdetile}
+@section fbdetile
+
+Detiles the Framebuffer tile layout into a linear layout using CPU.
+
+It currently supports conversion from Intel legacy tile-x and tile-y layouts
+into a linear layout. This is useful if one is using kmsgrab and hwdownload
+to capture a screen which is using one of these non-linear layouts.
+
+Currently it expects the data to be a 32bit RGB based pixel format. However
+the logic doesnt do any pixel format conversion or so. Later will be enabling
+16bit RGB data also, as the logic is transparent to it at one level.
+
+One could either insert this into the filter chain while capturing itself,
+or else, if it is slowing things down or so, then one could instead insert
+it into the filter chain during playback or transcoding or so.
+
+It supports the following optional parameters
+
+@table @option
+@item type
+Specify which detiling conversion to apply. The supported values are
+@table @var
+@item 0
+intel tile-x to linear conversion (the default)
+@item 1
+intel tile-y to linear conversion.
+@end table
+@end table
+
+If one wants to convert during capture itself, one could do
+@example
+ffmpeg -f kmsgrab -i - -vf "hwdownload, fbdetile" OUTPUT
+@end example
+
+However if one wants to convert after the tiled data has been already captured
+@example
+ffmpeg -i INPUT -vf "fbdetile" OUTPUT
+@end example
+@example
+ffplay -i INPUT -vf "fbdetile"
+@end example
+
+NOTE: While transcoding a test 1080p h264 stream, with 276 frames, with two
+runs of each situation, the performance was has given below. However this
+was for the older | initial version of the logic, as well as it was run on
+the default linux chromebook->vm->container, so the perf values need not be
+proper. But in a relative sense the overhead would be similar.
+@example
+rm out.mp4; time ./ffmpeg -i input.mp4 out.mp4
+rm out.mp4; time ./ffmpeg -i input.mp4 -vf fbdetile=0 out.mp4
+rm out.mp4; time ./ffmpeg -i input.mp4 -vf fbdetile=1 out.mp4
+@end example
+@table @option
+@item with no fbdetile filter
+it took ~7.28 secs,
+@item with fbdetile=0 filter
+it took ~8.69 secs,
+@item with fbdetile=1 filter
+it took ~9.20 secs.
+@end table
+
 @section hqx
 
 Apply a high-quality magnification filter designed for pixel art. This filter
