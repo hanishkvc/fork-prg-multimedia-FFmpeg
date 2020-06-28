@@ -58,6 +58,7 @@ int perfCnt = 0;
 enum FilterMode {
     TYPE_INTELX,
     TYPE_INTELY,
+    TYPE_INTELYF,
     NB_TYPE
 };
 
@@ -73,6 +74,7 @@ static const AVOption fbdetile_options[] = {
     { "type", "set framebuffer format_modifier type", OFFSET(type), AV_OPT_TYPE_INT, {.i64=TYPE_INTELX}, 0, NB_TYPE-1, FLAGS, "type" },
         { "intelx", "Intel Tile-X layout", 0, AV_OPT_TYPE_CONST, {.i64=TYPE_INTELX}, INT_MIN, INT_MAX, FLAGS, "type" },
         { "intely", "Intel Tile-Y layout", 0, AV_OPT_TYPE_CONST, {.i64=TYPE_INTELY}, INT_MIN, INT_MAX, FLAGS, "type" },
+        { "intelyf", "Intel Tile-Yf layout", 0, AV_OPT_TYPE_CONST, {.i64=TYPE_INTELYF}, INT_MIN, INT_MAX, FLAGS, "type" },
     { NULL }
 };
 
@@ -252,6 +254,61 @@ static void detile_intely(AVFilterContext *ctx, int w, int h,
     }
 }
 
+struct changeEntry {
+    int posOffset;
+    int xDelta;
+    int yDelta };
+
+// Settings for Intel Tile-Yf framebuffer layout
+struct changeEntry yfChanges[] = { {4, 0, 4}, {8, 4, -4}, {16, -4, 4}, {32, 4, -12} };
+int yfBytesPerPixel = 4; // Assumes each pixel is 4 bytes
+int yfSubTileWidth = 4;
+int yfSubTileHeight = 4;
+int yfSubTileWidthBytes = 16; //subTileWidth*bytesPerPixel
+int yfTileHeight = 16;
+
+static void detile_generic(AVFilterContext *ctx, int w, int h,
+                                  uint8_t *dst, int dstLineSize,
+                            const uint8_t *src, int srcLineSize,
+                            int bytesPerPixel,
+                            int subTileWidth, int subTileHeight, int subTileWidthBytes, int tileHeight,
+                            int numChanges, struct changeEntry *changes)
+{
+
+    if (w*bytesPerPixel != srcLineSize) {
+        fprintf(stderr,"DBUG:fbdetile:generic: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
+        fprintf(stderr,"ERRR:fbdetile:generic: dont support LineSize | Pitch going beyond width\n");
+    }
+    int sO = 0;
+    int dX = 0;
+    int dY = 0;
+    int nSTRows = (w*h)/subTileWidth;
+    int cSTR = 0;
+    while (cSTR < nSTRows) {
+        int dO = dY*dstLineSize + dX*bytesPerPixel;
+#ifdef DEBUG_FBTILE
+        fprintf(stderr,"DBUG:fbdetile:generic: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
+#endif
+
+        for (int k = 0; k < subTileHeight; k++) {
+            memcpy(dst+dO+k*dstLineSize, src+sO+k*subTileWidthBytes, subTileWidthBytes);
+        }
+        sO = sO + subTileHeight*subTileWidthBytes;
+
+        cSTR += subTileHeight;
+        for (int i=numChanges-1; i>=0; i--) {
+            if ((cSTR%changes[i].posOffset) == 0) {
+                dX += changes[i].xDelta;
+                dY += changes[i].yDelta;
+            }
+        }
+        if (dX >= w) {
+            dX = 0;
+            dY += tileHeight;
+        }
+    }
+}
+
 static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 {
     AVFilterContext *ctx = inlink->dst;
@@ -277,6 +334,12 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         detile_intely(ctx, fbdetile->width, fbdetile->height,
                       out->data[0], out->linesize[0],
                       in->data[0], in->linesize[0]);
+    } else if (fbdetile->type == TYPE_INTELYF) {
+        detile_generic(ctx, fbdetile->width, fbdetile->height,
+                        out->data[0], out->linesize[0],
+                        in->data[0], in->linesize[0],
+                        yfBytesPerPixel, yfSubTileWidth, yfSubTileHeight, yfSubTileWidthBytes, yfTileHeight,
+                        4, yfChanges);
     }
 #ifdef DEBUG_PERF
     uint64_t perfEnd = __rdtsc();
