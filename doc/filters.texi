@@ -12250,7 +12250,7 @@ intel tile-y to linear conversion.
 
 If one wants to convert during capture itself, one could do
 @example
-ffmpeg -f kmsgrab -i - -vf "hwdownload, fbdetile" OUTPUT
+ffmpeg -f kmsgrab -i - -vf "hwdownload,format=bgr0,fbdetile" OUTPUT
 @end example
 
 However if one wants to convert after the tiled data has been already captured
@@ -12261,11 +12261,8 @@ ffmpeg -i INPUT -vf "fbdetile" OUTPUT
 ffplay -i INPUT -vf "fbdetile"
 @end example
 
-NOTE: While transcoding a test 1080p h264 stream, with 276 frames, with two
-runs of each situation, the performance was has given below. However this
-was for the older | initial version of the logic, as well as it was run on
-the default linux chromebook->vm->container, so the perf values need not be
-proper. But in a relative sense the overhead would be similar.
+NOTE: While transcoding a test 1080p h264 stream, with 276 frames, below was
+the average times taken.
 @example
 rm out.mp4; time ./ffmpeg -i input.mp4 out.mp4
 rm out.mp4; time ./ffmpeg -i input.mp4 -vf fbdetile=0 out.mp4
@@ -12273,11 +12270,14 @@ rm out.mp4; time ./ffmpeg -i input.mp4 -vf fbdetile=1 out.mp4
 @end example
 @table @option
 @item with no fbdetile filter
-it took ~7.28 secs,
+it took ~7.28 secs, i5-8th Gen
+it took ~10.6 secs, i7-7th Gen
 @item with fbdetile=0 filter
-it took ~8.69 secs,
+it took ~8.69 secs, i5-8th Gen
+it took ~13.8 secs, i7-7th Gen
 @item with fbdetile=1 filter
-it took ~9.20 secs.
+it took ~9.20 secs. i5-8th Gen
+it took ~14.2 secs. i7-7th Gen
 @end table
 
 @section hqx
