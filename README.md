@@ -13,7 +13,7 @@ wayland session.
 
 Example1
 
-ffmpeg -f kmsgrab -i - -vf "hwdownload,fbdetile" MyCleanCapture.mp4
+ffmpeg -f kmsgrab -i - -vf "hwdownload,format=bgr0,fbdetile" MyCleanCapture.mp4
 
 Example2
 
