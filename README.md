@@ -1,6 +1,33 @@
 FFmpeg README
 =============
 
+# HanishKVC's FFMpeg Fork Notes
+
+## Branch: hkvcFBDeTile
+
+Contains the fbdetile video filter which allows converting tiled layout framebuffers
+into linear layout framebuffers.
+
+This is useful for people using kmsgrab and hwdownload, say for example capturing a
+wayland session.
+
+Example1
+
+ffmpeg -f kmsgrab -i - -vf "hwdownload,fbdetile" MyCleanCapture.mp4
+
+Example2
+
+ffmpeg -f kmsgrab -i - -vf "hwdownload,format=bgr0" MyTiledCapture.mp4
+
+ffmpeg -i MyTiledCapture.mp4 -vf "fbdetile" MyCleanCapture.mp4
+
+OR
+
+ffplay -i MyTiledCapture.mp4 -vf "fbdetile"
+
+
+# Original README
+
 FFmpeg is a collection of libraries and tools to process multimedia content
 such as audio, video, subtitles and related metadata.
 
