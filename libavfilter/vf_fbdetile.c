@@ -300,6 +300,7 @@ static void detile_generic(AVFilterContext *ctx, int w, int h,
             if ((cSTR%changes[i].posOffset) == 0) {
                 dX += changes[i].xDelta;
                 dY += changes[i].yDelta;
+		break;
             }
         }
         if (dX >= w) {
