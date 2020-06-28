@@ -17,7 +17,7 @@ function math() {
 }
 
 function _build_prepare() {
-	apt-get install build-essential nasm pkg-config libdrm-dev libx265-dev libopus-dev libx264-dev
+	apt-get install build-essential nasm pkg-config libdrm-dev libx265-dev libopus-dev libx264-dev libxcb1-dev libx11-dev libsdl2-dev
 }
 
 function _build_configure() {
@@ -43,6 +43,7 @@ function _time_ffmpeg() {
 }
 
 function time_ffmpeg() {
+	_time_ffmpeg "-vf fbdetile=2"
 	_time_ffmpeg "-vf fbdetile=1"
 	_time_ffmpeg
 	_time_ffmpeg "-vf fbdetile=0"
