@@ -48,6 +48,13 @@
 #include "internal.h"
 #include "video.h"
 
+#define DEBUG_PERF 1
+#ifdef DEBUG_PERF
+#include <x86intrin.h>
+uint64_t perfTime = 0;
+int perfCnt = 0;
+#endif
+
 enum FilterMode {
     TYPE_INTELX,
     TYPE_INTELY,
@@ -259,6 +266,9 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     }
     av_frame_copy_props(out, in);
 
+#ifdef DEBUG_PERF
+    uint64_t perfStart = __rdtsc();
+#endif
     if (fbdetile->type == TYPE_INTELX) {
         detile_intelx(ctx, fbdetile->width, fbdetile->height,
                       out->data[0], out->linesize[0],
@@ -268,6 +278,11 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                       out->data[0], out->linesize[0],
                       in->data[0], in->linesize[0]);
     }
+#ifdef DEBUG_PERF
+    uint64_t perfEnd = __rdtsc();
+    perfTime += (perfEnd - perfStart);
+    perfCnt += 1;
+#endif
 
     av_frame_free(&in);
     return ff_filter_frame(outlink, out);
@@ -275,7 +290,9 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
 static av_cold void uninit(AVFilterContext *ctx)
 {
-
+#ifdef DEBUG_PERF
+    fprintf(stderr, "DBUG:fbdetile:uninit:perf: AvgTSCCnt %ld\n", perfTime/perfCnt);
+#endif
 }
 
 static const AVFilterPad fbdetile_inputs[] = {
