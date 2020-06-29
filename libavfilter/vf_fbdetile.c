@@ -73,6 +73,7 @@ enum FilterMode {
     TYPE_INTELY,
     TYPE_INTELYF,
     TYPE_INTELGX,
+    TYPE_INTELGY,
     NB_TYPE
 };
 
@@ -90,6 +91,7 @@ static const AVOption fbdetile_options[] = {
         { "intely", "Intel Tile-Y layout", 0, AV_OPT_TYPE_CONST, {.i64=TYPE_INTELY}, INT_MIN, INT_MAX, FLAGS, "type" },
         { "intelyf", "Intel Tile-Yf layout", 0, AV_OPT_TYPE_CONST, {.i64=TYPE_INTELYF}, INT_MIN, INT_MAX, FLAGS, "type" },
         { "intelgx", "Intel Tile-X layout, GenericDetile", 0, AV_OPT_TYPE_CONST, {.i64=TYPE_INTELGX}, INT_MIN, INT_MAX, FLAGS, "type" },
+        { "intelgy", "Intel Tile-Y layout, GenericDetile", 0, AV_OPT_TYPE_CONST, {.i64=TYPE_INTELGY}, INT_MIN, INT_MAX, FLAGS, "type" },
     { NULL }
 };
 
@@ -107,6 +109,8 @@ static av_cold int init(AVFilterContext *ctx)
         fprintf(stderr,"INFO:fbdetile:init: Intel tile-yf to linear\n");
     } else if (fbdetile->type == TYPE_INTELGX) {
         fprintf(stderr,"INFO:fbdetile:init: Intel tile-x to linear, using generic detile\n");
+    } else if (fbdetile->type == TYPE_INTELGY) {
+        fprintf(stderr,"INFO:fbdetile:init: Intel tile-y to linear, using generic detile\n");
     } else {
         fprintf(stderr,"DBUG:fbdetile:init: Unknown Tile format specified, shouldnt reach here\n");
     }
@@ -300,6 +304,14 @@ int txSubTileHeight = 8;
 int txSubTileWidthBytes = 512; //subTileWidth*bytesPerPixel
 int txTileHeight = 8;
 int txNumChanges = 1;
+// Setting for Intel Tile-Y framebuffer layout
+struct changeEntry tyChanges[] = { {32, 4, 0} };
+int tyBytesPerPixel = 4; // Assumes each pixel is 4 bytes
+int tySubTileWidth = 4;
+int tySubTileHeight = 32;
+int tySubTileWidthBytes = 16; //subTileWidth*bytesPerPixel
+int tyTileHeight = 32;
+int tyNumChanges = 1;
 
 static void detile_generic(AVFilterContext *ctx, int w, int h,
                                   uint8_t *dst, int dstLineSize,
@@ -381,6 +393,12 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                         in->data[0], in->linesize[0],
                         txBytesPerPixel, txSubTileWidth, txSubTileHeight, txSubTileWidthBytes, txTileHeight,
                         txNumChanges, txChanges);
+    } else if (fbdetile->type == TYPE_INTELGY) {
+        detile_generic(ctx, fbdetile->width, fbdetile->height,
+                        out->data[0], out->linesize[0],
+                        in->data[0], in->linesize[0],
+                        tyBytesPerPixel, tySubTileWidth, tySubTileHeight, tySubTileWidthBytes, tyTileHeight,
+                        tyNumChanges, tyChanges);
     }
 #ifdef DEBUG_PERF
     uint64_t perfEnd = __rdtsc();
