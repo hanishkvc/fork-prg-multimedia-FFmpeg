@@ -344,6 +344,10 @@ static void detile_generic(AVFilterContext *ctx, int w, int h,
         fprintf(stderr,"DBUG:fbdetile:generic: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
 #endif
 
+	// As most tiling layouts have a minimum subtile of 4x4, if I remember correctly,
+	// so this loop could be unrolled to be multiples of 4, and speed up a bit.
+	// However if one unrolls to 4 times, then a tiling involving 3x3 or 2x2 wont
+	// be handlable. For now leaving it has fully generic.
         for (int k = 0; k < subTileHeight; k++) {
             memcpy(dst+dO+k*dstLineSize, src+sO+k*subTileWidthBytes, subTileWidthBytes);
         }
