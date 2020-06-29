@@ -47,10 +47,11 @@
  * Performance check results on i7-7500u
  * Run Type      : Type   : Seconds               : TSCCnt
  * Non filter run:        : 10.1s, 09.96s, 09.97s :
- * fbdetile=0 run: TileX  : 13.1s, 13.26s, 13.26s : 06.0M, 05.99M, 06.00M
- * fbdetile=1 run: TileY  : 13.4s, 13.41s, 13.39s : 06.3M, 06.28M, 06.27M
- * fbdetile=2 run: TileYf : 13.7s, 13.76s, 13.92s : 13.0M, 13.22M, 13.40M
- * fbdetile=3 run: TileGX :      , 13.43s, 13.32s :      , 06.20M, 06.16M
+ * fbdetile=0 run: TileX  : 13.1s, 13.32s, 13.26s : 06.0M, 05.95M, 06.00M
+ * fbdetile=1 run: TileY  : 13.4s, 13.48s, 13.39s : 06.3M, 06.22M, 06.27M
+ * fbdetile=2 run: TileYf : 13.7s, 13.80s, 13.92s : 13.0M, 12.63M, 13.40M
+ * fbdetile=3 run: TileGX :      , 13.49s, 13.32s :      , 06.27M, 06.16M
+ * fbdetile=4 run: TileGY :      , 13.73s, 13.51s :      , 08.63M, 08.40M
  */
 
 #include "libavutil/avassert.h"
