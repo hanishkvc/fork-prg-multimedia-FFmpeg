@@ -21,7 +21,12 @@
 /**
  * @file
  * Detile the Frame buffer's tile layout using the cpu
- * Currently it supports the legacy Intel Tile X layout detiling.
+ * Currently it supports detiling of following layouts
+ *     legacy Intel Tile-X
+ *     legacy Intel Tile-Y
+ *     newer Intel Tile-Yf
+ * More tiling layouts can be easily supported by adding configuration data
+ * for the generic detile logic, wrt the required tiling schemes.
  *
  */
 

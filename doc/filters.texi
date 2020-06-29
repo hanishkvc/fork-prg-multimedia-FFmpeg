@@ -12259,9 +12259,16 @@ The number of the CUDA device to use
 
 Detiles the Framebuffer tile layout into a linear layout using CPU.
 
-It currently supports conversion from Intel legacy tile-x and tile-y layouts
-into a linear layout. This is useful if one is using kmsgrab and hwdownload
-to capture a screen which is using one of these non-linear layouts.
+It currently supports conversion from Intel legacy tile-x and tile-y as well
+as the newer Intel tile-yf layouts into a linear layout. This is useful if
+one is using kmsgrab and hwdownload to capture a screen which is using one
+of these non-linear layouts.
+
+NOTE: It also provides a generic detiling logic, which can be easily configured
+to detile many different tiling schemes if required, in future. The same is
+used for detiling the intel tile-yf layout. Also sample configuration to handle
+intel tile-x and tile-y using generic detile logic is also shown for reference,
+in the code.
 
 Currently it expects the data to be a 32bit RGB based pixel format. However
 the logic doesnt do any pixel format conversion or so. Later will be enabling
@@ -12281,6 +12288,8 @@ Specify which detiling conversion to apply. The supported values are
 intel tile-x to linear conversion (the default)
 @item 1
 intel tile-y to linear conversion.
+@item 2
+intel tile-yf to linear conversion.
 @end table
 @end table
 
