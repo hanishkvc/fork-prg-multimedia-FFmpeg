@@ -33,10 +33,14 @@ function _time_ffmpeg() {
 		bash -c "time ./ffmpeg -y -i ../teststreams/testintelxtile.mp4 $1 -f h264 /dev/null" 2> /tmp/hkvc-run.log
 		fM=`grep "real" /tmp/hkvc-run.log | cut -f 2 | cut -d 'm' -f 1`
 		fS=`grep "real" /tmp/hkvc-run.log | cut -f 2 | cut -d 'm' -f 2 | cut -d 's' -f 1`
-		grep "real" /tmp/hkvc-run.log
+		if [ "$DEBUG" == "1" ]; then
+			grep "real" /tmp/hkvc-run.log
+		fi
 		curTime=`math "$fM*60*100+$fS*100"`
 		totalTime=$(($totalTime+$curTime))
-		grep "perf" /tmp/hkvc-run.log
+		if [ "$DEBUG" == "1" ]; then
+			grep "perf" /tmp/hkvc-run.log
+		fi
 		curTSC=`grep "perf" /tmp/hkvc-run.log | cut -d ' ' -f 3`
 		if [ "$curTSC" != "" ]; then
 			totalTSC=$(($totalTSC+$curTSC))
