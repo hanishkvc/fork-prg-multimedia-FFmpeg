@@ -33,11 +33,24 @@
  * optimisations, ...
  *
  * Does gcc map to optimal memcpy logic, based on the situation it is
- * used in.
+ * used in i.e like
+ *     based on size of transfer, alignment, architecture, etc
+ *     a suitable combination of inlining and or rep movsb and or
+ *     simd load/store and or unrolling and or ...
  *
  * If not, may be look at vector_size or intrinsics or appropriate arch
  * and cpu specific inline asm or ...
  *
+ */
+
+/*
+ * Performance check results on i7-7500u
+ * Run Type      : Type   : Seconds               : TSCCnt
+ * Non filter run:        : 10.1s, 09.96s, 09.97s :
+ * fbdetile=0 run: TileX  : 13.1s, 13.26s, 13.26s : 06.0M, 05.99M, 06.00M
+ * fbdetile=1 run: TileY  : 13.4s, 13.41s, 13.39s : 06.3M, 06.28M, 06.27M
+ * fbdetile=2 run: TileYf : 13.7s, 13.76s, 13.92s : 13.0M, 13.22M, 13.40M
+ * fbdetile=3 run: TileGX :      , 13.43s, 13.32s :      , 06.20M, 06.16M
  */
 
 #include "libavutil/avassert.h"
@@ -92,6 +105,8 @@ static av_cold int init(AVFilterContext *ctx)
         fprintf(stderr,"INFO:fbdetile:init: Intel tile-y to linear\n");
     } else if (fbdetile->type == TYPE_INTELYF) {
         fprintf(stderr,"INFO:fbdetile:init: Intel tile-yf to linear\n");
+    } else if (fbdetile->type == TYPE_INTELGX) {
+        fprintf(stderr,"INFO:fbdetile:init: Intel tile-x to linear, using generic detile\n");
     } else {
         fprintf(stderr,"DBUG:fbdetile:init: Unknown Tile format specified, shouldnt reach here\n");
     }
@@ -103,7 +118,7 @@ static av_cold int init(AVFilterContext *ctx)
 static int query_formats(AVFilterContext *ctx)
 {
     // Currently only RGB based 32bit formats are specified
-    // TODO: Technically the logic is transparent to 16bit RGB formats also
+    // TODO: Technically the logic is transparent to 16bit RGB formats also to a great extent
     static const enum AVPixelFormat pix_fmts[] = {AV_PIX_FMT_RGB0, AV_PIX_FMT_0RGB, AV_PIX_FMT_BGR0, AV_PIX_FMT_0BGR,
                                                   AV_PIX_FMT_RGBA, AV_PIX_FMT_ARGB, AV_PIX_FMT_BGRA, AV_PIX_FMT_ABGR,
                                                   AV_PIX_FMT_NONE};
@@ -258,10 +273,15 @@ static void detile_intely(AVFilterContext *ctx, int w, int h,
     }
 }
 
+/*
+ * Generic detile logic
+ */
+
 struct changeEntry {
     int posOffset;
     int xDelta;
-    int yDelta; };
+    int yDelta;
+};
 
 // Settings for Intel Tile-Yf framebuffer layout
 // May need to swap the 4 pixel wide subtile, have to check doc bit more
