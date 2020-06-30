@@ -405,6 +405,7 @@ static void detile_generic(AVFilterContext *ctx, int w, int h,
     int curTileInRow = 0;
     while (cSTR < nSTRows) {
         int dO = dY*dstLineSize + dX*bytesPerPixel;
+#define DEBUG_FBTILE 1
 #ifdef DEBUG_FBTILE
         fprintf(stderr,"DBUG:fbdetile:generic: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
 #endif
@@ -442,6 +443,9 @@ static void detile_generic(AVFilterContext *ctx, int w, int h,
             dX = 0;
             curTileInRow = 0;
             dY += tileHeight;
+            if (dY >= h) {
+                break;
+            }
         }
     }
 }
