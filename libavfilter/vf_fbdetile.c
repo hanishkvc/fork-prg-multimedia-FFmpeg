@@ -326,7 +326,7 @@ int tySubTileWidthBytes = 16; //subTileWidth*bytesPerPixel
 int tyTileHeight = 32;
 int tyNumChanges = 1;
 
-static void detile_generic(AVFilterContext *ctx, int w, int h,
+static void detile_generic_raw(AVFilterContext *ctx, int w, int h,
                                   uint8_t *dst, int dstLineSize,
                             const uint8_t *src, int srcLineSize,
                             int bytesPerPixel,
@@ -372,6 +372,58 @@ static void detile_generic(AVFilterContext *ctx, int w, int h,
         }
     }
 }
+
+
+static void detile_generic(AVFilterContext *ctx, int w, int h,
+                                  uint8_t *dst, int dstLineSize,
+                            const uint8_t *src, int srcLineSize,
+                            int bytesPerPixel,
+                            int subTileWidth, int subTileHeight, int subTileWidthBytes, int tileHeight,
+                            int numChanges, struct changeEntry *changes)
+{
+
+    if (w*bytesPerPixel != srcLineSize) {
+        fprintf(stderr,"DBUG:fbdetile:generic: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
+        fprintf(stderr,"ERRR:fbdetile:generic: dont support LineSize | Pitch going beyond width\n");
+    }
+    int sO = 0;
+    int dX = 0;
+    int dY = 0;
+    int nSTRows = (w*h)/subTileWidth;
+    int cSTR = 0;
+    while (cSTR < nSTRows) {
+        int dO = dY*dstLineSize + dX*bytesPerPixel;
+#ifdef DEBUG_FBTILE
+        fprintf(stderr,"DBUG:fbdetile:generic: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
+#endif
+
+	// As most tiling layouts have a minimum subtile of 4x4, if I remember correctly,
+	// so this loop could be unrolled to be multiples of 4, and speed up a bit.
+	// However if one unrolls to 4 times, then a tiling involving 3x3 or 2x2 wont
+	// be handlable. For now leaving it has fully generic.
+        for (int k = 0; k < subTileHeight; k+=4) {
+            memcpy(dst+dO+k*dstLineSize, src+sO+k*subTileWidthBytes, subTileWidthBytes);
+            memcpy(dst+dO+(k+1)*dstLineSize, src+sO+(k+1)*subTileWidthBytes, subTileWidthBytes);
+            memcpy(dst+dO+(k+2)*dstLineSize, src+sO+(k+2)*subTileWidthBytes, subTileWidthBytes);
+            memcpy(dst+dO+(k+3)*dstLineSize, src+sO+(k+3)*subTileWidthBytes, subTileWidthBytes);
+        }
+        sO = sO + subTileHeight*subTileWidthBytes;
+
+        cSTR += subTileHeight;
+        for (int i=numChanges-1; i>=0; i--) {
+            if ((cSTR%changes[i].posOffset) == 0) {
+                dX += changes[i].xDelta;
+                dY += changes[i].yDelta;
+		break;
+            }
+        }
+        if (dX >= w) {
+            dX = 0;
+            dY += tileHeight;
+        }
+    }
+}
+
 
 static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 {
