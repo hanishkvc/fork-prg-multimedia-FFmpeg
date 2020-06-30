@@ -402,6 +402,7 @@ static void detile_generic(AVFilterContext *ctx, int w, int h,
     else
         parallel=1;
     int cSTR = 0;
+    int curTileInRow = 0;
     while (cSTR < nSTRows) {
         int dO = dY*dstLineSize + dX*bytesPerPixel;
 #ifdef DEBUG_FBTILE
@@ -427,16 +428,19 @@ static void detile_generic(AVFilterContext *ctx, int w, int h,
         cSTR += subTileHeight;
         for (int i=numChanges-1; i>=0; i--) {
             if ((cSTR%changes[i].posOffset) == 0) {
-                if (i == numChanges-1)
-                    dX += (changes[i].xDelta*parallel);
-                else
+                if (i == numChanges-1) {
+                    curTileInRow += parallel;
+                    dX = curTileInRow*tileWidth;
+                } else {
                     dX += changes[i].xDelta;
+                }
                 dY += changes[i].yDelta;
 		break;
             }
         }
         if (dX >= w) {
             dX = 0;
+            curTileInRow = 0;
             dY += tileHeight;
         }
     }
@@ -536,3 +540,5 @@ AVFilter ff_vf_fbdetile = {
     .outputs       = fbdetile_outputs,
     .priv_class    = &fbdetile_class,
 };
+
+// vim: set expandtab sts=4: //
