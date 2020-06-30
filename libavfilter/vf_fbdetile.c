@@ -68,6 +68,7 @@
 #include "internal.h"
 #include "video.h"
 
+#undef DEBUG_FBTILE 1
 #define DEBUG_PERF 1
 #ifdef DEBUG_PERF
 #include <x86intrin.h>
@@ -410,7 +411,6 @@ static void detile_generic(AVFilterContext *ctx, int w, int h,
     int curTileInRow = 0;
     while (cSTR < nSTRows) {
         int dO = dY*dstLineSize + dX*bytesPerPixel;
-#define DEBUG_FBTILE 1
 #ifdef DEBUG_FBTILE
         fprintf(stderr,"DBUG:fbdetile:generic: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
 #endif
