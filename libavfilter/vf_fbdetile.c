@@ -297,6 +297,7 @@ struct changeEntry {
 
 // Settings for Intel Tile-Yf framebuffer layout
 // May need to swap the 4 pixel wide subtile, have to check doc bit more
+// TODO: Add the missing subtile level wrt dirChangesList
 int yfBytesPerPixel = 4; // Assumes each pixel is 4 bytes
 int yfSubTileWidth = 4;
 #ifdef RAWDIRCHANGELIST_FORREFERENCE
@@ -333,11 +334,12 @@ int tyTileWidth = 32;
 int tyTileHeight = 32;
 int tyNumChanges = 2;
 
-static void detile_generic_raw(AVFilterContext *ctx, int w, int h,
+static void detile_generic_simple(AVFilterContext *ctx, int w, int h,
                                   uint8_t *dst, int dstLineSize,
                             const uint8_t *src, int srcLineSize,
                             int bytesPerPixel,
-                            int subTileWidth, int subTileHeight, int subTileWidthBytes, int tileHeight,
+                            int subTileWidth, int subTileHeight, int subTileWidthBytes,
+                            int tileWidth, int tileHeight,
                             int numChanges, struct changeEntry *changes)
 {
 
@@ -366,7 +368,7 @@ static void detile_generic_raw(AVFilterContext *ctx, int w, int h,
             if ((cSTR%changes[i].posOffset) == 0) {
                 dX += changes[i].xDelta;
                 dY += changes[i].yDelta;
-		break;
+                break;
             }
         }
         if (dX >= w) {
@@ -392,7 +394,7 @@ static void detile_generic(AVFilterContext *ctx, int w, int h,
         fprintf(stderr,"ERRR:fbdetile:generic: dont support LineSize | Pitch going beyond width\n");
     }
     if (w%tileWidth != 0) {
-        fprintf(stderr,"DBUG:fbdetile:generic:NotSupported: width%d, tileWidth%d\n", w, tileWidth);
+        fprintf(stderr,"DBUG:fbdetile:generic:NotSupported:NonMultWidth: width%d, tileWidth%d\n", w, tileWidth);
     }
     int sO = 0;
     int sOPrev = 0;
@@ -413,10 +415,12 @@ static void detile_generic(AVFilterContext *ctx, int w, int h,
         fprintf(stderr,"DBUG:fbdetile:generic: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
 #endif
 
-	// As most tiling layouts have a minimum subtile of 4x4, if I remember correctly,
-	// so this loop could be unrolled to be multiples of 4, and speed up a bit.
-	// However if one unrolls to 4 times, then a tiling involving 3x3 or 2x2 wont
-	// be handlable. For now leaving it has fully generic.
+        // As most tiling layouts have a minimum subtile of 4x4, if I remember correctly,
+        // so this loop has been unrolled to be multiples of 4, and speed up a bit.
+        // However tiling involving 3x3 or 2x2 wont be handlable. Use detile_generic_simple
+        // for such tile layouts.
+        // Detile parallely to a limited extent. To avoid any cache set-associativity and or
+        // limited cache based thrashing, keep it spacially and inturn temporaly small at one level.
         for (int k = 0; k < subTileHeight; k+=4) {
             for (int p = 0; p < parallel; p++) {
                 int pSrcOffset = p*tileWidth*tileHeight*bytesPerPixel;
