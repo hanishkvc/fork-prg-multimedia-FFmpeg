@@ -391,6 +391,7 @@ static void detile_generic(AVFilterContext *ctx, int w, int h,
         fprintf(stderr,"DBUG:fbdetile:generic:NotSupported: width%d, tileWidth%d\n", w, tileWidth);
     }
     int sO = 0;
+    int sOPrev = 0;
     int dX = 0;
     int dY = 0;
     int nSTRows = (w*h)/subTileWidth;
@@ -432,6 +433,9 @@ static void detile_generic(AVFilterContext *ctx, int w, int h,
                 if (i == numChanges-1) {
                     curTileInRow += parallel;
                     dX = curTileInRow*tileWidth;
+                    //sO += tileWidth*tileHeight*bytesPerPixel*(parallel-1);
+                    sO = sOPrev + tileWidth*tileHeight*bytesPerPixel*(parallel);
+                    sOPrev = sO;
                 } else {
                     dX += changes[i].xDelta;
                 }
