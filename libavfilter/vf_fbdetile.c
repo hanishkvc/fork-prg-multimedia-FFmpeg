@@ -401,12 +401,10 @@ static void detile_generic(AVFilterContext *ctx, int w, int h,
     int nSTRows = (w*h)/subTileWidth;
     int nSTRowsInATile = (tileWidth*tileHeight)/subTileWidth;
     int nTilesInARow = w/tileWidth;
-    if (nTilesInARow%4 == 0)
-        parallel=4;
-    else if (nTilesInARow%2 == 0)
-        parallel=2;
-    else
-        parallel=1;
+    for (parallel=8; parallel>0; parallel--) {
+        if (nTilesInARow%parallel == 0)
+            break;
+    }
     int cSTR = 0;
     int curTileInRow = 0;
     while (cSTR < nSTRows) {
