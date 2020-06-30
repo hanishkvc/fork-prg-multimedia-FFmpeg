@@ -308,6 +308,7 @@ struct changeEntry yfChanges[] = { {8, 4, 0}, {16, -4, 8}, {32, 4, -8} };
 int yfNumChanges = 3;
 #endif
 int yfSubTileWidthBytes = 16; //subTileWidth*bytesPerPixel
+int yfTileWidth = 16;
 int yfTileHeight = 16;
 // Setting for Intel Tile-X framebuffer layout
 struct changeEntry txChanges[] = { {8, 128, 0} };
@@ -315,6 +316,7 @@ int txBytesPerPixel = 4; // Assumes each pixel is 4 bytes
 int txSubTileWidth = 128;
 int txSubTileHeight = 8;
 int txSubTileWidthBytes = 512; //subTileWidth*bytesPerPixel
+int txTileWidth = 128;
 int txTileHeight = 8;
 int txNumChanges = 1;
 // Setting for Intel Tile-Y framebuffer layout
@@ -323,6 +325,7 @@ int tyBytesPerPixel = 4; // Assumes each pixel is 4 bytes
 int tySubTileWidth = 4;
 int tySubTileHeight = 32;
 int tySubTileWidthBytes = 16; //subTileWidth*bytesPerPixel
+int tyTileWidth = 32;
 int tyTileHeight = 32;
 int tyNumChanges = 1;
 
@@ -349,10 +352,6 @@ static void detile_generic_raw(AVFilterContext *ctx, int w, int h,
         fprintf(stderr,"DBUG:fbdetile:generic: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
 #endif
 
-	// As most tiling layouts have a minimum subtile of 4x4, if I remember correctly,
-	// so this loop could be unrolled to be multiples of 4, and speed up a bit.
-	// However if one unrolls to 4 times, then a tiling involving 3x3 or 2x2 wont
-	// be handlable. For now leaving it has fully generic.
         for (int k = 0; k < subTileHeight; k++) {
             memcpy(dst+dO+k*dstLineSize, src+sO+k*subTileWidthBytes, subTileWidthBytes);
         }
@@ -378,18 +377,30 @@ static void detile_generic(AVFilterContext *ctx, int w, int h,
                                   uint8_t *dst, int dstLineSize,
                             const uint8_t *src, int srcLineSize,
                             int bytesPerPixel,
-                            int subTileWidth, int subTileHeight, int subTileWidthBytes, int tileHeight,
+                            int subTileWidth, int subTileHeight, int subTileWidthBytes,
+                            int tileWidth, int tileHeight,
                             int numChanges, struct changeEntry *changes)
 {
+    int parallel = 1;
 
     if (w*bytesPerPixel != srcLineSize) {
         fprintf(stderr,"DBUG:fbdetile:generic: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
         fprintf(stderr,"ERRR:fbdetile:generic: dont support LineSize | Pitch going beyond width\n");
     }
+    if (w%tileWidth != 0) {
+        fprintf(stderr,"DBUG:fbdetile:generic:NotSupported: width%d, tileWidth%d\n", w, tileWidth);
+    }
     int sO = 0;
     int dX = 0;
     int dY = 0;
     int nSTRows = (w*h)/subTileWidth;
+    int nTilesInARow = w/tileWidth;
+    if (nTilesInARow%4 == 0)
+        parallel=4;
+    else if (nTilesInARow%2 == 0)
+        parallel=2;
+    else
+        parallel=1;
     int cSTR = 0;
     while (cSTR < nSTRows) {
         int dO = dY*dstLineSize + dX*bytesPerPixel;
@@ -402,17 +413,24 @@ static void detile_generic(AVFilterContext *ctx, int w, int h,
 	// However if one unrolls to 4 times, then a tiling involving 3x3 or 2x2 wont
 	// be handlable. For now leaving it has fully generic.
         for (int k = 0; k < subTileHeight; k+=4) {
-            memcpy(dst+dO+k*dstLineSize, src+sO+k*subTileWidthBytes, subTileWidthBytes);
-            memcpy(dst+dO+(k+1)*dstLineSize, src+sO+(k+1)*subTileWidthBytes, subTileWidthBytes);
-            memcpy(dst+dO+(k+2)*dstLineSize, src+sO+(k+2)*subTileWidthBytes, subTileWidthBytes);
-            memcpy(dst+dO+(k+3)*dstLineSize, src+sO+(k+3)*subTileWidthBytes, subTileWidthBytes);
+            for (int p = 0; p < parallel; p++) {
+                int pSrcOffset = p*tileWidth*tileHeight*bytesPerPixel;
+                int pDstOffset = p*tileWidth*bytesPerPixel;
+                memcpy(dst+dO+k*dstLineSize+pDstOffset, src+sO+k*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
+                memcpy(dst+dO+(k+1)*dstLineSize+pDstOffset, src+sO+(k+1)*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
+                memcpy(dst+dO+(k+2)*dstLineSize+pDstOffset, src+sO+(k+2)*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
+                memcpy(dst+dO+(k+3)*dstLineSize+pDstOffset, src+sO+(k+3)*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
+            }
         }
         sO = sO + subTileHeight*subTileWidthBytes;
 
         cSTR += subTileHeight;
         for (int i=numChanges-1; i>=0; i--) {
             if ((cSTR%changes[i].posOffset) == 0) {
-                dX += changes[i].xDelta;
+                if (i == numChanges-1)
+                    dX += (changes[i].xDelta*parallel);
+                else
+                    dX += changes[i].xDelta;
                 dY += changes[i].yDelta;
 		break;
             }
@@ -454,19 +472,22 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         detile_generic(ctx, fbdetile->width, fbdetile->height,
                         out->data[0], out->linesize[0],
                         in->data[0], in->linesize[0],
-                        yfBytesPerPixel, yfSubTileWidth, yfSubTileHeight, yfSubTileWidthBytes, yfTileHeight,
+                        yfBytesPerPixel, yfSubTileWidth, yfSubTileHeight, yfSubTileWidthBytes,
+                        yfTileWidth, yfTileHeight,
                         yfNumChanges, yfChanges);
     } else if (fbdetile->type == TYPE_INTELGX) {
         detile_generic(ctx, fbdetile->width, fbdetile->height,
                         out->data[0], out->linesize[0],
                         in->data[0], in->linesize[0],
-                        txBytesPerPixel, txSubTileWidth, txSubTileHeight, txSubTileWidthBytes, txTileHeight,
+                        txBytesPerPixel, txSubTileWidth, txSubTileHeight, txSubTileWidthBytes,
+                        txTileWidth, txTileHeight,
                         txNumChanges, txChanges);
     } else if (fbdetile->type == TYPE_INTELGY) {
         detile_generic(ctx, fbdetile->width, fbdetile->height,
                         out->data[0], out->linesize[0],
                         in->data[0], in->linesize[0],
-                        tyBytesPerPixel, tySubTileWidth, tySubTileHeight, tySubTileWidthBytes, tyTileHeight,
+                        tyBytesPerPixel, tySubTileWidth, tySubTileHeight, tySubTileWidthBytes,
+                        tyTileWidth, tyTileHeight,
                         tyNumChanges, tyChanges);
     }
 #ifdef DEBUG_PERF
