@@ -320,14 +320,17 @@ int txTileWidth = 128;
 int txTileHeight = 8;
 int txNumChanges = 1;
 // Setting for Intel Tile-Y framebuffer layout
-struct changeEntry tyChanges[] = { {32, 4, 0} };
+// Even thou a simple generic detiling logic doesnt require the
+// dummy 256 posOffset entry. A parallel detiling logic requires
+// to know about the Tile boundry.
+struct changeEntry tyChanges[] = { {32, 4, 0}, {256, 4, 0} };
 int tyBytesPerPixel = 4; // Assumes each pixel is 4 bytes
 int tySubTileWidth = 4;
 int tySubTileHeight = 32;
 int tySubTileWidthBytes = 16; //subTileWidth*bytesPerPixel
 int tyTileWidth = 32;
 int tyTileHeight = 32;
-int tyNumChanges = 1;
+int tyNumChanges = 2;
 
 static void detile_generic_raw(AVFilterContext *ctx, int w, int h,
                                   uint8_t *dst, int dstLineSize,
@@ -395,6 +398,7 @@ static void detile_generic(AVFilterContext *ctx, int w, int h,
     int dX = 0;
     int dY = 0;
     int nSTRows = (w*h)/subTileWidth;
+    int nSTRowsInATile = (tileWidth*tileHeight)/subTileWidth;
     int nTilesInARow = w/tileWidth;
     if (nTilesInARow%4 == 0)
         parallel=4;
