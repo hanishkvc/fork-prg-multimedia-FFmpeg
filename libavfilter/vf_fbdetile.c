@@ -226,64 +226,67 @@ static void detile_intely(AVFilterContext *ctx, int w, int h,
                           const uint8_t *src, int srcLineSize)
 {
     // Offsets and LineSize are in bytes
-    int tileW = 4; // For a 32Bit / Pixel framebuffer, 16/4
-    //int tileH = 32;
+    const int pixBytes = 4;                 // bytesPerPixel
+    // tileW represents subTileWidth here, as it can be repeated to fill a tile
+    const int tileW = 4;                    // tileWidth inPixels, 16/4, For a 32Bits/Pixel framebuffer
+    const int tileH = 32;                   // tileHeight inPixelLines
+    const int tileWBytes = tileW*pixBytes;  // tileWidth inBytes
 
-    if (w*4 != srcLineSize) {
+    if (w*pixBytes != srcLineSize) {
         fprintf(stderr,"DBUG:fbdetile:intely: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
         fprintf(stderr,"ERRR:fbdetile:intely: dont support LineSize | Pitch going beyond width\n");
     }
     int sO = 0;
     int dX = 0;
     int dY = 0;
-    int nTLines = (w*h)/tileW;
+    const int nTLines = (w*h)/tileW;
     int cTL = 0;
     while (cTL < nTLines) {
-        int dO = dY*dstLineSize + dX*4;
+        int dO = dY*dstLineSize + dX*pixBytes;
 #ifdef DEBUG_FBTILE
         fprintf(stderr,"DBUG:fbdetile:intely: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
 #endif
 
-        memcpy(dst+dO+0*dstLineSize, src+sO+0*16, 16);
-        memcpy(dst+dO+1*dstLineSize, src+sO+1*16, 16);
-        memcpy(dst+dO+2*dstLineSize, src+sO+2*16, 16);
-        memcpy(dst+dO+3*dstLineSize, src+sO+3*16, 16);
-        memcpy(dst+dO+4*dstLineSize, src+sO+4*16, 16);
-        memcpy(dst+dO+5*dstLineSize, src+sO+5*16, 16);
-        memcpy(dst+dO+6*dstLineSize, src+sO+6*16, 16);
-        memcpy(dst+dO+7*dstLineSize, src+sO+7*16, 16);
-        memcpy(dst+dO+8*dstLineSize, src+sO+8*16, 16);
-        memcpy(dst+dO+9*dstLineSize, src+sO+9*16, 16);
-        memcpy(dst+dO+10*dstLineSize, src+sO+10*16, 16);
-        memcpy(dst+dO+11*dstLineSize, src+sO+11*16, 16);
-        memcpy(dst+dO+12*dstLineSize, src+sO+12*16, 16);
-        memcpy(dst+dO+13*dstLineSize, src+sO+13*16, 16);
-        memcpy(dst+dO+14*dstLineSize, src+sO+14*16, 16);
-        memcpy(dst+dO+15*dstLineSize, src+sO+15*16, 16);
-        memcpy(dst+dO+16*dstLineSize, src+sO+16*16, 16);
-        memcpy(dst+dO+17*dstLineSize, src+sO+17*16, 16);
-        memcpy(dst+dO+18*dstLineSize, src+sO+18*16, 16);
-        memcpy(dst+dO+19*dstLineSize, src+sO+19*16, 16);
-        memcpy(dst+dO+20*dstLineSize, src+sO+20*16, 16);
-        memcpy(dst+dO+21*dstLineSize, src+sO+21*16, 16);
-        memcpy(dst+dO+22*dstLineSize, src+sO+22*16, 16);
-        memcpy(dst+dO+23*dstLineSize, src+sO+23*16, 16);
-        memcpy(dst+dO+24*dstLineSize, src+sO+24*16, 16);
-        memcpy(dst+dO+25*dstLineSize, src+sO+25*16, 16);
-        memcpy(dst+dO+26*dstLineSize, src+sO+26*16, 16);
-        memcpy(dst+dO+27*dstLineSize, src+sO+27*16, 16);
-        memcpy(dst+dO+28*dstLineSize, src+sO+28*16, 16);
-        memcpy(dst+dO+29*dstLineSize, src+sO+29*16, 16);
-        memcpy(dst+dO+30*dstLineSize, src+sO+30*16, 16);
-        memcpy(dst+dO+31*dstLineSize, src+sO+31*16, 16);
+        memcpy(dst+dO+0*dstLineSize, src+sO+0*tileWBytes, tileWBytes);
+        memcpy(dst+dO+1*dstLineSize, src+sO+1*tileWBytes, tileWBytes);
+        memcpy(dst+dO+2*dstLineSize, src+sO+2*tileWBytes, tileWBytes);
+        memcpy(dst+dO+3*dstLineSize, src+sO+3*tileWBytes, tileWBytes);
+        memcpy(dst+dO+4*dstLineSize, src+sO+4*tileWBytes, tileWBytes);
+        memcpy(dst+dO+5*dstLineSize, src+sO+5*tileWBytes, tileWBytes);
+        memcpy(dst+dO+6*dstLineSize, src+sO+6*tileWBytes, tileWBytes);
+        memcpy(dst+dO+7*dstLineSize, src+sO+7*tileWBytes, tileWBytes);
+        memcpy(dst+dO+8*dstLineSize, src+sO+8*tileWBytes, tileWBytes);
+        memcpy(dst+dO+9*dstLineSize, src+sO+9*tileWBytes, tileWBytes);
+        memcpy(dst+dO+10*dstLineSize, src+sO+10*tileWBytes, tileWBytes);
+        memcpy(dst+dO+11*dstLineSize, src+sO+11*tileWBytes, tileWBytes);
+        memcpy(dst+dO+12*dstLineSize, src+sO+12*tileWBytes, tileWBytes);
+        memcpy(dst+dO+13*dstLineSize, src+sO+13*tileWBytes, tileWBytes);
+        memcpy(dst+dO+14*dstLineSize, src+sO+14*tileWBytes, tileWBytes);
+        memcpy(dst+dO+15*dstLineSize, src+sO+15*tileWBytes, tileWBytes);
+        memcpy(dst+dO+16*dstLineSize, src+sO+16*tileWBytes, tileWBytes);
+        memcpy(dst+dO+17*dstLineSize, src+sO+17*tileWBytes, tileWBytes);
+        memcpy(dst+dO+18*dstLineSize, src+sO+18*tileWBytes, tileWBytes);
+        memcpy(dst+dO+19*dstLineSize, src+sO+19*tileWBytes, tileWBytes);
+        memcpy(dst+dO+20*dstLineSize, src+sO+20*tileWBytes, tileWBytes);
+        memcpy(dst+dO+21*dstLineSize, src+sO+21*tileWBytes, tileWBytes);
+        memcpy(dst+dO+22*dstLineSize, src+sO+22*tileWBytes, tileWBytes);
+        memcpy(dst+dO+23*dstLineSize, src+sO+23*tileWBytes, tileWBytes);
+        memcpy(dst+dO+24*dstLineSize, src+sO+24*tileWBytes, tileWBytes);
+        memcpy(dst+dO+25*dstLineSize, src+sO+25*tileWBytes, tileWBytes);
+        memcpy(dst+dO+26*dstLineSize, src+sO+26*tileWBytes, tileWBytes);
+        memcpy(dst+dO+27*dstLineSize, src+sO+27*tileWBytes, tileWBytes);
+        memcpy(dst+dO+28*dstLineSize, src+sO+28*tileWBytes, tileWBytes);
+        memcpy(dst+dO+29*dstLineSize, src+sO+29*tileWBytes, tileWBytes);
+        memcpy(dst+dO+30*dstLineSize, src+sO+30*tileWBytes, tileWBytes);
+        memcpy(dst+dO+31*dstLineSize, src+sO+31*tileWBytes, tileWBytes);
 
         dX += tileW;
         if (dX >= w) {
             dX = 0;
-            dY += 32;
+            dY += tileH;
         }
-        sO = sO + 32*16;
-        cTL += 32;
+        sO = sO + tileW*tileH*pixBytes;
+        cTL += tileH;
     }
 }
 
