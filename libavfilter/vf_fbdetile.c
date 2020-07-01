@@ -50,14 +50,16 @@
 
 /*
  * Performance check results on i7-7500u
+ * TileYf, TileGX, TileGY using detile_generic_opti
+ *     This mainly impacts TileYf, due to its deeper subtiling
+ *     Without opti, its TSCCnt rises to aroun 11.XYM
  * Run Type      : Type   : Seconds Max, Min : TSCCnt Min, Max
- * Non filter run:        :  10.10s, 09.96s  :
- * fbdetile=0 run: TileX  :  13.34s, 13.10s  :  05.95M, 06.00M
- * fbdetile=1 run: TileY  :  13.50s, 13.39s  :  06.22M, 06.32M
- * fbdetile=2 run: TileYf :  13.75s, 13.64s  :  09.66M, 09.84M // Optimised DirChangeList
- * fbdetile=2 run: TileYf :  13.92s, 13.70s  :  12.63M, 13.40M // Raw DirChangeList
- * fbdetile=3 run: TileGX :  13.66s, 13.32s  :  06.16M, 06.33M
- * fbdetile=4 run: TileGY :  13.73s, 13.51s  :  08.40M, 08.63M
+ * Non filter run:        :  10.11s, 09.96s  :
+ * fbdetile=0 run: TileX  :  13.45s, 13.20s  :  05.95M, 06.10M
+ * fbdetile=1 run: TileY  :  13.50s, 13.39s  :  06.22M, 06.39M
+ * fbdetile=2 run: TileYf :  13.75s, 13.63s  :  09.82M, 09.90M
+ * fbdetile=3 run: TileGX :  13.70s, 13.32s  :  06.15M, 06.24M
+ * fbdetile=4 run: TileGY :  14.12s, 13.57s  :  08.75M, 09.10M
  */
 
 #include "libavutil/avassert.h"
@@ -68,7 +70,7 @@
 #include "internal.h"
 #include "video.h"
 
-// Use Optimised detile_generic or the Simpler but more granular one
+// Use Optimised detile_generic or the Simpler but more fine grained one
 #define DETILE_GENERIC_OPTI 1
 // Enable printing of the tile walk
 #undef DEBUG_FBTILE
@@ -307,7 +309,6 @@ struct changeEntry {
 
 // Settings for Intel Tile-Yf framebuffer layout
 // May need to swap the 4 pixel wide subtile, have to check doc bit more
-// TODO: Add the missing subtile level wrt dirChangesList
 int yfBytesPerPixel = 4;            // Assumes each pixel is 4 bytes
 int yfSubTileWidth = 4;
 int yfSubTileHeight = 8;
@@ -327,8 +328,8 @@ int txTileHeight = 8;
 int txNumChanges = 1;
 // Setting for Intel Tile-Y framebuffer layout
 // Even thou a simple generic detiling logic doesnt require the
-// dummy 256 posOffset entry. A parallel detiling logic requires
-// to know about the Tile boundry.
+// dummy 256 posOffset entry. The pseudo parallel detiling based
+// opti logic requires to know about the Tile boundry.
 struct changeEntry tyChanges[] = { {32, 4, 0}, {256, 4, 0} };
 int tyBytesPerPixel = 4;            // Assumes each pixel is 4 bytes
 int tySubTileWidth = 4;
