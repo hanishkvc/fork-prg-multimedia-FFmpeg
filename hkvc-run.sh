@@ -45,6 +45,7 @@ function _time_ffmpeg() {
 		if [ "$curTSC" != "" ]; then
 			totalTSC=$(($totalTSC+$curTSC))
 		fi
+		echo -n -e "curReal: $fM:$fS, curTSC: $curTSC\r"
 	done
 	AvgTime=`math -f "$totalTime/(4*100)"`
 	AvgTSC=`math -f "$totalTSC/4"`
