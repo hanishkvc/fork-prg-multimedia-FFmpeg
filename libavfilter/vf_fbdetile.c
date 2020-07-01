@@ -305,18 +305,12 @@ struct changeEntry {
 // TODO: Add the missing subtile level wrt dirChangesList
 int yfBytesPerPixel = 4;            // Assumes each pixel is 4 bytes
 int yfSubTileWidth = 4;
-#ifdef RAWDIRCHANGELIST_FORREFERENCE
-int yfSubTileHeight = 4;
-struct changeEntry yfChanges[] = { {4, 0, 4}, {8, 4, -4}, {16, -4, 4}, {32, 4, -12} };
-int yfNumChanges = 4;
-#else
 int yfSubTileHeight = 8;
-struct changeEntry yfChanges[] = { {8, 4, 0}, {16, -4, 8}, {32, 4, -8} };
-int yfNumChanges = 3;
-#endif
+struct changeEntry yfChanges[] = { {8, 4, 0}, {16, -4, 8}, {32, 4, -8}, {64, -12, 8 }, {128, 4, -24} };
+int yfNumChanges = 5;
 int yfSubTileWidthBytes = 16;       //subTileWidth*bytesPerPixel
-int yfTileWidth = 16;
-int yfTileHeight = 16;
+int yfTileWidth = 32;
+int yfTileHeight = 32;
 // Setting for Intel Tile-X framebuffer layout
 struct changeEntry txChanges[] = { {8, 128, 0} };
 int txBytesPerPixel = 4;            // Assumes each pixel is 4 bytes
