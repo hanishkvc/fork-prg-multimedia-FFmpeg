@@ -68,8 +68,13 @@
 #include "internal.h"
 #include "video.h"
 
+// Use Optimised detile_generic or the Simpler but more granular one
+#undef DETILE_GENERIC_OPTI
+// Enable printing of the tile walk
 #undef DEBUG_FBTILE
+// Print time taken by detile using performance counter
 #define DEBUG_PERF 1
+
 #ifdef DEBUG_PERF
 #include <x86intrin.h>
 uint64_t perfTime = 0;
@@ -378,7 +383,7 @@ static void detile_generic_simple(AVFilterContext *ctx, int w, int h,
 }
 
 
-static void detile_generic(AVFilterContext *ctx, int w, int h,
+static void detile_generic_opti(AVFilterContext *ctx, int w, int h,
                                   uint8_t *dst, int dstLineSize,
                             const uint8_t *src, int srcLineSize,
                             int bytesPerPixel,
@@ -459,6 +464,12 @@ static void detile_generic(AVFilterContext *ctx, int w, int h,
 }
 
 
+#ifdef DETILE_GENERIC_OPTI
+#define detile_generic detile_generic_opti
+#else
+#define detile_generic detile_generic_simple
+#endif
+
 static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 {
     AVFilterContext *ctx = inlink->dst;
@@ -485,7 +496,6 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                       out->data[0], out->linesize[0],
                       in->data[0], in->linesize[0]);
     } else if (fbdetile->type == TYPE_INTELYF) {
-        //detile_generic_simple(ctx, fbdetile->width, fbdetile->height,
         detile_generic(ctx, fbdetile->width, fbdetile->height,
                         out->data[0], out->linesize[0],
                         in->data[0], in->linesize[0],
