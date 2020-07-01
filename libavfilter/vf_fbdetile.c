@@ -303,7 +303,7 @@ struct changeEntry {
 // Settings for Intel Tile-Yf framebuffer layout
 // May need to swap the 4 pixel wide subtile, have to check doc bit more
 // TODO: Add the missing subtile level wrt dirChangesList
-int yfBytesPerPixel = 4; // Assumes each pixel is 4 bytes
+int yfBytesPerPixel = 4;            // Assumes each pixel is 4 bytes
 int yfSubTileWidth = 4;
 #ifdef RAWDIRCHANGELIST_FORREFERENCE
 int yfSubTileHeight = 4;
@@ -314,15 +314,15 @@ int yfSubTileHeight = 8;
 struct changeEntry yfChanges[] = { {8, 4, 0}, {16, -4, 8}, {32, 4, -8} };
 int yfNumChanges = 3;
 #endif
-int yfSubTileWidthBytes = 16; //subTileWidth*bytesPerPixel
+int yfSubTileWidthBytes = 16;       //subTileWidth*bytesPerPixel
 int yfTileWidth = 16;
 int yfTileHeight = 16;
 // Setting for Intel Tile-X framebuffer layout
 struct changeEntry txChanges[] = { {8, 128, 0} };
-int txBytesPerPixel = 4; // Assumes each pixel is 4 bytes
+int txBytesPerPixel = 4;            // Assumes each pixel is 4 bytes
 int txSubTileWidth = 128;
 int txSubTileHeight = 8;
-int txSubTileWidthBytes = 512; //subTileWidth*bytesPerPixel
+int txSubTileWidthBytes = 512;      //subTileWidth*bytesPerPixel
 int txTileWidth = 128;
 int txTileHeight = 8;
 int txNumChanges = 1;
@@ -331,10 +331,10 @@ int txNumChanges = 1;
 // dummy 256 posOffset entry. A parallel detiling logic requires
 // to know about the Tile boundry.
 struct changeEntry tyChanges[] = { {32, 4, 0}, {256, 4, 0} };
-int tyBytesPerPixel = 4; // Assumes each pixel is 4 bytes
+int tyBytesPerPixel = 4;            // Assumes each pixel is 4 bytes
 int tySubTileWidth = 4;
 int tySubTileHeight = 32;
-int tySubTileWidthBytes = 16; //subTileWidth*bytesPerPixel
+int tySubTileWidthBytes = 16;       //subTileWidth*bytesPerPixel
 int tyTileWidth = 32;
 int tyTileHeight = 32;
 int tyNumChanges = 2;
@@ -355,8 +355,8 @@ static void detile_generic_simple(AVFilterContext *ctx, int w, int h,
     int sO = 0;
     int dX = 0;
     int dY = 0;
-    int nSTLines = (w*h)/subTileWidth; // numSubTileLines
-    int cSTL = 0; // curSubTileLine
+    int nSTLines = (w*h)/subTileWidth;  // numSubTileLines
+    int cSTL = 0;                       // curSubTileLine
     while (cSTL < nSTLines) {
         int dO = dY*dstLineSize + dX*bytesPerPixel;
 #ifdef DEBUG_FBTILE
@@ -406,7 +406,7 @@ static void detile_generic(AVFilterContext *ctx, int w, int h,
     int dX = 0;
     int dY = 0;
     int nSTLines = (w*h)/subTileWidth;
-    int nSTLinesInATile = (tileWidth*tileHeight)/subTileWidth;
+    //int nSTLinesInATile = (tileWidth*tileHeight)/subTileWidth;
     int nTilesInARow = w/tileWidth;
     for (parallel=8; parallel>0; parallel--) {
         if (nTilesInARow%parallel == 0)
@@ -444,7 +444,6 @@ static void detile_generic(AVFilterContext *ctx, int w, int h,
                 if (i == numChanges-1) {
                     curTileInRow += parallel;
                     dX = curTileInRow*tileWidth;
-                    //sO += tileWidth*tileHeight*bytesPerPixel*(parallel-1);
                     sO = sOPrev + tileWidth*tileHeight*bytesPerPixel*(parallel);
                     sOPrev = sO;
                 } else {
