@@ -306,7 +306,7 @@ struct changeEntry {
 int yfBytesPerPixel = 4;            // Assumes each pixel is 4 bytes
 int yfSubTileWidth = 4;
 int yfSubTileHeight = 8;
-struct changeEntry yfChanges[] = { {8, 4, 0}, {16, -4, 8}, {32, 4, -8}, {64, -12, 8 }, {128, 4, -24} };
+struct changeEntry yfChanges[] = { {8, 4, 0}, {16, -4, 8}, {32, 4, -8}, {64, -12, 8 }, {128, 4, -24}, {256, 4, -24} };
 int yfNumChanges = 5;
 int yfSubTileWidthBytes = 16;       //subTileWidth*bytesPerPixel
 int yfTileWidth = 32;
@@ -485,7 +485,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                       out->data[0], out->linesize[0],
                       in->data[0], in->linesize[0]);
     } else if (fbdetile->type == TYPE_INTELYF) {
-        detile_generic(ctx, fbdetile->width, fbdetile->height,
+        detile_generic_simple(ctx, fbdetile->width, fbdetile->height,
                         out->data[0], out->linesize[0],
                         in->data[0], in->linesize[0],
                         yfBytesPerPixel, yfSubTileWidth, yfSubTileHeight, yfSubTileWidthBytes,
