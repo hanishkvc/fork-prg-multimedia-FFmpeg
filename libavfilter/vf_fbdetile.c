@@ -68,7 +68,7 @@
 #include "internal.h"
 #include "video.h"
 
-#undef DEBUG_FBTILE 1
+#undef DEBUG_FBTILE
 #define DEBUG_PERF 1
 #ifdef DEBUG_PERF
 #include <x86intrin.h>
@@ -160,7 +160,7 @@ static void detile_intelx(AVFilterContext *ctx, int w, int h,
 {
     // Offsets and LineSize are in bytes
     int tileW = 128; // For a 32Bit / Pixel framebuffer, 512/4
-    int tileH = 8;
+    //int tileH = 8;
 
     if (w*4 != srcLineSize) {
         fprintf(stderr,"DBUG:fbdetile:intelx: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
@@ -169,9 +169,9 @@ static void detile_intelx(AVFilterContext *ctx, int w, int h,
     int sO = 0;
     int dX = 0;
     int dY = 0;
-    int nTRows = (w*h)/tileW;
-    int cTR = 0;
-    while (cTR < nTRows) {
+    int nTLines = (w*h)/tileW; // numTileLines; One TileLine = One TileWidth
+    int cTL = 0; // curTileLine
+    while (cTL < nTLines) {
         int dO = dY*dstLineSize + dX*4;
 #ifdef DEBUG_FBTILE
         fprintf(stderr,"DBUG:fbdetile:intelx: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
@@ -190,7 +190,7 @@ static void detile_intelx(AVFilterContext *ctx, int w, int h,
             dY += 8;
         }
         sO = sO + 8*512;
-        cTR += 8;
+        cTL += 8;
     }
 }
 
@@ -225,7 +225,7 @@ static void detile_intely(AVFilterContext *ctx, int w, int h,
 {
     // Offsets and LineSize are in bytes
     int tileW = 4; // For a 32Bit / Pixel framebuffer, 16/4
-    int tileH = 32;
+    //int tileH = 32;
 
     if (w*4 != srcLineSize) {
         fprintf(stderr,"DBUG:fbdetile:intely: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
@@ -234,9 +234,9 @@ static void detile_intely(AVFilterContext *ctx, int w, int h,
     int sO = 0;
     int dX = 0;
     int dY = 0;
-    int nTRows = (w*h)/tileW;
-    int cTR = 0;
-    while (cTR < nTRows) {
+    int nTLines = (w*h)/tileW;
+    int cTL = 0;
+    while (cTL < nTLines) {
         int dO = dY*dstLineSize + dX*4;
 #ifdef DEBUG_FBTILE
         fprintf(stderr,"DBUG:fbdetile:intely: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
@@ -281,7 +281,7 @@ static void detile_intely(AVFilterContext *ctx, int w, int h,
             dY += 32;
         }
         sO = sO + 32*16;
-        cTR += 32;
+        cTL += 32;
     }
 }
 
@@ -350,9 +350,9 @@ static void detile_generic_simple(AVFilterContext *ctx, int w, int h,
     int sO = 0;
     int dX = 0;
     int dY = 0;
-    int nSTRows = (w*h)/subTileWidth;
-    int cSTR = 0;
-    while (cSTR < nSTRows) {
+    int nSTLines = (w*h)/subTileWidth; // numSubTileLines
+    int cSTL = 0; // curSubTileLine
+    while (cSTL < nSTLines) {
         int dO = dY*dstLineSize + dX*bytesPerPixel;
 #ifdef DEBUG_FBTILE
         fprintf(stderr,"DBUG:fbdetile:generic: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
@@ -363,9 +363,9 @@ static void detile_generic_simple(AVFilterContext *ctx, int w, int h,
         }
         sO = sO + subTileHeight*subTileWidthBytes;
 
-        cSTR += subTileHeight;
+        cSTL += subTileHeight;
         for (int i=numChanges-1; i>=0; i--) {
-            if ((cSTR%changes[i].posOffset) == 0) {
+            if ((cSTL%changes[i].posOffset) == 0) {
                 dX += changes[i].xDelta;
                 dY += changes[i].yDelta;
                 break;
@@ -400,16 +400,16 @@ static void detile_generic(AVFilterContext *ctx, int w, int h,
     int sOPrev = 0;
     int dX = 0;
     int dY = 0;
-    int nSTRows = (w*h)/subTileWidth;
-    int nSTRowsInATile = (tileWidth*tileHeight)/subTileWidth;
+    int nSTLines = (w*h)/subTileWidth;
+    int nSTLinesInATile = (tileWidth*tileHeight)/subTileWidth;
     int nTilesInARow = w/tileWidth;
     for (parallel=8; parallel>0; parallel--) {
         if (nTilesInARow%parallel == 0)
             break;
     }
-    int cSTR = 0;
+    int cSTL = 0;
     int curTileInRow = 0;
-    while (cSTR < nSTRows) {
+    while (cSTL < nSTLines) {
         int dO = dY*dstLineSize + dX*bytesPerPixel;
 #ifdef DEBUG_FBTILE
         fprintf(stderr,"DBUG:fbdetile:generic: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
@@ -433,9 +433,9 @@ static void detile_generic(AVFilterContext *ctx, int w, int h,
         }
         sO = sO + subTileHeight*subTileWidthBytes;
 
-        cSTR += subTileHeight;
+        cSTL += subTileHeight;
         for (int i=numChanges-1; i>=0; i--) {
-            if ((cSTR%changes[i].posOffset) == 0) {
+            if ((cSTL%changes[i].posOffset) == 0) {
                 if (i == numChanges-1) {
                     curTileInRow += parallel;
                     dX = curTileInRow*tileWidth;
