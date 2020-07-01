@@ -14,13 +14,20 @@ stH=4
 x = 0
 y = 0
 iCur = 0
-color=(200,0,0)
+colors=[
+	(200,0,0),
+	(0,200,0),
+	(0,0,200),
+	(200,200,200),
+	(200,200,0),
+	(0,200,200),
+	(200,0,200),
+	(0,0,0)]
+iC = 0
 while iCur < (w*h):
 	if (iCur%(stW*stH)) == 0:
-		if color[0] == 200:
-			color = (0,0,200)
-		else:
-			color = (200,0,0)
+		color = colors[iC]
+		iC = (iC+1)%len(colors)
 	s.set_at((x,y),color)
 	x += 1
 	if (x >= w):
