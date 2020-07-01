@@ -159,38 +159,40 @@ static void detile_intelx(AVFilterContext *ctx, int w, int h,
                           const uint8_t *src, int srcLineSize)
 {
     // Offsets and LineSize are in bytes
-    int tileW = 128; // For a 32Bit / Pixel framebuffer, 512/4
-    //int tileH = 8;
+    const int pixBytes = 4;                     // bytes per pixel
+    const int tileW = 128;                      // tileWidth inPixels, 512/4, For a 32Bits/Pixel framebuffer
+    const int tileH = 8;                        // tileHeight inPixelLines
+    const int tileWBytes = tileW*pixBytes;      // tileWidth inBytes
 
-    if (w*4 != srcLineSize) {
+    if (w*pixBytes != srcLineSize) {
         fprintf(stderr,"DBUG:fbdetile:intelx: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
         fprintf(stderr,"ERRR:fbdetile:intelx: dont support LineSize | Pitch going beyond width\n");
     }
-    int sO = 0;
-    int dX = 0;
-    int dY = 0;
-    int nTLines = (w*h)/tileW; // numTileLines; One TileLine = One TileWidth
-    int cTL = 0; // curTileLine
+    int sO = 0;                 // srcOffset inBytes
+    int dX = 0;                 // destX inPixels
+    int dY = 0;                 // destY inPixels
+    int nTLines = (w*h)/tileW;  // numTileLines; One TileLine = One TileWidth
+    int cTL = 0;                // curTileLine
     while (cTL < nTLines) {
-        int dO = dY*dstLineSize + dX*4;
+        int dO = dY*dstLineSize + dX*pixBytes;
 #ifdef DEBUG_FBTILE
         fprintf(stderr,"DBUG:fbdetile:intelx: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
 #endif
-        memcpy(dst+dO+0*dstLineSize, src+sO+0*512, 512);
-        memcpy(dst+dO+1*dstLineSize, src+sO+1*512, 512);
-        memcpy(dst+dO+2*dstLineSize, src+sO+2*512, 512);
-        memcpy(dst+dO+3*dstLineSize, src+sO+3*512, 512);
-        memcpy(dst+dO+4*dstLineSize, src+sO+4*512, 512);
-        memcpy(dst+dO+5*dstLineSize, src+sO+5*512, 512);
-        memcpy(dst+dO+6*dstLineSize, src+sO+6*512, 512);
-        memcpy(dst+dO+7*dstLineSize, src+sO+7*512, 512);
+        memcpy(dst+dO+0*dstLineSize, src+sO+0*tileWBytes, tileWBytes);
+        memcpy(dst+dO+1*dstLineSize, src+sO+1*tileWBytes, tileWBytes);
+        memcpy(dst+dO+2*dstLineSize, src+sO+2*tileWBytes, tileWBytes);
+        memcpy(dst+dO+3*dstLineSize, src+sO+3*tileWBytes, tileWBytes);
+        memcpy(dst+dO+4*dstLineSize, src+sO+4*tileWBytes, tileWBytes);
+        memcpy(dst+dO+5*dstLineSize, src+sO+5*tileWBytes, tileWBytes);
+        memcpy(dst+dO+6*dstLineSize, src+sO+6*tileWBytes, tileWBytes);
+        memcpy(dst+dO+7*dstLineSize, src+sO+7*tileWBytes, tileWBytes);
         dX += tileW;
         if (dX >= w) {
             dX = 0;
-            dY += 8;
+            dY += tileH;
         }
-        sO = sO + 8*512;
-        cTL += 8;
+        sO = sO + tileW*tileH*pixBytes;
+        cTL += tileH;
     }
 }
 
