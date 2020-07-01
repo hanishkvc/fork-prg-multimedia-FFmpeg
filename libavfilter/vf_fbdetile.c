@@ -69,7 +69,7 @@
 #include "video.h"
 
 // Use Optimised detile_generic or the Simpler but more granular one
-#undef DETILE_GENERIC_OPTI
+#define DETILE_GENERIC_OPTI 1
 // Enable printing of the tile walk
 #undef DEBUG_FBTILE
 // Print time taken by detile using performance counter
