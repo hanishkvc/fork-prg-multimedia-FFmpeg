@@ -191,7 +191,7 @@ static int hwdownload_filter_frame(AVFilterLink *link, AVFrame *input)
 
     output2->width  = outlink->w;
     output2->height = outlink->h;
-    int formatModifier = 0;
+    uint64_t formatModifier = 0;
 #ifdef CONFIG_LIBDRM
     if (input->format  == AV_PIX_FMT_DRM_PRIME) {
         AVDRMFrameDescriptor *drmFrame = input->data[0];
