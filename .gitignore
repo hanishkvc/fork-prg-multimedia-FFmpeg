@@ -24,6 +24,7 @@
 *_g
 \#*
 .\#*
+/tags
 /.config
 /.version
 /ffmpeg
