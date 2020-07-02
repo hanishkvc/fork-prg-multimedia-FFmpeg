@@ -171,36 +171,11 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 #ifdef DEBUG_PERF
     uint64_t perfStart = __rdtsc();
 #endif
-    if (fbdetile->type == TILE_INTELX) {
-        detile_intelx(fbdetile->width, fbdetile->height,
-                      out->data[0], out->linesize[0],
-                      in->data[0], in->linesize[0]);
-    } else if (fbdetile->type == TILE_INTELY) {
-        detile_intely(fbdetile->width, fbdetile->height,
-                      out->data[0], out->linesize[0],
-                      in->data[0], in->linesize[0]);
-    } else if (fbdetile->type == TILE_INTELYF) {
-        detile_generic(fbdetile->width, fbdetile->height,
+
+    detile_this(fbdetile->type, 0, fbdetile->width, fbdetile->height,
                         out->data[0], out->linesize[0],
-                        in->data[0], in->linesize[0],
-                        tyfBytesPerPixel, tyfSubTileWidth, tyfSubTileHeight, tyfSubTileWidthBytes,
-                        tyfTileWidth, tyfTileHeight,
-                        tyfNumDirChanges, tyfDirChanges);
-    } else if (fbdetile->type == TILE_INTELGX) {
-        detile_generic(fbdetile->width, fbdetile->height,
-                        out->data[0], out->linesize[0],
-                        in->data[0], in->linesize[0],
-                        txBytesPerPixel, txSubTileWidth, txSubTileHeight, txSubTileWidthBytes,
-                        txTileWidth, txTileHeight,
-                        txNumDirChanges, txDirChanges);
-    } else if (fbdetile->type == TILE_INTELGY) {
-        detile_generic(fbdetile->width, fbdetile->height,
-                        out->data[0], out->linesize[0],
-                        in->data[0], in->linesize[0],
-                        tyBytesPerPixel, tySubTileWidth, tySubTileHeight, tySubTileWidthBytes,
-                        tyTileWidth, tyTileHeight,
-                        tyNumDirChanges, tyDirChanges);
-    }
+                        in->data[0], in->linesize[0]);
+
 #ifdef DEBUG_PERF
     uint64_t perfEnd = __rdtsc();
     perfTime += (perfEnd - perfStart);

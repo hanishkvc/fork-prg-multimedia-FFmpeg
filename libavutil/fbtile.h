@@ -175,8 +175,16 @@ void detile_generic_opti(int w, int h,
 #endif
 
 
+void detile_this(int mode, uint64_t arg1,
+                        int w, int h,
+                        uint8_t *dst, int dstLineSize,
+                        uint8_t *src, int srcLineSize,
+                        int bytesPerPixel);
+
+
 /**
  * @}
  */
 
 #endif /* AVUTIL_FBTILE_H */
+// vim: set expandtab sts=4: //
