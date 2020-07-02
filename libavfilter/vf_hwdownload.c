@@ -34,7 +34,22 @@ typedef struct HWDownloadContext {
 
     AVBufferRef       *hwframes_ref;
     AVHWFramesContext *hwframes;
+    int fbdetile;
 } HWDownloadContext;
+
+#define OFFSET(x) offsetof(HWDownloadContext, x)
+#define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM
+static const AVOption hwdownload_options[] = {
+    { "fbdetile", "set framebuffer detile type", OFFSET(fbdetile), AV_OPT_TYPE_INT, {.i64=TILE_INTELX}, 0, TILE_NONE_END-1, FLAGS, "fbdetile" },
+        { "none", "No SW detiling", 0, AV_OPT_TYPE_CONST, {.i64=TILE_NONE}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
+        { "auto", "auto select based on format_modifier, TODO", 0, AV_OPT_TYPE_CONST, {.i64=TILE_AUTO}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
+        { "intelx", "Intel Tile-X layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELX}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
+        { "intely", "Intel Tile-Y layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELY}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
+        { "intelyf", "Intel Tile-Yf layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELYF}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
+        { "intelgx", "Intel Tile-X layout, GenericDetile", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELGX}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
+        { "intelgy", "Intel Tile-Y layout, GenericDetile", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELGY}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
+    { NULL }
+};
 
 static int hwdownload_query_formats(AVFilterContext *avctx)
 {
@@ -173,9 +188,9 @@ static int hwdownload_filter_frame(AVFilterLink *link, AVFrame *input)
 
     output2->width  = outlink->w;
     output2->height = outlink->h;
-    detile_intelx(output2->width, output2->height,
-                  output2->data[0], output2->linesize[0],
-                  output->data[0], output->linesize[0]);
+    detile_this(ctx->fbdetile, 0, output2->width, output2->height,
+                output2->data[0], output2->linesize[0],
+                output->data[0], output->linesize[0], 4);
 
     err = av_frame_copy_props(output2, input);
     if (err < 0)
@@ -203,7 +218,7 @@ static av_cold void hwdownload_uninit(AVFilterContext *avctx)
 static const AVClass hwdownload_class = {
     .class_name = "hwdownload",
     .item_name  = av_default_item_name,
-    .option     = NULL,
+    .option     = hwdownload_options,
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
