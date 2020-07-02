@@ -50,6 +50,9 @@ int fbtilemode_from_formatmodifier(uint64_t formatModifier)
             break;
     }
 #endif
+#ifdef DEBUG_FBTILE_FORMATMODIFIER_MAPPING
+    fprintf(stderr,"DBUG:fbtile:formatmodifier[%lx] mapped to mode[%d]\n", formatModifier, mode);
+#endif
     return mode;
 }
 
