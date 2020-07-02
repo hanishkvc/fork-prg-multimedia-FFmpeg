@@ -55,11 +55,11 @@
  *     Without opti, its TSCCnt rises to aroun 11.XYM
  * Run Type      : Type   : Seconds Max, Min : TSCCnt Min, Max
  * Non filter run:        :  10.11s, 09.96s  :
- * fbdetile=0 run: TileX  :  13.45s, 13.20s  :  05.95M, 06.10M
- * fbdetile=1 run: TileY  :  13.50s, 13.39s  :  06.22M, 06.39M
- * fbdetile=2 run: TileYf :  13.75s, 13.63s  :  09.82M, 09.90M
- * fbdetile=3 run: TileGX :  13.70s, 13.32s  :  06.15M, 06.24M
- * fbdetile=4 run: TileGY :  14.12s, 13.57s  :  08.75M, 09.10M
+ * fbdetile=2 run: TileX  :  13.45s, 13.20s  :  05.95M, 06.10M
+ * fbdetile=3 run: TileY  :  13.50s, 13.39s  :  06.22M, 06.39M
+ * fbdetile=4 run: TileYf :  13.75s, 13.63s  :  09.82M, 09.90M
+ * fbdetile=5 run: TileGX :  13.70s, 13.32s  :  06.15M, 06.24M
+ * fbdetile=6 run: TileGY :  14.12s, 13.57s  :  08.75M, 09.10M
  */
 
 #include "libavutil/avassert.h"

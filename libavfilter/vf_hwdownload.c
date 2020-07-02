@@ -23,6 +23,9 @@
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/fbtile.h"
+#ifdef CONFIG_LIBDRM
+#include "libavutil/hwcontext_drm.h"
+#endif
 
 #include "avfilter.h"
 #include "formats.h"
@@ -189,10 +192,12 @@ static int hwdownload_filter_frame(AVFilterLink *link, AVFrame *input)
     output2->width  = outlink->w;
     output2->height = outlink->h;
     int formatModifier = 0;
+#ifdef CONFIG_LIBDRM
     if (input->format  == AV_PIX_FMT_DRM_PRIME) {
         AVDRMFrameDescriptor *drmFrame = input->data[0];
         formatModifier = drmFrame->objects[0].format_modifier;
     }
+#endif
     detile_this(ctx->fbdetile, formatModifier, output2->width, output2->height,
                 output2->data[0], output2->linesize[0],
                 output->data[0], output->linesize[0], 4);
