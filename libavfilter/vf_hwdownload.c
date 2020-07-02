@@ -22,6 +22,7 @@
 #include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
+#include "libavutil/fbtile.h"
 
 #include "avfilter.h"
 #include "formats.h"
@@ -128,6 +129,7 @@ static int hwdownload_filter_frame(AVFilterLink *link, AVFrame *input)
     AVFilterLink  *outlink = avctx->outputs[0];
     HWDownloadContext *ctx = avctx->priv;
     AVFrame *output = NULL;
+    AVFrame *output2 = NULL;
     int err;
 
     if (!ctx->hwframes_ref || !input->hw_frames_ctx) {
@@ -162,13 +164,32 @@ static int hwdownload_filter_frame(AVFilterLink *link, AVFrame *input)
     if (err < 0)
         goto fail;
 
-    av_frame_free(&input);
+    output2 = ff_get_video_buffer(outlink, ctx->hwframes->width,
+                                  ctx->hwframes->height);
+    if (!output2) {
+        err = AVERROR(ENOMEM);
+        goto fail;
+    }
 
-    return ff_filter_frame(avctx->outputs[0], output);
+    output2->width  = outlink->w;
+    output2->height = outlink->h;
+    detile_intelx(output2->width, output2->height,
+                  output2->data[0], output2->linesize[0],
+                  output->data[0], output->linesize[0]);
+
+    err = av_frame_copy_props(output2, input);
+    if (err < 0)
+        goto fail;
+
+    av_frame_free(&input);
+    av_frame_free(&output);
+
+    return ff_filter_frame(avctx->outputs[0], output2);
 
 fail:
     av_frame_free(&input);
     av_frame_free(&output);
+    av_frame_free(&output2);
     return err;
 }
 
