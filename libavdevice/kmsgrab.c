@@ -239,6 +239,7 @@ static av_cold int kmsgrab_read_header(AVFormatContext *avctx)
     drmModePlaneRes *plane_res = NULL;
     drmModePlane *plane = NULL;
     drmModeFB *fb = NULL;
+    drmModeFB2 *fb2 = NULL;
     AVStream *stream;
     int err, i;
 
@@ -364,6 +365,22 @@ static av_cold int kmsgrab_read_header(AVFormatContext *avctx)
         goto fail;
     }
 
+    fb2 = drmModeGetFB2(ctx->hwctx->fd, plane->fb_id);
+    if (!fb2) {
+        err = errno;
+        av_log(avctx, AV_LOG_ERROR, "Failed to get "
+               "framebuffer2 %"PRIu32": %s.\n",
+               plane->fb_id, strerror(err));
+        err = AVERROR(err);
+        goto fail;
+    }
+
+    av_log(avctx, AV_LOG_INFO, "Template framebuffer2 is %"PRIu32": "
+           "%"PRIu32"x%"PRIu32", pixel_format: %"PRIu32", format_modifier: %"PRIu64".\n",
+           fb2->fb_id, fb2->width, fb2->height, fb2->pixel_format, fb2->modifier);
+
+    ctx->drm_format_modifier  = fb2->modifier;
+
     stream = avformat_new_stream(avctx, NULL);
     if (!stream) {
         err = AVERROR(ENOMEM);
@@ -408,6 +425,8 @@ fail:
         drmModeFreePlane(plane);
     if (fb)
         drmModeFreeFB(fb);
+    if (fb2)
+        drmModeFreeFB2(fb2);
 
     return err;
 }
