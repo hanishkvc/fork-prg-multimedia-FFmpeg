@@ -84,15 +84,6 @@ uint64_t perfTime = 0;
 int perfCnt = 0;
 #endif
 
-enum FilterMode {
-    TYPE_INTELX,
-    TYPE_INTELY,
-    TYPE_INTELYF,
-    TYPE_INTELGX,
-    TYPE_INTELGY,
-    NB_TYPE
-};
-
 typedef struct FBDetileContext {
     const AVClass *class;
     int width, height;
@@ -102,12 +93,12 @@ typedef struct FBDetileContext {
 #define OFFSET(x) offsetof(FBDetileContext, x)
 #define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM
 static const AVOption fbdetile_options[] = {
-    { "type", "set framebuffer format_modifier type", OFFSET(type), AV_OPT_TYPE_INT, {.i64=TYPE_INTELX}, 0, NB_TYPE-1, FLAGS, "type" },
-        { "intelx", "Intel Tile-X layout", 0, AV_OPT_TYPE_CONST, {.i64=TYPE_INTELX}, INT_MIN, INT_MAX, FLAGS, "type" },
-        { "intely", "Intel Tile-Y layout", 0, AV_OPT_TYPE_CONST, {.i64=TYPE_INTELY}, INT_MIN, INT_MAX, FLAGS, "type" },
-        { "intelyf", "Intel Tile-Yf layout", 0, AV_OPT_TYPE_CONST, {.i64=TYPE_INTELYF}, INT_MIN, INT_MAX, FLAGS, "type" },
-        { "intelgx", "Intel Tile-X layout, GenericDetile", 0, AV_OPT_TYPE_CONST, {.i64=TYPE_INTELGX}, INT_MIN, INT_MAX, FLAGS, "type" },
-        { "intelgy", "Intel Tile-Y layout, GenericDetile", 0, AV_OPT_TYPE_CONST, {.i64=TYPE_INTELGY}, INT_MIN, INT_MAX, FLAGS, "type" },
+    { "type", "set framebuffer format_modifier type", OFFSET(type), AV_OPT_TYPE_INT, {.i64=TILE_INTELX}, 0, TILE_NONE_END-1, FLAGS, "type" },
+        { "intelx", "Intel Tile-X layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELX}, INT_MIN, INT_MAX, FLAGS, "type" },
+        { "intely", "Intel Tile-Y layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELY}, INT_MIN, INT_MAX, FLAGS, "type" },
+        { "intelyf", "Intel Tile-Yf layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELYF}, INT_MIN, INT_MAX, FLAGS, "type" },
+        { "intelgx", "Intel Tile-X layout, GenericDetile", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELGX}, INT_MIN, INT_MAX, FLAGS, "type" },
+        { "intelgy", "Intel Tile-Y layout, GenericDetile", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELGY}, INT_MIN, INT_MAX, FLAGS, "type" },
     { NULL }
 };
 
@@ -117,15 +108,15 @@ static av_cold int init(AVFilterContext *ctx)
 {
     FBDetileContext *fbdetile = ctx->priv;
 
-    if (fbdetile->type == TYPE_INTELX) {
+    if (fbdetile->type == TILE_INTELX) {
         fprintf(stderr,"INFO:fbdetile:init: Intel tile-x to linear\n");
-    } else if (fbdetile->type == TYPE_INTELY) {
+    } else if (fbdetile->type == TILE_INTELY) {
         fprintf(stderr,"INFO:fbdetile:init: Intel tile-y to linear\n");
-    } else if (fbdetile->type == TYPE_INTELYF) {
+    } else if (fbdetile->type == TILE_INTELYF) {
         fprintf(stderr,"INFO:fbdetile:init: Intel tile-yf to linear\n");
-    } else if (fbdetile->type == TYPE_INTELGX) {
+    } else if (fbdetile->type == TILE_INTELGX) {
         fprintf(stderr,"INFO:fbdetile:init: Intel tile-x to linear, using generic detile\n");
-    } else if (fbdetile->type == TYPE_INTELGY) {
+    } else if (fbdetile->type == TILE_INTELGY) {
         fprintf(stderr,"INFO:fbdetile:init: Intel tile-y to linear, using generic detile\n");
     } else {
         fprintf(stderr,"DBUG:fbdetile:init: Unknown Tile format specified, shouldnt reach here\n");
@@ -180,29 +171,29 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 #ifdef DEBUG_PERF
     uint64_t perfStart = __rdtsc();
 #endif
-    if (fbdetile->type == TYPE_INTELX) {
+    if (fbdetile->type == TILE_INTELX) {
         detile_intelx(fbdetile->width, fbdetile->height,
                       out->data[0], out->linesize[0],
                       in->data[0], in->linesize[0]);
-    } else if (fbdetile->type == TYPE_INTELY) {
+    } else if (fbdetile->type == TILE_INTELY) {
         detile_intely(fbdetile->width, fbdetile->height,
                       out->data[0], out->linesize[0],
                       in->data[0], in->linesize[0]);
-    } else if (fbdetile->type == TYPE_INTELYF) {
+    } else if (fbdetile->type == TILE_INTELYF) {
         detile_generic(fbdetile->width, fbdetile->height,
                         out->data[0], out->linesize[0],
                         in->data[0], in->linesize[0],
                         tyfBytesPerPixel, tyfSubTileWidth, tyfSubTileHeight, tyfSubTileWidthBytes,
                         tyfTileWidth, tyfTileHeight,
                         tyfNumDirChanges, tyfDirChanges);
-    } else if (fbdetile->type == TYPE_INTELGX) {
+    } else if (fbdetile->type == TILE_INTELGX) {
         detile_generic(fbdetile->width, fbdetile->height,
                         out->data[0], out->linesize[0],
                         in->data[0], in->linesize[0],
                         txBytesPerPixel, txSubTileWidth, txSubTileHeight, txSubTileWidthBytes,
                         txTileWidth, txTileHeight,
                         txNumDirChanges, txDirChanges);
-    } else if (fbdetile->type == TYPE_INTELGY) {
+    } else if (fbdetile->type == TILE_INTELGY) {
         detile_generic(fbdetile->width, fbdetile->height,
                         out->data[0], out->linesize[0],
                         in->data[0], in->linesize[0],
