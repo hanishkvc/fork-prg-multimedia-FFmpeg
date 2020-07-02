@@ -75,7 +75,7 @@
 // Enable printing of the tile walk
 #undef DEBUG_FBTILE
 // Print time taken by detile using performance counter
-#define DEBUG_PERF 1
+#undef DEBUG_PERF
 
 #ifdef DEBUG_PERF
 #include <x86intrin.h>
