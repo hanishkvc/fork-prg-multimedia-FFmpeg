@@ -43,9 +43,9 @@ typedef struct HWDownloadContext {
 #define OFFSET(x) offsetof(HWDownloadContext, x)
 #define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM
 static const AVOption hwdownload_options[] = {
-    { "fbdetile", "set framebuffer detile type", OFFSET(fbdetile), AV_OPT_TYPE_INT, {.i64=TILE_NONE}, 0, TILE_NONE_END-1, FLAGS, "fbdetile" },
+    { "fbdetile", "set framebuffer detile mode", OFFSET(fbdetile), AV_OPT_TYPE_INT, {.i64=TILE_NONE}, 0, TILE_NONE_END-1, FLAGS, "fbdetile" },
         { "none", "No SW detiling", 0, AV_OPT_TYPE_CONST, {.i64=TILE_NONE}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
-        { "auto", "auto select based on format_modifier, TODO", 0, AV_OPT_TYPE_CONST, {.i64=TILE_AUTO}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
+        { "auto", "auto select based on format_modifier", 0, AV_OPT_TYPE_CONST, {.i64=TILE_AUTO}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
         { "intelx", "Intel Tile-X layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELX}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
         { "intely", "Intel Tile-Y layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELY}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
         { "intelyf", "Intel Tile-Yf layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELYF}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },

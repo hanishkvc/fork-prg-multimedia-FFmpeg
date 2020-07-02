@@ -12141,6 +12141,25 @@ Not all formats will be supported on the output - it may be necessary to insert
 an additional @option{format} filter immediately following in the graph to get
 the output in a supported format.
 
+It supports the following optional parameters
+
+@table @option
+@item fbdetile
+Specify type of CPU based FrameBuffer layout detiling to apply. The supported values are
+@table @var
+@item 0
+Dont do sw detiling (the default).
+@item 1
+Auto detect detile logic to apply (for hwcontext_drm).
+@item 2
+intel tile-x to linear conversion.
+@item 3
+intel tile-y to linear conversion.
+@item 4
+intel tile-yf to linear conversion.
+@end table
+@end table
+
 @section hwmap
 
 Map hardware frames to system memory or to another device.
@@ -12285,10 +12304,14 @@ It supports the following optional parameters
 Specify which detiling conversion to apply. The supported values are
 @table @var
 @item 0
-intel tile-x to linear conversion (the default)
+Dont do detiling.
 @item 1
-intel tile-y to linear conversion.
+Auto detect detile logic to apply (supported in vf_hwdownload, not in vf_fbdetile).
 @item 2
+intel tile-x to linear conversion (the default).
+@item 3
+intel tile-y to linear conversion.
+@item 4
 intel tile-yf to linear conversion.
 @end table
 @end table
