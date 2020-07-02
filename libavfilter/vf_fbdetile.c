@@ -563,6 +563,7 @@ AVFilter ff_vf_fbdetile = {
     .inputs        = fbdetile_inputs,
     .outputs       = fbdetile_outputs,
     .priv_class    = &fbdetile_class,
+    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };
 
 // vim: set expandtab sts=4: //
