@@ -337,4 +337,34 @@ void detile_generic_opti(int w, int h,
 }
 
 
+void detile_this(int mode, uint64_t arg1,
+                        int w, int h,
+                        uint8_t *dst, int dstLineSize,
+                        uint8_t *src, int srcLineSize,
+                        int bytesPerPixel)
+{
+    if (mode == TILE_NONE) {
+        return;
+    } else if (mode == TILE_INTELX) {
+        detile_intelx(w, h, dst, dstLineSize, src, srcLineSize);
+    } else if (mode == TILE_INTELY) {
+        detile_intely(w, h, dst, dstLineSize, src, srcLineSize);
+    } else if (mode == TILE_INTELYF) {
+        detile_generic(w, h, dst, dstLineSize, src, srcLineSize,
+                            tyfBytesPerPixel, tyfSubTileWidth, tyfSubTileHeight, tyfSubTileWidthBytes,
+                            tyfTileWidth, tyfTileHeight,
+                            tyfNumDirChanges, tyfDirChanges);
+    } else if (mode == TILE_INTELGX) {
+        detile_generic(w, h, dst, dstLineSize, src, srcLineSize,
+                            txBytesPerPixel, txSubTileWidth, txSubTileHeight, txSubTileWidthBytes,
+                            txTileWidth, txTileHeight,
+                            txNumDirChanges, txDirChanges);
+    } else if (mode == TILE_INTELGY) {
+        detile_generic(w, h, dst, dstLineSize, src, srcLineSize,
+                            tyBytesPerPixel, tySubTileWidth, tySubTileHeight, tySubTileWidthBytes,
+                            tyTileWidth, tyTileHeight,
+                            tyNumDirChanges, tyDirChanges);
+    }
+}
+
 // vim: set expandtab sts=4: //
