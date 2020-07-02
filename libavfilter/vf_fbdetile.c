@@ -163,6 +163,9 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     AVFilterLink *outlink = ctx->outputs[0];
     AVFrame *out;
 
+    if (fbdetile->type == TILE_NONE)
+        return ff_filter_frame(outlink, in);
+
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out) {
         av_frame_free(&in);
