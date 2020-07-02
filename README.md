@@ -3,7 +3,17 @@ FFmpeg README
 
 # HanishKVC's FFMpeg Fork Notes
 
-## Branch: hkvcFBDeTile
+## Branch: hkvcFBTilePlus
+
+Contains libavutil/fbtile.c|h, which allows tiling transform wrt framebuffer
+
+Contains hwdownload with fbdetile option, which allows detiling while capturing
+live, if required.
+
+Contains fbdetile video filter which allows detiling on already captured content,
+as a seperate pass.
+
+## Branch: hkvcVFFBDeTile
 
 Contains the fbdetile video filter which allows converting tiled layout framebuffers
 into linear layout framebuffers.
