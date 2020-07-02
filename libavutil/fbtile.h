@@ -46,6 +46,15 @@ enum FBTileMode {
 
 
 /**
+ * Map from formatmodifier to fbtile's internal mode.
+ *
+ * @param formatModifier the format_modifier to map
+ * @return the fbtile's equivalent internal mode
+ */
+int fbtilemode_from_formatmodifier(uint64_t formatModifier);
+
+
+/**
  * Detile legacy intel tile-x layout into linear layout.
  *
  * @param w width of the image
@@ -175,6 +184,19 @@ void detile_generic_opti(int w, int h,
 #endif
 
 
+/**
+ * detile demuxer.
+ *
+ * @param mode the fbtile mode based detiling to call
+ * @param arg1 the format_modifier, in case mode is TILE_AUTO
+ * @param w width of the image
+ * @param h height of the image
+ * @param dst the destination image buffer
+ * @param dstLineSize the size of each row in dst image, in bytes
+ * @param src the source image buffer
+ * @param srcLineSize the size of each row in src image, in bytes
+ * @param bytesPerPixel the bytes per pixel for the image
+ */
 void detile_this(int mode, uint64_t arg1,
                         int w, int h,
                         uint8_t *dst, int dstLineSize,

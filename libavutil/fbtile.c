@@ -27,10 +27,11 @@
 #endif
 
 
-static int fbtilemode_from_formatmodifier(uint64_t formatModifier)
+int fbtilemode_from_formatmodifier(uint64_t formatModifier)
 {
-    int mode = TILE_NONE;
+    int mode = TILE_NONE_END;
 
+#ifdef CONFIG_LIBDRM
     switch(formatModifier) {
         case DRM_FORMAT_MOD_LINEAR:
             mode = TILE_NONE;
@@ -48,6 +49,7 @@ static int fbtilemode_from_formatmodifier(uint64_t formatModifier)
             mode = TILE_NONE_END;
             break;
     }
+#endif
     return mode;
 }
 
@@ -401,5 +403,6 @@ void detile_this(int mode, uint64_t arg1,
         fprintf(stderr, "WARN:fbtile:detile_this:TILE_AUTO: invalid or unsupported format_modifier:%llx\n",arg1);
     }
 }
+
 
 // vim: set expandtab sts=4: //
