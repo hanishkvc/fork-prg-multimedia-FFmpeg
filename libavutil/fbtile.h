@@ -33,6 +33,18 @@
  */
 
 
+enum FBTileMode {
+    TILE_NONE,
+    TILE_AUTO,
+    TILE_INTELX,
+    TILE_INTELY,
+    TILE_INTELYF,
+    TILE_INTELGX,
+    TILE_INTELGY,
+    TILE_NONE_END,
+};
+
+
 /**
  * Detile legacy intel tile-x layout into linear layout.
  *
@@ -47,6 +59,7 @@ void detile_intelx(int w, int h,
                           uint8_t *dst, int dstLineSize,
                           const uint8_t *src, int srcLineSize);
 
+
 /**
  * Detile legacy intel tile-y layout into linear layout.
  *
@@ -60,6 +73,7 @@ void detile_intelx(int w, int h,
 void detile_intely(int w, int h,
                           uint8_t *dst, int dstLineSize,
                           const uint8_t *src, int srcLineSize);
+
 
 /**
  * Generic Logic.
