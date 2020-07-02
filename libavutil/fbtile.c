@@ -22,6 +22,34 @@
 #include "avutil.h"
 #include "common.h"
 #include "fbtile.h"
+#ifdef CONFIG_LIBDRM
+#include <drm_fourcc.h>
+#endif
+
+
+static int fbtilemode_from_formatmodifier(uint64_t formatModifier)
+{
+    int mode = TILE_NONE;
+
+    switch(formatModifier) {
+        case DRM_FORMAT_MOD_LINEAR:
+            mode = TILE_NONE;
+            break;
+        case I915_FORMAT_MOD_X_TILED:
+            mode = TILE_INTELX;
+            break;
+        case I915_FORMAT_MOD_Y_TILED:
+            mode = TILE_INTELY;
+            break;
+        case I915_FORMAT_MOD_Yf_TILED:
+            mode = TILE_INTELYF;
+            break;
+        default:
+            mode = TILE_NONE_END;
+            break;
+    }
+    return mode;
+}
 
 
 void detile_intelx(int w, int h,
@@ -345,7 +373,12 @@ void detile_this(int mode, uint64_t arg1,
 {
     if (mode == TILE_NONE) {
         return;
-    } else if (mode == TILE_INTELX) {
+    }
+    if (mode == TILE_AUTO) {
+        mode = fbtilemode_from_formatmodifier(arg1);
+    }
+
+    if (mode == TILE_INTELX) {
         detile_intelx(w, h, dst, dstLineSize, src, srcLineSize);
     } else if (mode == TILE_INTELY) {
         detile_intely(w, h, dst, dstLineSize, src, srcLineSize);
@@ -364,10 +397,8 @@ void detile_this(int mode, uint64_t arg1,
                             tyBytesPerPixel, tySubTileWidth, tySubTileHeight, tySubTileWidthBytes,
                             tyTileWidth, tyTileHeight,
                             tyNumDirChanges, tyDirChanges);
-    } else if (mode == TILE_AUTO) {
-        fprintf(stderr, "WARN:fbtile:detile_this:TILE_AUTO mode not supported currently...\n");
     } else if (mode == TILE_NONE_END) {
-        fprintf(stderr, "WARN:fbtile:detile_this:TILE_NONE_END invalid frame format_modifier for hwdownload ???\n");
+        fprintf(stderr, "WARN:fbtile:detile_this:TILE_AUTO: invalid or unsupported format_modifier:%llx\n",arg1);
     }
 }
 
