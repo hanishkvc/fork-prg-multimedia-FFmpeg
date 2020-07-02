@@ -364,6 +364,10 @@ void detile_this(int mode, uint64_t arg1,
                             tyBytesPerPixel, tySubTileWidth, tySubTileHeight, tySubTileWidthBytes,
                             tyTileWidth, tyTileHeight,
                             tyNumDirChanges, tyDirChanges);
+    } else if (mode == TILE_AUTO) {
+        fprintf(stderr, "WARN:fbtile:detile_this:TILE_AUTO mode not supported currently...\n");
+    } else if (mode == TILE_NONE_END) {
+        fprintf(stderr, "WARN:fbtile:detile_this:TILE_NONE_END invalid frame format_modifier for hwdownload ???\n");
     }
 }
 
