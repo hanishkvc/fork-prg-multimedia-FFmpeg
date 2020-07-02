@@ -51,6 +51,7 @@ enum FBTileMode {
  * @param formatModifier the format_modifier to map
  * @return the fbtile's equivalent internal mode
  */
+#undef DEBUG_FBTILE_FORMATMODIFIER_MAPPING
 int fbtilemode_from_formatmodifier(uint64_t formatModifier);
 
 
