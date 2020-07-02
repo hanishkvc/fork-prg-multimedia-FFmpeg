@@ -2,6 +2,8 @@ Entries are sorted chronologically from oldest to youngest within each release,
 releases are sorted from youngest to oldest.
 
 version <next>:
+- hwdownload support framebuffer layout detiling (certain Intel tile layouts)
+- fbdetile cpu based framebuffer layout detiling video filter
 - AudioToolbox output device
 - MacCaption demuxer
 
