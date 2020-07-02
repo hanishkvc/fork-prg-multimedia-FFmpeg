@@ -376,7 +376,7 @@ static av_cold int kmsgrab_read_header(AVFormatContext *avctx)
     }
 
     av_log(avctx, AV_LOG_INFO, "Template framebuffer2 is %"PRIu32": "
-           "%"PRIu32"x%"PRIu32", pixel_format: %"PRIu32", format_modifier: %"PRIu64".\n",
+           "%"PRIu32"x%"PRIu32", pixel_format: 0x%"PRIx32", format_modifier: 0x%"PRIx64".\n",
            fb2->fb_id, fb2->width, fb2->height, fb2->pixel_format, fb2->modifier);
 
     ctx->drm_format_modifier  = fb2->modifier;
