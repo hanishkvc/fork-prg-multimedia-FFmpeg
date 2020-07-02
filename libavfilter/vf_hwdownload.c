@@ -138,30 +138,6 @@ static int hwdownload_config_output(AVFilterLink *outlink)
     return 0;
 }
 
-static int fbdetile_formatmodifier_map(uint64_t formatModifier)
-{
-    int mode = TILE_NONE;
-
-    switch(formatModifier) {
-        case DRM_FORMAT_MOD_LINEAR:
-            mode = TILE_NONE;
-            break;
-        case I915_FORMAT_MOD_X_TILED:
-            mode = TILE_INTELX;
-            break;
-        case I915_FORMAT_MOD_Y_TILED:
-            mode = TILE_INTELY;
-            break;
-        case I915_FORMAT_MOD_Yf_TILED:
-            mode = TILE_INTELYF;
-            break;
-        default:
-            mode = TILE_NONE_END;
-            break;
-    }
-    return mode;
-}
-
 static int hwdownload_filter_frame(AVFilterLink *link, AVFrame *input)
 {
     AVFilterContext *avctx = link->dst;
@@ -212,12 +188,12 @@ static int hwdownload_filter_frame(AVFilterLink *link, AVFrame *input)
 
     output2->width  = outlink->w;
     output2->height = outlink->h;
-    int fbdetileMode = ctx->fbdetile;
+    int formatModifier = 0;
     if (input->format  == AV_PIX_FMT_DRM_PRIME) {
         AVDRMFrameDescriptor *drmFrame = input->data[0];
-        fbdetileMode = fbdetile_formatmodifier_map(drmFrame->objects[0].format_modifier);
+        formatModifier = drmFrame->objects[0].format_modifier;
     }
-    detile_this(fbdetileMode, 0, output2->width, output2->height,
+    detile_this(ctx->fbdetile, formatModifier, output2->width, output2->height,
                 output2->data[0], output2->linesize[0],
                 output->data[0], output->linesize[0], 4);
 
