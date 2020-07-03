@@ -100,6 +100,16 @@ static int hwdownload_config_input(AVFilterLink *inlink)
 
     ctx->hwframes = (AVHWFramesContext*)ctx->hwframes_ref->data;
 
+    int found = 0;
+    if (ctx->fbdetile != 0) {
+        found = fbtile_checkpixformats(ctx->hwframes->sw_format, fbtilePixFormats[0]);
+        if (!found) {
+            av_log(ctx, AV_LOG_ERROR, "Invalid input format %s for fbdetile.\n",
+                   av_get_pix_fmt_name(ctx->hwframes->sw_format));
+            return AVERROR(EINVAL);
+        }
+    }
+
     return 0;
 }
 
@@ -133,6 +143,15 @@ static int hwdownload_config_output(AVFilterLink *outlink)
         av_log(ctx, AV_LOG_ERROR, "Invalid output format %s for hwframe "
                "download.\n", av_get_pix_fmt_name(outlink->format));
         return AVERROR(EINVAL);
+    }
+
+    if (ctx->fbdetile != 0) {
+        found = fbtile_checkpixformats(outlink->format, fbtilePixFormats[0]);
+        if (!found) {
+            av_log(ctx, AV_LOG_ERROR, "Invalid output format %s for fbdetile.\n",
+                   av_get_pix_fmt_name(outlink->format));
+            return AVERROR(EINVAL);
+        }
     }
 
     outlink->w = inlink->w;
@@ -181,6 +200,11 @@ static int hwdownload_filter_frame(AVFilterLink *link, AVFrame *input)
     err = av_frame_copy_props(output, input);
     if (err < 0)
         goto fail;
+
+    if (ctx->fbdetile == 0) {
+        av_frame_free(&input);
+        return ff_filter_frame(avctx->outputs[0], output);
+    }
 
     output2 = ff_get_video_buffer(outlink, ctx->hwframes->width,
                                   ctx->hwframes->height);
