@@ -56,6 +56,19 @@ int fbtilemode_from_formatmodifier(uint64_t formatModifier);
 
 
 /**
+ * Supported pixel formats by the fbtile logics
+ */
+extern const enum AVPixelFormat fbtilePixFormats[];
+/**
+ * Check if the given pixel formats are supported by fbtile logic.
+ *
+ * @param srcPixFormat pixel format of source image
+ * @param dstPixFormat pixel format of destination image
+ */
+int fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVPixelFormat dstPixFormat);
+
+
+/**
  * Detile legacy intel tile-x layout into linear layout.
  *
  * @param w width of the image
