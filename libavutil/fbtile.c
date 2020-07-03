@@ -19,10 +19,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "config.h"
 #include "avutil.h"
 #include "common.h"
 #include "fbtile.h"
-#ifdef CONFIG_LIBDRM
+#if CONFIG_LIBDRM
 #include <drm_fourcc.h>
 #endif
 
@@ -31,7 +32,7 @@ int fbtilemode_from_formatmodifier(uint64_t formatModifier)
 {
     int mode = TILE_NONE_END;
 
-#ifdef CONFIG_LIBDRM
+#if CONFIG_LIBDRM
     switch(formatModifier) {
         case DRM_FORMAT_MOD_LINEAR:
             mode = TILE_NONE;
