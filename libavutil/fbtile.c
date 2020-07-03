@@ -58,6 +58,26 @@ int fbtilemode_from_formatmodifier(uint64_t formatModifier)
 }
 
 
+/**
+ * Supported pixel formats
+ */
+const enum AVPixelFormat fbtilePixFormats[] = {AV_PIX_FMT_RGB0, AV_PIX_FMT_0RGB, AV_PIX_FMT_BGR0, AV_PIX_FMT_0BGR,
+                                               AV_PIX_FMT_RGBA, AV_PIX_FMT_ARGB, AV_PIX_FMT_BGRA, AV_PIX_FMT_ABGR, AV_PIX_FMT_NONE};
+
+int fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVPixelFormat dstPixFormat)
+{
+    int okSrc = 0;
+    int okDst = 0;
+    for (int i = 0; fbtilePixFormats[i] != AV_PIX_FMT_NONE; i++) {
+        if (fbtilePixFormats[i] == srcPixFormat)
+            okSrc = 1;
+        if (fbtilePixFormats[i] == dstPixFormat)
+            okDst = 1;
+    }
+    return (okSrc && okDst);
+}
+
+
 void detile_intelx(int w, int h,
                           uint8_t *dst, int dstLineSize,
                           const uint8_t *src, int srcLineSize)
@@ -404,7 +424,7 @@ void detile_this(int mode, uint64_t arg1,
                             tyTileWidth, tyTileHeight,
                             tyNumDirChanges, tyDirChanges);
     } else if (mode == TILE_NONE_END) {
-        fprintf(stderr, "WARN:fbtile:detile_this:TILE_AUTO: invalid or unsupported format_modifier:%llx\n",arg1);
+        fprintf(stderr, "WARN:fbtile:detile_this:TILE_AUTO: invalid or unsupported format_modifier:%"PRIx64"\n",arg1);
     }
 }
 
