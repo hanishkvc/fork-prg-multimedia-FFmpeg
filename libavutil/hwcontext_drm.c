@@ -187,6 +187,10 @@ static int drm_transfer_get_formats(AVHWFramesContext *ctx,
     return 0;
 }
 
+// Can be overridden during compiling, if required.
+#ifndef HWCTXDRM_SYNCRELATED_FORMATMODIFIER
+#define HWCTXDRM_SYNCRELATED_FORMATMODIFIER 1
+#endif
 static int drm_transfer_with_detile(const AVFrame *hwAVFrame, AVFrame *dst, const AVFrame *src)
 {
     int err = 0;
@@ -198,8 +202,12 @@ static int drm_transfer_with_detile(const AVFrame *hwAVFrame, AVFrame *dst, cons
             err = detile_this(TILE_AUTO, formatModifier, dst->width, dst->height,
                               dst->data[0], dst->linesize[0],
                               src->data[0], src->linesize[0], 4);
-            if (!err)
+            if (!err) {
+#if HWCTXDRM_SYNCRELATED_FORMATMODIFIER
+                drmFrame->objects[0].format_modifier = DRM_FORMAT_MOD_LINEAR;
+#endif
                 return 0;
+            }
         }
     }
     return av_frame_copy(dst, src);

@@ -401,11 +401,11 @@ int detile_this(int mode, uint64_t arg1,
                         int bytesPerPixel)
 {
     static int logState=0;
-    if (mode == TILE_NONE) {
-        return 1;
-    }
     if (mode == TILE_AUTO) {
         mode = fbtilemode_from_formatmodifier(arg1);
+    }
+    if (mode == TILE_NONE) {
+        return 1;
     }
 
     if (mode == TILE_INTELX) {
