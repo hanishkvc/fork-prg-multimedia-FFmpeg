@@ -114,7 +114,12 @@ static av_cold int init(AVFilterContext *ctx)
 {
     FBDetileContext *fbdetile = ctx->priv;
 
-    if (fbdetile->type == TILE_INTELX) {
+    if (fbdetile->type == TILE_NONE) {
+        av_log(ctx, AV_LOG_INFO, "init: Wont detile, pass through\n");
+    } else if (fbdetile->type == TILE_AUTO) {
+        av_log(ctx, AV_LOG_WARNING, "init: Auto detile mode detect, not supported, pass through\n");
+        fbdetile->type = TILE_NONE;
+    } else if (fbdetile->type == TILE_INTELX) {
         av_log(ctx, AV_LOG_INFO, "init: Intel tile-x to linear\n");
     } else if (fbdetile->type == TILE_INTELY) {
         av_log(ctx, AV_LOG_INFO, "init: Intel tile-y to linear\n");
@@ -125,7 +130,7 @@ static av_cold int init(AVFilterContext *ctx)
     } else if (fbdetile->type == TILE_INTELGY) {
         av_log(ctx, AV_LOG_INFO, "init: Intel tile-y to linear, using generic detile\n");
     } else {
-        av_log(ctx, AV_LOG_DEBUG, "init: Unknown Tile format specified, shouldnt reach here\n");
+        av_log(ctx, AV_LOG_ERROR, "init: Unknown Tile format specified, shouldnt reach here\n");
     }
     fbdetile->width = 1920;
     fbdetile->height = 1080;
@@ -198,6 +203,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 static av_cold void uninit(AVFilterContext *ctx)
 {
 #ifdef DEBUG_PERF
+    if (perfCnt == 0)
+        perfCnt = 1;
     av_log(ctx, AV_LOG_INFO, "uninit:perf: AvgTSCCnt %ld\n", perfTime/perfCnt);
 #endif
 }
