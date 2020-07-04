@@ -2,6 +2,7 @@ Entries are sorted chronologically from oldest to youngest within each release,
 releases are sorted from youngest to oldest.
 
 version <next>:
+- fbdetile cpu based framebuffer layout detiling video filter
 - hwdownload framebuffer layout detiling (Intel tile-x|y|yf layouts)
 - hwcontext_drm detiles non linear layouts, if possible
 - kmsgrab GetFB2 format_modifier, if user doesnt specify
