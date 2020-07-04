@@ -52,7 +52,7 @@ int fbtilemode_from_formatmodifier(uint64_t formatModifier)
     }
 #endif
 #ifdef DEBUG_FBTILE_FORMATMODIFIER_MAPPING
-    fprintf(stderr,"DBUG:fbtile:formatmodifier[%lx] mapped to mode[%d]\n", formatModifier, mode);
+    av_log(NULL, AV_LOG_DEBUG, "fbtile:formatmodifier[%lx] mapped to mode[%d]\n", formatModifier, mode);
 #endif
     return mode;
 }
@@ -89,8 +89,8 @@ void detile_intelx(int w, int h,
     const int tileWBytes = tileW*pixBytes;      // tileWidth inBytes
 
     if (w*pixBytes != srcLineSize) {
-        fprintf(stderr,"DBUG:fbdetile:intelx: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
-        fprintf(stderr,"ERRR:fbdetile:intelx: dont support LineSize | Pitch going beyond width\n");
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:intelx: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:intelx: dont support LineSize | Pitch going beyond width\n");
     }
     int sO = 0;                 // srcOffset inBytes
     int dX = 0;                 // destX inPixels
@@ -100,7 +100,7 @@ void detile_intelx(int w, int h,
     while (cTL < nTLines) {
         int dO = dY*dstLineSize + dX*pixBytes;
 #ifdef DEBUG_FBTILE
-        fprintf(stderr,"DBUG:fbdetile:intelx: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
+        av_log(NULL, AV_LOG_DEBUG, "fbdetile:intelx: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
 #endif
         memcpy(dst+dO+0*dstLineSize, src+sO+0*tileWBytes, tileWBytes);
         memcpy(dst+dO+1*dstLineSize, src+sO+1*tileWBytes, tileWBytes);
@@ -158,8 +158,8 @@ void detile_intely(int w, int h,
     const int tileWBytes = tileW*pixBytes;  // tileWidth inBytes
 
     if (w*pixBytes != srcLineSize) {
-        fprintf(stderr,"DBUG:fbdetile:intely: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
-        fprintf(stderr,"ERRR:fbdetile:intely: dont support LineSize | Pitch going beyond width\n");
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:intely: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:intely: dont support LineSize | Pitch going beyond width\n");
     }
     int sO = 0;
     int dX = 0;
@@ -169,7 +169,7 @@ void detile_intely(int w, int h,
     while (cTL < nTLines) {
         int dO = dY*dstLineSize + dX*pixBytes;
 #ifdef DEBUG_FBTILE
-        fprintf(stderr,"DBUG:fbdetile:intely: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
+        av_log(NULL, AV_LOG_DEBUG, "fbdetile:intely: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
 #endif
 
         memcpy(dst+dO+0*dstLineSize, src+sO+0*tileWBytes, tileWBytes);
@@ -275,8 +275,8 @@ void detile_generic_simple(int w, int h,
 {
 
     if (w*bytesPerPixel != srcLineSize) {
-        fprintf(stderr,"DBUG:fbdetile:generic: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
-        fprintf(stderr,"ERRR:fbdetile:generic: dont support LineSize | Pitch going beyond width\n");
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:generic: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:generic: dont support LineSize | Pitch going beyond width\n");
     }
     int sO = 0;
     int dX = 0;
@@ -286,7 +286,7 @@ void detile_generic_simple(int w, int h,
     while (cSTL < nSTLines) {
         int dO = dY*dstLineSize + dX*bytesPerPixel;
 #ifdef DEBUG_FBTILE
-        fprintf(stderr,"DBUG:fbdetile:generic: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
+        av_log(NULL, AV_LOG_DEBUG, "fbdetile:generic: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
 #endif
 
         for (int k = 0; k < subTileHeight; k++) {
@@ -321,11 +321,11 @@ void detile_generic_opti(int w, int h,
     int parallel = 1;
 
     if (w*bytesPerPixel != srcLineSize) {
-        fprintf(stderr,"DBUG:fbdetile:generic: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
-        fprintf(stderr,"ERRR:fbdetile:generic: dont support LineSize | Pitch going beyond width\n");
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:generic: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:generic: dont support LineSize | Pitch going beyond width\n");
     }
     if (w%tileWidth != 0) {
-        fprintf(stderr,"DBUG:fbdetile:generic:NotSupported:NonMultWidth: width%d, tileWidth%d\n", w, tileWidth);
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:generic:NotSupported:NonMultWidth: width%d, tileWidth%d\n", w, tileWidth);
     }
     int sO = 0;
     int sOPrev = 0;
@@ -343,7 +343,7 @@ void detile_generic_opti(int w, int h,
     while (cSTL < nSTLines) {
         int dO = dY*dstLineSize + dX*bytesPerPixel;
 #ifdef DEBUG_FBTILE
-        fprintf(stderr,"DBUG:fbdetile:generic: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
+        av_log(NULL, AV_LOG_DEBUG, "fbdetile:generic: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
 #endif
 
         // As most tiling layouts have a minimum subtile of 4x4, if I remember correctly,
@@ -424,7 +424,7 @@ void detile_this(int mode, uint64_t arg1,
                             tyTileWidth, tyTileHeight,
                             tyNumDirChanges, tyDirChanges);
     } else if (mode == TILE_NONE_END) {
-        fprintf(stderr, "WARN:fbtile:detile_this:TILE_AUTO: invalid or unsupported format_modifier:%"PRIx64"\n",arg1);
+        av_log(NULL, AV_LOG_WARNING, "fbtile:detile_this:TILE_AUTO: invalid or unsupported format_modifier:%"PRIx64"\n",arg1);
     }
 }
 

@@ -115,17 +115,17 @@ static av_cold int init(AVFilterContext *ctx)
     FBDetileContext *fbdetile = ctx->priv;
 
     if (fbdetile->type == TILE_INTELX) {
-        fprintf(stderr,"INFO:fbdetile:init: Intel tile-x to linear\n");
+        av_log(ctx, AV_LOG_INFO, "init: Intel tile-x to linear\n");
     } else if (fbdetile->type == TILE_INTELY) {
-        fprintf(stderr,"INFO:fbdetile:init: Intel tile-y to linear\n");
+        av_log(ctx, AV_LOG_INFO, "init: Intel tile-y to linear\n");
     } else if (fbdetile->type == TILE_INTELYF) {
-        fprintf(stderr,"INFO:fbdetile:init: Intel tile-yf to linear\n");
+        av_log(ctx, AV_LOG_INFO, "init: Intel tile-yf to linear\n");
     } else if (fbdetile->type == TILE_INTELGX) {
-        fprintf(stderr,"INFO:fbdetile:init: Intel tile-x to linear, using generic detile\n");
+        av_log(ctx, AV_LOG_INFO, "init: Intel tile-x to linear, using generic detile\n");
     } else if (fbdetile->type == TILE_INTELGY) {
-        fprintf(stderr,"INFO:fbdetile:init: Intel tile-y to linear, using generic detile\n");
+        av_log(ctx, AV_LOG_INFO, "init: Intel tile-y to linear, using generic detile\n");
     } else {
-        fprintf(stderr,"DBUG:fbdetile:init: Unknown Tile format specified, shouldnt reach here\n");
+        av_log(ctx, AV_LOG_DEBUG, "init: Unknown Tile format specified, shouldnt reach here\n");
     }
     fbdetile->width = 1920;
     fbdetile->height = 1080;
@@ -154,7 +154,7 @@ static int config_props(AVFilterLink *inlink)
 
     fbdetile->width = inlink->w;
     fbdetile->height = inlink->h;
-    fprintf(stderr,"DBUG:fbdetile:config_props: %d x %d\n", fbdetile->width, fbdetile->height);
+    av_log(ctx, AV_LOG_INFO, "config_props: %d x %d\n", fbdetile->width, fbdetile->height);
 
     return 0;
 }
@@ -198,7 +198,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 static av_cold void uninit(AVFilterContext *ctx)
 {
 #ifdef DEBUG_PERF
-    fprintf(stderr, "DBUG:fbdetile:uninit:perf: AvgTSCCnt %ld\n", perfTime/perfCnt);
+    av_log(ctx, AV_LOG_INFO, "uninit:perf: AvgTSCCnt %ld\n", perfTime/perfCnt);
 #endif
 }
 
