@@ -394,14 +394,14 @@ void detile_generic_opti(int w, int h,
 }
 
 
-void detile_this(int mode, uint64_t arg1,
+int detile_this(int mode, uint64_t arg1,
                         int w, int h,
                         uint8_t *dst, int dstLineSize,
                         uint8_t *src, int srcLineSize,
                         int bytesPerPixel)
 {
     if (mode == TILE_NONE) {
-        return;
+        return 1;
     }
     if (mode == TILE_AUTO) {
         mode = fbtilemode_from_formatmodifier(arg1);
@@ -427,8 +427,13 @@ void detile_this(int mode, uint64_t arg1,
                             tyTileWidth, tyTileHeight,
                             tyNumDirChanges, tyDirChanges);
     } else if (mode == TILE_NONE_END) {
-        av_log(NULL, AV_LOG_WARNING, "fbtile:detile_this:TILE_AUTO: invalid or unsupported format_modifier:%"PRIx64"\n",arg1);
+        av_log(NULL, AV_LOG_WARNING, "fbtile:detile_this:TILE_AUTOOr???: invalid or unsupported format_modifier:%"PRIx64"\n",arg1);
+        return 1;
+    } else {
+        av_log(NULL, AV_LOG_ERROR, "fbtile:detile_this:????: unknown mode specified, check caller\n");
+        return 1;
     }
+    return 0;
 }
 
 
