@@ -2,8 +2,9 @@ Entries are sorted chronologically from oldest to youngest within each release,
 releases are sorted from youngest to oldest.
 
 version <next>:
-- hwdownload support framebuffer layout detiling (certain Intel tile layouts)
 - fbdetile cpu based framebuffer layout detiling video filter
+- hwdownload framebuffer layout detiling (Intel tile-x|y|yf layouts)
+- kmsgrab GetFB2 format_modifier, if user doesnt specify
 - AudioToolbox output device
 - MacCaption demuxer
 - PGX decoder
