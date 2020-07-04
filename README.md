@@ -13,7 +13,13 @@ live, if required.
 Contains fbdetile video filter which allows detiling on already captured content,
 as a seperate pass.
 
+Contains hwcontext_drm detile support.
+
+KMSGrab GetFB2 for format_modifier
+
 ## Branch: hkvcVFFBDeTile
+
+This is the previous standalone version of the fbdetile video filter.
 
 Contains the fbdetile video filter which allows converting tiled layout framebuffers
 into linear layout framebuffers.
