@@ -17,7 +17,7 @@ Contains hwcontext_drm detile support.
 
 KMSGrab GetFB2 for format_modifier
 
-## Branch: hkvcVFFBDeTile
+## Branch: hkvcOld20200701_VFFBDeTile
 
 This is the previous standalone version of the fbdetile video filter.
 
