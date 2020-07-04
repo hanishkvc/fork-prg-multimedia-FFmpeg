@@ -196,17 +196,20 @@ static int drm_transfer_with_detile(const AVFrame *hwAVFrame, AVFrame *dst, cons
     int err = 0;
 
     if (hwAVFrame->format  == AV_PIX_FMT_DRM_PRIME) {
-        AVDRMFrameDescriptor *drmFrame = (AVDRMFrameDescriptor*)hwAVFrame->data[0];
-        uint64_t formatModifier = drmFrame->objects[0].format_modifier;
-        if (formatModifier != DRM_FORMAT_MOD_LINEAR) {
-            err = detile_this(TILE_AUTO, formatModifier, dst->width, dst->height,
-                              dst->data[0], dst->linesize[0],
-                              src->data[0], src->linesize[0], 4);
-            if (!err) {
+        int ok = fbtile_checkpixformats(src->format, dst->format);
+        if (ok) {
+            AVDRMFrameDescriptor *drmFrame = (AVDRMFrameDescriptor*)hwAVFrame->data[0];
+            uint64_t formatModifier = drmFrame->objects[0].format_modifier;
+            if (formatModifier != DRM_FORMAT_MOD_LINEAR) {
+                err = detile_this(TILE_AUTO, formatModifier, dst->width, dst->height,
+                                  dst->data[0], dst->linesize[0],
+                                  src->data[0], src->linesize[0], 4);
+                if (!err) {
 #if HWCTXDRM_SYNCRELATED_FORMATMODIFIER
-                drmFrame->objects[0].format_modifier = DRM_FORMAT_MOD_LINEAR;
+                    drmFrame->objects[0].format_modifier = DRM_FORMAT_MOD_LINEAR;
 #endif
-                return 0;
+                    return 0;
+                }
             }
         }
     }
