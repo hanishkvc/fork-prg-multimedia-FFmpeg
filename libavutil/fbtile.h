@@ -210,8 +210,10 @@ void detile_generic_opti(int w, int h,
  * @param src the source image buffer
  * @param srcLineSize the size of each row in src image, in bytes
  * @param bytesPerPixel the bytes per pixel for the image
+ *
+ * @return 0 if detiled, 1 if not
  */
-void detile_this(int mode, uint64_t arg1,
+int detile_this(int mode, uint64_t arg1,
                         int w, int h,
                         uint8_t *dst, int dstLineSize,
                         uint8_t *src, int srcLineSize,
