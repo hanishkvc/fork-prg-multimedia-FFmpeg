@@ -111,6 +111,18 @@ struct dirChange {
     int xDelta;
     int yDelta;
 };
+
+/*
+ * TileWalk, Contains info required for a given tile walking.
+ */
+struct TileWalk {
+    int bytesPerPixel;
+    int subTileWidth, subTileHeight;
+    int tileWidth, tileHeight;
+    int numDirChanges;
+    struct dirChange dirChanges[];
+};
+
 /**
  * Settings for Intel Tile-Yf framebuffer layout.
  * May need to swap the 4 pixel wide subtile, have to check doc bit more
@@ -185,10 +197,7 @@ void detile_generic_simple(int w, int h,
 void detile_generic_opti(int w, int h,
                                 uint8_t *dst, int dstLineSize,
                                 const uint8_t *src, int srcLineSize,
-                                int bytesPerPixel,
-                                int subTileWidth, int subTileHeight, int subTileWidthBytes,
-                                int tileWidth, int tileHeight,
-                                int numDirChanges, struct dirChange *dirChanges);
+                                const struct TileWalk *tw);
 
 
 // Use Optimised detile_generic or the Simpler but more fine grained one
