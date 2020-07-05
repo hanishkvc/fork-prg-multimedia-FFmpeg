@@ -41,7 +41,7 @@ function _time_ffmpeg() {
 		if [ "$DEBUG" == "1" ]; then
 			grep "perf" /tmp/hkvc-run.log
 		fi
-		curTSC=`grep "perf" /tmp/hkvc-run.log | cut -d ' ' -f 3`
+		curTSC=`grep "perf" /tmp/hkvc-run.log | cut -d ' ' -f 6`
 		if [ "$curTSC" != "" ]; then
 			totalTSC=$(($totalTSC+$curTSC))
 		fi
@@ -53,13 +53,14 @@ function _time_ffmpeg() {
 }
 
 function time_ffmpeg() {
-	_time_ffmpeg "-vf fbdetile=1"
+	_time_ffmpeg "-vf fbdetile=2"
 	_time_ffmpeg
 	_time_ffmpeg "-vf fbdetile=0"
-	_time_ffmpeg "-vf fbdetile=1"
 	_time_ffmpeg "-vf fbdetile=2"
 	_time_ffmpeg "-vf fbdetile=3"
 	_time_ffmpeg "-vf fbdetile=4"
+	_time_ffmpeg "-vf fbdetile=5"
+	_time_ffmpeg "-vf fbdetile=6"
 }
 
 $@
