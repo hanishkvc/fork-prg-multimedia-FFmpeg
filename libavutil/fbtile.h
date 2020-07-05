@@ -191,6 +191,8 @@ void detile_generic_opti(int w, int h,
                                 int numDirChanges, struct dirChange *dirChanges);
 
 
+// Use Optimised detile_generic or the Simpler but more fine grained one
+#define DETILE_GENERIC_OPTI 1
 #ifdef DETILE_GENERIC_OPTI
 #define detile_generic detile_generic_opti
 #else
