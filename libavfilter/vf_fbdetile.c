@@ -65,7 +65,6 @@
 #include "libavutil/avassert.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/opt.h"
-#include "libavutil/fbtile.h"
 #include "avfilter.h"
 #include "formats.h"
 #include "internal.h"
@@ -73,8 +72,11 @@
 
 // Use Optimised detile_generic or the Simpler but more fine grained one
 #define DETILE_GENERIC_OPTI 1
+#include "libavutil/fbtile.h"
+
 // Enable printing of the tile walk
 #undef DEBUG_FBTILE
+
 // Print time taken by detile using performance counter
 #if ARCH_X86
 #define DEBUG_PERF 1
