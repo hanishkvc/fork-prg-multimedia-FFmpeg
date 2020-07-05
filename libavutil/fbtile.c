@@ -223,6 +223,14 @@ void detile_intely(int w, int h,
  * Generic detile logic
  */
 
+struct TileWalk {
+    int bytesPerPixel;
+    int subTileWidth, subTileHeight;
+    int tileWidth, tileHeight;
+    int numDirChanges;
+    struct dirChange dirChanges[];
+};
+
 /*
  * Direction Change Entry
  * Used to specify the tile walking of subtiles within a tile.
@@ -239,6 +247,13 @@ const int tyfTileWidth = 32;
 const int tyfTileHeight = 32;
 const int tyfNumDirChanges = 6;
 struct dirChange tyfDirChanges[] = { {8, 4, 0}, {16, -4, 8}, {32, 4, -8}, {64, -12, 8 }, {128, 4, -24}, {256, 4, -24} };
+struct TileWalk tyfTileWalk = {
+                    .bytesPerPixel = 4,
+                    .subTileWidth = 4, .subTileHeight = 8,
+                    .tileWidth = 32, .tileHeight = 32,
+                    .numDirChanges = 6,
+                    .dirChanges = { {8, 4, 0}, {16, -4, 8}, {32, 4, -8}, {64, -12, 8}, {128, 4, -24}, {256, 4, -24} }
+                };
 
 /**
  * Setting for Intel Tile-X framebuffer layout
@@ -251,6 +266,13 @@ const int txTileWidth = 128;
 const int txTileHeight = 8;
 const int txNumDirChanges = 1;
 struct dirChange txDirChanges[] = { {8, 128, 0} };
+struct TileWalk txTileWalk = {
+                    .bytesPerPixel = 4,
+                    .subTileWidth = 128, .subTileHeight = 8,
+                    .tileWidth = 128, .tileHeight = 8,
+                    .numDirChanges = 1,
+                    .dirChanges = { {8, 128, 0} }
+                };
 
 /**
  * Setting for Intel Tile-Y framebuffer layout
@@ -266,6 +288,13 @@ const int tyTileWidth = 32;
 const int tyTileHeight = 32;
 const int tyNumDirChanges = 2;
 struct dirChange tyDirChanges[] = { {32, 4, 0}, {256, 4, 0} };
+struct TileWalk tyTileWalk = {
+                    .bytesPerPixel = 4,
+                    .subTileWidth = 4, .subTileHeight = 32,
+                    .tileWidth = 32, .tileHeight = 32,
+                    .numDirChanges = 2,
+                    .dirChanges = { {32, 4, 0}, {256, 4, 0} }
+                };
 
 
 void detile_generic_simple(int w, int h,
