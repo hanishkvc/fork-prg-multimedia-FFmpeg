@@ -55,23 +55,21 @@
  * Non filter run:        :  10.04s, 09.97s  :  00.00M, 00.00M
  * fbdetile=0 run: PasThro:  12.70s, 13.20s  :  00.00M, 00.00M
  * fbdetile=2 run: TileX  :  12.45s, 13.41s  :  05.95M, 06.05M
- * fbdetile=3 run: TileY  :  13.47s, 13.89s  :  06.31M, 06.36M
- * fbdetile=4 run: TileYf :  13.73s, 13.83s  :  11.41M, 11.83M
+ * fbdetile=3 run: TileY  :  13.47s, 13.89s  :  06.31M, 06.38M
+ * fbdetile=4 run: TileYf :  13.73s, 13.83s  :  11.41M, 11.83M  ; Simple
+ * fbdetile=4 run: TileYf :  13.73s, 13.83s  :  09.82M, 09.92M  ; Opti
  * fbdetile=5 run: TileGX :  13.34s, 13.52s  :  06.13M, 06.20M
- * fbdetile=6 run: TileGY :  13.59s, 13.65s  :  08.60M, 08.97M
+ * fbdetile=6 run: TileGY :  13.59s, 13.68s  :  08.60M, 08.97M
  */
 
 #include "libavutil/avassert.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/opt.h"
+#include "libavutil/fbtile.h"
 #include "avfilter.h"
 #include "formats.h"
 #include "internal.h"
 #include "video.h"
-
-// Use Optimised detile_generic or the Simpler but more fine grained one
-#define DETILE_GENERIC_OPTI 1
-#include "libavutil/fbtile.h"
 
 // Enable printing of the tile walk
 #undef DEBUG_FBTILE
