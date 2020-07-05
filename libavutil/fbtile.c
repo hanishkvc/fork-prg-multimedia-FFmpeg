@@ -223,18 +223,6 @@ void detile_intely(int w, int h,
  * Generic detile logic
  */
 
-struct TileWalk {
-    int bytesPerPixel;
-    int subTileWidth, subTileHeight;
-    int tileWidth, tileHeight;
-    int numDirChanges;
-    struct dirChange dirChanges[];
-};
-
-/*
- * Direction Change Entry
- * Used to specify the tile walking of subtiles within a tile.
- */
 /**
  * Settings for Intel Tile-Yf framebuffer layout.
  * May need to swap the 4 pixel wide subtile, have to check doc bit more
@@ -345,27 +333,25 @@ void detile_generic_simple(int w, int h,
 void detile_generic_opti(int w, int h,
                                 uint8_t *dst, int dstLineSize,
                                 const uint8_t *src, int srcLineSize,
-                                int bytesPerPixel,
-                                int subTileWidth, int subTileHeight, int subTileWidthBytes,
-                                int tileWidth, int tileHeight,
-                                int numDirChanges, struct dirChange *dirChanges)
+                                const struct TileWalk *tw)
 {
+    int subTileWidthBytes = tw->subTileWidth*tw->bytesPerPixel;
     int parallel = 1;
 
-    if (w*bytesPerPixel != srcLineSize) {
+    if (w*tw->bytesPerPixel != srcLineSize) {
         av_log(NULL, AV_LOG_ERROR, "fbdetile:generic: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
         av_log(NULL, AV_LOG_ERROR, "fbdetile:generic: dont support LineSize | Pitch going beyond width\n");
     }
-    if (w%tileWidth != 0) {
-        av_log(NULL, AV_LOG_ERROR, "fbdetile:generic:NotSupported:NonMultWidth: width%d, tileWidth%d\n", w, tileWidth);
+    if (w%tw->tileWidth != 0) {
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:generic:NotSupported:NonMultWidth: width%d, tileWidth%d\n", w, tw->tileWidth);
     }
     int sO = 0;
     int sOPrev = 0;
     int dX = 0;
     int dY = 0;
-    int nSTLines = (w*h)/subTileWidth;
+    int nSTLines = (w*h)/tw->subTileWidth;
     //int nSTLinesInATile = (tileWidth*tileHeight)/subTileWidth;
-    int nTilesInARow = w/tileWidth;
+    int nTilesInARow = w/tw->tileWidth;
     for (parallel=8; parallel>0; parallel--) {
         if (nTilesInARow%parallel == 0)
             break;
@@ -373,7 +359,7 @@ void detile_generic_opti(int w, int h,
     int cSTL = 0;
     int curTileInRow = 0;
     while (cSTL < nSTLines) {
-        int dO = dY*dstLineSize + dX*bytesPerPixel;
+        int dO = dY*dstLineSize + dX*tw->bytesPerPixel;
 #ifdef DEBUG_FBTILE
         av_log(NULL, AV_LOG_DEBUG, "fbdetile:generic: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
 #endif
@@ -384,37 +370,37 @@ void detile_generic_opti(int w, int h,
         // for such tile layouts.
         // Detile parallely to a limited extent. To avoid any cache set-associativity and or
         // limited cache based thrashing, keep it spacially and inturn temporaly small at one level.
-        for (int k = 0; k < subTileHeight; k+=4) {
+        for (int k = 0; k < tw->subTileHeight; k+=4) {
             for (int p = 0; p < parallel; p++) {
-                int pSrcOffset = p*tileWidth*tileHeight*bytesPerPixel;
-                int pDstOffset = p*tileWidth*bytesPerPixel;
+                int pSrcOffset = p*tw->tileWidth*tw->tileHeight*tw->bytesPerPixel;
+                int pDstOffset = p*tw->tileWidth*tw->bytesPerPixel;
                 memcpy(dst+dO+k*dstLineSize+pDstOffset, src+sO+k*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
                 memcpy(dst+dO+(k+1)*dstLineSize+pDstOffset, src+sO+(k+1)*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
                 memcpy(dst+dO+(k+2)*dstLineSize+pDstOffset, src+sO+(k+2)*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
                 memcpy(dst+dO+(k+3)*dstLineSize+pDstOffset, src+sO+(k+3)*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
             }
         }
-        sO = sO + subTileHeight*subTileWidthBytes;
+        sO = sO + tw->subTileHeight*subTileWidthBytes;
 
-        cSTL += subTileHeight;
-        for (int i=numDirChanges-1; i>=0; i--) {
-            if ((cSTL%dirChanges[i].posOffset) == 0) {
-                if (i == numDirChanges-1) {
+        cSTL += tw->subTileHeight;
+        for (int i=tw->numDirChanges-1; i>=0; i--) {
+            if ((cSTL%tw->dirChanges[i].posOffset) == 0) {
+                if (i == tw->numDirChanges-1) {
                     curTileInRow += parallel;
-                    dX = curTileInRow*tileWidth;
-                    sO = sOPrev + tileWidth*tileHeight*bytesPerPixel*(parallel);
+                    dX = curTileInRow*tw->tileWidth;
+                    sO = sOPrev + tw->tileWidth*tw->tileHeight*tw->bytesPerPixel*(parallel);
                     sOPrev = sO;
                 } else {
-                    dX += dirChanges[i].xDelta;
+                    dX += tw->dirChanges[i].xDelta;
                 }
-                dY += dirChanges[i].yDelta;
+                dY += tw->dirChanges[i].yDelta;
 		break;
             }
         }
         if (dX >= w) {
             dX = 0;
             curTileInRow = 0;
-            dY += tileHeight;
+            dY += tw->tileHeight;
             if (dY >= h) {
                 break;
             }
@@ -442,20 +428,11 @@ int detile_this(int mode, uint64_t arg1,
     } else if (mode == TILE_INTELY) {
         detile_intely(w, h, dst, dstLineSize, src, srcLineSize);
     } else if (mode == TILE_INTELYF) {
-        detile_generic(w, h, dst, dstLineSize, src, srcLineSize,
-                            tyfBytesPerPixel, tyfSubTileWidth, tyfSubTileHeight, tyfSubTileWidthBytes,
-                            tyfTileWidth, tyfTileHeight,
-                            tyfNumDirChanges, tyfDirChanges);
+        detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
     } else if (mode == TILE_INTELGX) {
-        detile_generic(w, h, dst, dstLineSize, src, srcLineSize,
-                            txBytesPerPixel, txSubTileWidth, txSubTileHeight, txSubTileWidthBytes,
-                            txTileWidth, txTileHeight,
-                            txNumDirChanges, txDirChanges);
+        detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk);
     } else if (mode == TILE_INTELGY) {
-        detile_generic(w, h, dst, dstLineSize, src, srcLineSize,
-                            tyBytesPerPixel, tySubTileWidth, tySubTileHeight, tySubTileWidthBytes,
-                            tyTileWidth, tyTileHeight,
-                            tyNumDirChanges, tyDirChanges);
+        detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk);
     } else if (mode == TILE_NONE_END) {
         av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logState, "fbtile:detile_this:TILE_AUTOOr???: invalid or unsupported format_modifier:%"PRIx64"\n",arg1);
         return 1;
