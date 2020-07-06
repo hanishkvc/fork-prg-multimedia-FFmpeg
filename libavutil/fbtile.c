@@ -285,14 +285,15 @@ struct TileWalk tyTileWalk = {
                 };
 
 
-void detile_generic_simple(int w, int h,
+void _detile_generic_simple(int w, int h,
                                   uint8_t *dst, int dstLineSize,
                                   const uint8_t *src, int srcLineSize,
                                   int bytesPerPixel,
-                                  int subTileWidth, int subTileHeight, int subTileWidthBytes,
+                                  int subTileWidth, int subTileHeight,
                                   int tileWidth, int tileHeight,
                                   int numDirChanges, struct dirChange *dirChanges)
 {
+    int subTileWidthBytes = subTileWidth*bytesPerPixel;
 
     if (w*bytesPerPixel != srcLineSize) {
         av_log(NULL, AV_LOG_ERROR, "fbdetile:generic: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
@@ -329,6 +330,90 @@ void detile_generic_simple(int w, int h,
     }
 }
 
+
+static void _detile_generic_opti(const int w, const int h,
+                                uint8_t *dst, const int dstLineSize,
+                                const uint8_t *src, const int srcLineSize,
+                                const int bytesPerPixel,
+                                const int subTileWidth, const int subTileHeight,
+                                const int tileWidth, const int tileHeight,
+                                const int numDirChanges, const struct dirChange *dirChanges)
+{
+    const int subTileWidthBytes = subTileWidth*bytesPerPixel;
+    int parallel = 1;
+
+    if (w*bytesPerPixel != srcLineSize) {
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:generic: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:generic: dont support LineSize | Pitch going beyond width\n");
+    }
+    if (w%tileWidth != 0) {
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:generic:NotSupported:NonMultWidth: width%d, tileWidth%d\n", w, tileWidth);
+    }
+    int sO = 0;
+    int sOPrev = 0;
+    int dX = 0;
+    int dY = 0;
+    int nSTLines = (w*h)/subTileWidth;
+    //int nSTLinesInATile = (tileWidth*tileHeight)/subTileWidth;
+    int nTilesInARow = w/tileWidth;
+    for (parallel=8; parallel>0; parallel--) {
+        if (nTilesInARow%parallel == 0)
+            break;
+    }
+    int cSTL = 0;
+    int curTileInRow = 0;
+    while (cSTL < nSTLines) {
+        int dO = dY*dstLineSize + dX*bytesPerPixel;
+#ifdef DEBUG_FBTILE
+        av_log(NULL, AV_LOG_DEBUG, "fbdetile:generic: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
+#endif
+
+        // As most tiling layouts have a minimum subtile of 4x4, if I remember correctly,
+        // so this loop has been unrolled to be multiples of 4, and speed up a bit.
+        // However tiling involving 3x3 or 2x2 wont be handlable. Use detile_generic_simple
+        // for such tile layouts.
+        // Detile parallely to a limited extent. To avoid any cache set-associativity and or
+        // limited cache based thrashing, keep it spacially and inturn temporaly small at one level.
+        for (int k = 0; k < subTileHeight; k+=4) {
+            for (int p = 0; p < parallel; p++) {
+                int pSrcOffset = p*tileWidth*tileHeight*bytesPerPixel;
+                int pDstOffset = p*tileWidth*bytesPerPixel;
+                memcpy(dst+dO+k*dstLineSize+pDstOffset, src+sO+k*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
+                memcpy(dst+dO+(k+1)*dstLineSize+pDstOffset, src+sO+(k+1)*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
+                memcpy(dst+dO+(k+2)*dstLineSize+pDstOffset, src+sO+(k+2)*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
+                memcpy(dst+dO+(k+3)*dstLineSize+pDstOffset, src+sO+(k+3)*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
+            }
+        }
+        sO = sO + subTileHeight*subTileWidthBytes;
+
+        cSTL += subTileHeight;
+        for (int i=numDirChanges-1; i>=0; i--) {
+            if ((cSTL%dirChanges[i].posOffset) == 0) {
+                if (i == numDirChanges-1) {
+                    curTileInRow += parallel;
+                    dX = curTileInRow*tileWidth;
+                    sO = sOPrev + tileWidth*tileHeight*bytesPerPixel*(parallel);
+                    sOPrev = sO;
+                } else {
+                    dX += dirChanges[i].xDelta;
+                }
+                dY += dirChanges[i].yDelta;
+		break;
+            }
+        }
+        if (dX >= w) {
+            dX = 0;
+            curTileInRow = 0;
+            dY += tileHeight;
+            if (dY >= h) {
+                break;
+            }
+        }
+    }
+}
+
+
+#if 0
 
 void detile_generic_opti(int w, int h,
                                 uint8_t *dst, int dstLineSize,
@@ -408,6 +493,22 @@ void detile_generic_opti(int w, int h,
     }
 }
 
+#else
+
+void detile_generic_opti(int w, int h,
+                                uint8_t *dst, int dstLineSize,
+                                const uint8_t *src, int srcLineSize,
+                                const struct TileWalk *tw)
+{
+    _detile_generic_opti(w, h, dst, dstLineSize, src, srcLineSize,
+                            tw->bytesPerPixel,
+                            tw->subTileWidth, tw->subTileHeight,
+                            tw->tileWidth, tw->tileHeight,
+                            tw->numDirChanges, tw->dirChanges);
+}
+
+
+#endif
 
 int detile_this(int mode, uint64_t arg1,
                         int w, int h,
