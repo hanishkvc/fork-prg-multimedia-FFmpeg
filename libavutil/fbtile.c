@@ -285,15 +285,15 @@ struct TileWalk tyTileWalk = {
                 };
 
 
-void _detile_generic_simple(int w, int h,
-                                  uint8_t *dst, int dstLineSize,
-                                  const uint8_t *src, int srcLineSize,
-                                  int bytesPerPixel,
-                                  int subTileWidth, int subTileHeight,
-                                  int tileWidth, int tileHeight,
-                                  int numDirChanges, struct dirChange *dirChanges)
+void _detile_generic_simple(const int w, const int h,
+                                  uint8_t *dst, const int dstLineSize,
+                                  const uint8_t *src, const int srcLineSize,
+                                  const int bytesPerPixel,
+                                  const int subTileWidth, const int subTileHeight,
+                                  const int tileWidth, const int tileHeight,
+                                  const int numDirChanges, const struct dirChange *dirChanges)
 {
-    int subTileWidthBytes = subTileWidth*bytesPerPixel;
+    const int subTileWidthBytes = subTileWidth*bytesPerPixel;
 
     if (w*bytesPerPixel != srcLineSize) {
         av_log(NULL, AV_LOG_ERROR, "fbdetile:generic: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
@@ -415,12 +415,12 @@ void _detile_generic_opti(const int w, const int h,
 
 #if 0
 
-void detile_generic_opti(int w, int h,
-                                uint8_t *dst, int dstLineSize,
-                                const uint8_t *src, int srcLineSize,
+void detile_generic_opti(const int w, const int h,
+                                uint8_t *dst, const int dstLineSize,
+                                const uint8_t *src, const int srcLineSize,
                                 const struct TileWalk *tw)
 {
-    int subTileWidthBytes = tw->subTileWidth*tw->bytesPerPixel;
+    const int subTileWidthBytes = tw->subTileWidth*tw->bytesPerPixel;
     int parallel = 1;
 
     if (w*tw->bytesPerPixel != srcLineSize) {
@@ -495,9 +495,9 @@ void detile_generic_opti(int w, int h,
 
 #else
 
-void detile_generic_opti(int w, int h,
-                                uint8_t *dst, int dstLineSize,
-                                const uint8_t *src, int srcLineSize,
+void detile_generic_opti(const int w, const int h,
+                                uint8_t *dst, const int dstLineSize,
+                                const uint8_t *src, const int srcLineSize,
                                 const struct TileWalk *tw)
 {
     _detile_generic_opti(w, h, dst, dstLineSize, src, srcLineSize,

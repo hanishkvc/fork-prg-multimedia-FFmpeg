@@ -182,13 +182,13 @@ extern struct dirChange tyDirChanges[];
 /**
  * Generic detile simple version, which is fine-grained.
  */
-void _detile_generic_simple(int w, int h,
-                                  uint8_t *dst, int dstLineSize,
-                                  const uint8_t *src, int srcLineSize,
-                                  int bytesPerPixel,
-                                  int subTileWidth, int subTileHeight,
-                                  int tileWidth, int tileHeight,
-                                  int numDirChanges, struct dirChange *dirChanges);
+void _detile_generic_simple(const int w, const int h,
+                                  uint8_t *dst, const int dstLineSize,
+                                  const uint8_t *src, const int srcLineSize,
+                                  const int bytesPerPixel,
+                                  const int subTileWidth, const int subTileHeight,
+                                  const int tileWidth, const int tileHeight,
+                                  const int numDirChanges, const struct dirChange *dirChanges);
 
 
 /**
@@ -201,9 +201,9 @@ void _detile_generic_opti(const int w, const int h,
                                 const int subTileWidth, const int subTileHeight,
                                 const int tileWidth, const int tileHeight,
                                 const int numDirChanges, const struct dirChange *dirChanges);
-void detile_generic_opti(int w, int h,
-                                uint8_t *dst, int dstLineSize,
-                                const uint8_t *src, int srcLineSize,
+void detile_generic_opti(const int w, const int h,
+                                uint8_t *dst, const int dstLineSize,
+                                const uint8_t *src, const int srcLineSize,
                                 const struct TileWalk *tw);
 
 
