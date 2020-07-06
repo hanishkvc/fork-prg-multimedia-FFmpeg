@@ -52,7 +52,7 @@ function _time_ffmpeg() {
 	echo "AvgTime=$AvgTime, AvgTSC=$AvgTSC"
 }
 
-function time_ffmpeg() {
+function time_fbdetile() {
 	_time_ffmpeg "-vf fbdetile=2"
 	_time_ffmpeg
 	_time_ffmpeg "-vf fbdetile=0"
@@ -61,6 +61,14 @@ function time_ffmpeg() {
 	_time_ffmpeg "-vf fbdetile=4"
 	_time_ffmpeg "-vf fbdetile=5"
 	_time_ffmpeg "-vf fbdetile=6"
+}
+
+function test_fbdetile() {
+	hkvc/hkvc-tile-image.py
+	for i in 0 1 2 3 4 5 6 7; do
+		rm /tmp/t.png; ./ffmpeg -i /tmp/ssti.png -vf fbdetile=$i /tmp/t.png; xdg-open /tmp/t.png
+		read -p "that was fbdetile=$i"
+	done
 }
 
 $@
