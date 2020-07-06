@@ -103,7 +103,7 @@ void detile_intelx(int w, int h,
     while (cTL < nTLines) {
         int dO = dY*dstLineSize + dX*pixBytes;
 #ifdef DEBUG_FBTILE
-        av_log(NULL, AV_LOG_DEBUG, "fbdetile:intelx: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
+        av_log(NULL, AV_LOG_DEBUG, "fbdetile:intelx: dX%d dY%d; sO%d, dO%d; %d/%d\n", dX, dY, sO, dO, cTL, nTLines);
 #endif
         memcpy(dst+dO+0*dstLineSize, src+sO+0*tileWBytes, tileWBytes);
         memcpy(dst+dO+1*dstLineSize, src+sO+1*tileWBytes, tileWBytes);
@@ -172,7 +172,7 @@ void detile_intely(int w, int h,
     while (cTL < nTLines) {
         int dO = dY*dstLineSize + dX*pixBytes;
 #ifdef DEBUG_FBTILE
-        av_log(NULL, AV_LOG_DEBUG, "fbdetile:intely: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
+        av_log(NULL, AV_LOG_DEBUG, "fbdetile:intely: dX%d dY%d; sO%d, dO%d; %d/%d\n", dX, dY, sO, dO, cTL, nTLines);
 #endif
 
         memcpy(dst+dO+0*dstLineSize, src+sO+0*tileWBytes, tileWBytes);
@@ -296,8 +296,8 @@ void _detile_generic_simple(const int w, const int h,
     const int subTileWidthBytes = subTileWidth*bytesPerPixel;
 
     if (w*bytesPerPixel != srcLineSize) {
-        av_log(NULL, AV_LOG_ERROR, "fbdetile:generic: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
-        av_log(NULL, AV_LOG_ERROR, "fbdetile:generic: dont support LineSize | Pitch going beyond width\n");
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:genericsimp: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:genericsimp: dont support LineSize | Pitch going beyond width\n");
     }
     int sO = 0;
     int dX = 0;
@@ -307,7 +307,7 @@ void _detile_generic_simple(const int w, const int h,
     while (cSTL < nSTLines) {
         int dO = dY*dstLineSize + dX*bytesPerPixel;
 #ifdef DEBUG_FBTILE
-        av_log(NULL, AV_LOG_DEBUG, "fbdetile:generic: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
+        av_log(NULL, AV_LOG_DEBUG, "fbdetile:genericsimp: dX%d dY%d; sO%d, dO%d; %d/%d\n", dX, dY, sO, dO, cSTL, nSTLines);
 #endif
 
         for (int k = 0; k < subTileHeight; k++) {
@@ -356,11 +356,11 @@ void _detile_generic_opti(const int w, const int h,
     int parallel = 1;
 
     if (w*bytesPerPixel != srcLineSize) {
-        av_log(NULL, AV_LOG_ERROR, "fbdetile:generic: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
-        av_log(NULL, AV_LOG_ERROR, "fbdetile:generic: dont support LineSize | Pitch going beyond width\n");
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:genericopti: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:genericopti: dont support LineSize | Pitch going beyond width\n");
     }
     if (w%tileWidth != 0) {
-        av_log(NULL, AV_LOG_ERROR, "fbdetile:generic:NotSupported:NonMultWidth: width%d, tileWidth%d\n", w, tileWidth);
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:genericopti:NotSupported:NonMultWidth: width%d, tileWidth%d\n", w, tileWidth);
     }
     int sO = 0;
     int sOPrev = 0;
@@ -378,7 +378,7 @@ void _detile_generic_opti(const int w, const int h,
     while (cSTL < nSTLines) {
         int dO = dY*dstLineSize + dX*bytesPerPixel;
 #ifdef DEBUG_FBTILE
-        av_log(NULL, AV_LOG_DEBUG, "fbdetile:generic: dX%d dY%d, sO%d, dO%d\n", dX, dY, sO, dO);
+        av_log(NULL, AV_LOG_DEBUG, "fbdetile:genericopti: dX%d dY%d; sO%d, dO%d; %d/%d\n", dX, dY, sO, dO, cSTL, nSTLines);
 #endif
 
         // As most tiling layouts have a minimum subtile of 4x4, if I remember correctly,
@@ -387,14 +387,16 @@ void _detile_generic_opti(const int w, const int h,
         // for such tile layouts.
         // Detile parallely to a limited extent. To avoid any cache set-associativity and or
         // limited cache based thrashing, keep it spacially and inturn temporaly small at one level.
-        for (int k = 0; k < subTileHeight; k+=4) {
+        for (int k = 0; k < subTileHeight; k+=1) {
             for (int p = 0; p < parallel; p++) {
                 int pSrcOffset = p*tileWidth*tileHeight*bytesPerPixel;
                 int pDstOffset = p*tileWidth*bytesPerPixel;
                 memcpy(dst+dO+k*dstLineSize+pDstOffset, src+sO+k*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
+                /*
                 memcpy(dst+dO+(k+1)*dstLineSize+pDstOffset, src+sO+(k+1)*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
                 memcpy(dst+dO+(k+2)*dstLineSize+pDstOffset, src+sO+(k+2)*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
                 memcpy(dst+dO+(k+3)*dstLineSize+pDstOffset, src+sO+(k+3)*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
+                */
             }
         }
         sO = sO + subTileHeight*subTileWidthBytes;
