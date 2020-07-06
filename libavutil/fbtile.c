@@ -28,7 +28,7 @@
 #endif
 
 
-int fbtilemode_from_formatmodifier(uint64_t formatModifier)
+int fbtilemode_from_drmformatmodifier(uint64_t formatModifier)
 {
     int mode = TILE_NONE_END;
 
@@ -52,7 +52,7 @@ int fbtilemode_from_formatmodifier(uint64_t formatModifier)
     }
 #endif
 #ifdef DEBUG_FBTILE_FORMATMODIFIER_MAPPING
-    av_log(NULL, AV_LOG_DEBUG, "fbtile:formatmodifier[%lx] mapped to mode[%d]\n", formatModifier, mode);
+    av_log(NULL, AV_LOG_DEBUG, "fbtile:drmformatmodifier[%lx] mapped to mode[%d]\n", formatModifier, mode);
 #endif
     return mode;
 }
@@ -449,7 +449,7 @@ int detile_this(int mode, uint64_t arg1,
 {
     static int logState=0;
     if (mode == TILE_AUTO) {
-        mode = fbtilemode_from_formatmodifier(arg1);
+        mode = fbtilemode_from_drmformatmodifier(arg1);
     }
     if (mode == TILE_NONE) {
         return 1;
