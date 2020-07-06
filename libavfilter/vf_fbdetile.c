@@ -71,8 +71,6 @@
 #include "internal.h"
 #include "video.h"
 
-// Enable printing of the tile walk
-#undef DEBUG_FBTILE
 
 // Print time taken by detile using performance counter
 #if ARCH_X86
