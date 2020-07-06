@@ -34,7 +34,7 @@
 
 
 // Enable printing of the tile walk
-#define DEBUG_FBTILE 1
+//#define DEBUG_FBTILE 1
 
 
 enum FBTileMode {
