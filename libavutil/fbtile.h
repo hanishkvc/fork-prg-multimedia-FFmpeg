@@ -194,6 +194,13 @@ void _detile_generic_simple(int w, int h,
 /**
  * Generic detile optimised version, minimum subtile supported 4x4.
  */
+void _detile_generic_opti(const int w, const int h,
+                                uint8_t *dst, const int dstLineSize,
+                                const uint8_t *src, const int srcLineSize,
+                                const int bytesPerPixel,
+                                const int subTileWidth, const int subTileHeight,
+                                const int tileWidth, const int tileHeight,
+                                const int numDirChanges, const struct dirChange *dirChanges);
 void detile_generic_opti(int w, int h,
                                 uint8_t *dst, int dstLineSize,
                                 const uint8_t *src, int srcLineSize,
