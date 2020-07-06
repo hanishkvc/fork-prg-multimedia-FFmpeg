@@ -413,7 +413,7 @@ void _detile_generic_opti(const int w, const int h,
 }
 
 
-#if 0
+#if 1
 
 void detile_generic_opti(const int w, const int h,
                                 uint8_t *dst, const int dstLineSize,
