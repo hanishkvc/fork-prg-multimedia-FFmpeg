@@ -223,10 +223,6 @@ void detile_intely(int w, int h,
  * Generic detile logic
  */
 
-/*
- * Direction Change Entry
- * Used to specify the tile walking of subtiles within a tile.
- */
 /**
  * Settings for Intel Tile-Yf framebuffer layout.
  * May need to swap the 4 pixel wide subtile, have to check doc bit more
@@ -239,6 +235,13 @@ const int tyfTileWidth = 32;
 const int tyfTileHeight = 32;
 const int tyfNumDirChanges = 6;
 struct dirChange tyfDirChanges[] = { {8, 4, 0}, {16, -4, 8}, {32, 4, -8}, {64, -12, 8 }, {128, 4, -24}, {256, 4, -24} };
+struct TileWalk tyfTileWalk = {
+                    .bytesPerPixel = 4,
+                    .subTileWidth = 4, .subTileHeight = 8,
+                    .tileWidth = 32, .tileHeight = 32,
+                    .numDirChanges = 6,
+                    .dirChanges = { {8, 4, 0}, {16, -4, 8}, {32, 4, -8}, {64, -12, 8}, {128, 4, -24}, {256, 4, -24} }
+                };
 
 /**
  * Setting for Intel Tile-X framebuffer layout
@@ -251,6 +254,13 @@ const int txTileWidth = 128;
 const int txTileHeight = 8;
 const int txNumDirChanges = 1;
 struct dirChange txDirChanges[] = { {8, 128, 0} };
+struct TileWalk txTileWalk = {
+                    .bytesPerPixel = 4,
+                    .subTileWidth = 128, .subTileHeight = 8,
+                    .tileWidth = 128, .tileHeight = 8,
+                    .numDirChanges = 1,
+                    .dirChanges = { {8, 128, 0} }
+                };
 
 /**
  * Setting for Intel Tile-Y framebuffer layout
@@ -266,16 +276,24 @@ const int tyTileWidth = 32;
 const int tyTileHeight = 32;
 const int tyNumDirChanges = 2;
 struct dirChange tyDirChanges[] = { {32, 4, 0}, {256, 4, 0} };
+struct TileWalk tyTileWalk = {
+                    .bytesPerPixel = 4,
+                    .subTileWidth = 4, .subTileHeight = 32,
+                    .tileWidth = 32, .tileHeight = 32,
+                    .numDirChanges = 2,
+                    .dirChanges = { {32, 4, 0}, {256, 4, 0} }
+                };
 
 
-void detile_generic_simple(int w, int h,
-                                  uint8_t *dst, int dstLineSize,
-                                  const uint8_t *src, int srcLineSize,
-                                  int bytesPerPixel,
-                                  int subTileWidth, int subTileHeight, int subTileWidthBytes,
-                                  int tileWidth, int tileHeight,
-                                  int numDirChanges, struct dirChange *dirChanges)
+void _detile_generic_simple(const int w, const int h,
+                                  uint8_t *dst, const int dstLineSize,
+                                  const uint8_t *src, const int srcLineSize,
+                                  const int bytesPerPixel,
+                                  const int subTileWidth, const int subTileHeight,
+                                  const int tileWidth, const int tileHeight,
+                                  const int numDirChanges, const struct dirChange *dirChanges)
 {
+    const int subTileWidthBytes = subTileWidth*bytesPerPixel;
 
     if (w*bytesPerPixel != srcLineSize) {
         av_log(NULL, AV_LOG_ERROR, "fbdetile:generic: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
@@ -313,14 +331,28 @@ void detile_generic_simple(int w, int h,
 }
 
 
-void detile_generic_opti(int w, int h,
-                                uint8_t *dst, int dstLineSize,
-                                const uint8_t *src, int srcLineSize,
-                                int bytesPerPixel,
-                                int subTileWidth, int subTileHeight, int subTileWidthBytes,
-                                int tileWidth, int tileHeight,
-                                int numDirChanges, struct dirChange *dirChanges)
+void detile_generic_simple(const int w, const int h,
+                                uint8_t *dst, const int dstLineSize,
+                                const uint8_t *src, const int srcLineSize,
+                                const struct TileWalk *tw)
 {
+    _detile_generic_simple(w, h, dst, dstLineSize, src, srcLineSize,
+                            tw->bytesPerPixel,
+                            tw->subTileWidth, tw->subTileHeight,
+                            tw->tileWidth, tw->tileHeight,
+                            tw->numDirChanges, tw->dirChanges);
+}
+
+
+void _detile_generic_opti(const int w, const int h,
+                                uint8_t *dst, const int dstLineSize,
+                                const uint8_t *src, const int srcLineSize,
+                                const int bytesPerPixel,
+                                const int subTileWidth, const int subTileHeight,
+                                const int tileWidth, const int tileHeight,
+                                const int numDirChanges, const struct dirChange *dirChanges)
+{
+    const int subTileWidthBytes = subTileWidth*bytesPerPixel;
     int parallel = 1;
 
     if (w*bytesPerPixel != srcLineSize) {
@@ -394,6 +426,19 @@ void detile_generic_opti(int w, int h,
 }
 
 
+void detile_generic_opti(const int w, const int h,
+                                uint8_t *dst, const int dstLineSize,
+                                const uint8_t *src, const int srcLineSize,
+                                const struct TileWalk *tw)
+{
+    _detile_generic_opti(w, h, dst, dstLineSize, src, srcLineSize,
+                            tw->bytesPerPixel,
+                            tw->subTileWidth, tw->subTileHeight,
+                            tw->tileWidth, tw->tileHeight,
+                            tw->numDirChanges, tw->dirChanges);
+}
+
+
 int detile_this(int mode, uint64_t arg1,
                         int w, int h,
                         uint8_t *dst, int dstLineSize,
@@ -413,20 +458,11 @@ int detile_this(int mode, uint64_t arg1,
     } else if (mode == TILE_INTELY) {
         detile_intely(w, h, dst, dstLineSize, src, srcLineSize);
     } else if (mode == TILE_INTELYF) {
-        detile_generic(w, h, dst, dstLineSize, src, srcLineSize,
-                            tyfBytesPerPixel, tyfSubTileWidth, tyfSubTileHeight, tyfSubTileWidthBytes,
-                            tyfTileWidth, tyfTileHeight,
-                            tyfNumDirChanges, tyfDirChanges);
+        detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
     } else if (mode == TILE_INTELGX) {
-        detile_generic(w, h, dst, dstLineSize, src, srcLineSize,
-                            txBytesPerPixel, txSubTileWidth, txSubTileHeight, txSubTileWidthBytes,
-                            txTileWidth, txTileHeight,
-                            txNumDirChanges, txDirChanges);
+        detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk);
     } else if (mode == TILE_INTELGY) {
-        detile_generic(w, h, dst, dstLineSize, src, srcLineSize,
-                            tyBytesPerPixel, tySubTileWidth, tySubTileHeight, tySubTileWidthBytes,
-                            tyTileWidth, tyTileHeight,
-                            tyNumDirChanges, tyDirChanges);
+        detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk);
     } else if (mode == TILE_NONE_END) {
         av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logState, "fbtile:detile_this:TILE_AUTOOr???: invalid or unsupported format_modifier:%"PRIx64"\n",arg1);
         return 1;

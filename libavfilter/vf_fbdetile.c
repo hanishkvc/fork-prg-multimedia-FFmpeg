@@ -50,16 +50,16 @@
 
 /*
  * Performance check results on i7-7500u
- * TileYf, TileGX, TileGY using detile_generic_opti
- *     This mainly impacts TileYf, due to its deeper subtiling
- *     Without opti, its TSCCnt rises to aroun 11.XYM
- * Run Type      : Type   : Seconds Max, Min : TSCCnt Min, Max
- * Non filter run:        :  10.11s, 09.96s  :
- * fbdetile=2 run: TileX  :  13.45s, 13.20s  :  05.95M, 06.10M
- * fbdetile=3 run: TileY  :  13.50s, 13.39s  :  06.22M, 06.39M
- * fbdetile=4 run: TileYf :  13.75s, 13.63s  :  09.82M, 09.90M
- * fbdetile=5 run: TileGX :  13.70s, 13.32s  :  06.15M, 06.24M
- * fbdetile=6 run: TileGY :  14.12s, 13.57s  :  08.75M, 09.10M
+ *
+ * Run Type      : Type   : Seconds Min, Max : TSCCnt Min, Max
+ * Non filter run:        :  10.04s, 09.97s  :  00.00M, 00.00M
+ * fbdetile=0 run: PasThro:  12.70s, 13.20s  :  00.00M, 00.00M
+ * fbdetile=2 run: TileX  :  12.45s, 13.41s  :  05.95M, 06.05M
+ * fbdetile=3 run: TileY  :  13.47s, 13.89s  :  06.31M, 06.38M
+ * fbdetile=4 run: TileYf :  13.73s, 13.83s  :  11.41M, 11.83M  ; Simple
+ * fbdetile=4 run: TileYf :  13.73s, 13.83s  :  09.82M, 09.92M  ; Opti
+ * fbdetile=5 run: TileGX :  13.34s, 13.52s  :  06.13M, 06.20M
+ * fbdetile=6 run: TileGY :  13.59s, 13.68s  :  08.60M, 08.97M
  */
 
 #include "libavutil/avassert.h"
@@ -71,10 +71,9 @@
 #include "internal.h"
 #include "video.h"
 
-// Use Optimised detile_generic or the Simpler but more fine grained one
-#define DETILE_GENERIC_OPTI 1
 // Enable printing of the tile walk
 #undef DEBUG_FBTILE
+
 // Print time taken by detile using performance counter
 #if ARCH_X86
 #define DEBUG_PERF 1
@@ -178,7 +177,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     av_frame_copy_props(out, in);
 
 #ifdef DEBUG_PERF
-    uint64_t perfStart = __rdtsc();
+    unsigned int tscArg;
+    uint64_t perfStart = __rdtscp(&tscArg);
 #endif
 
     detile_this(fbdetile->type, 0, fbdetile->width, fbdetile->height,
@@ -186,7 +186,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                         in->data[0], in->linesize[0], 4);
 
 #ifdef DEBUG_PERF
-    uint64_t perfEnd = __rdtsc();
+    uint64_t perfEnd = __rdtscp(&tscArg);
     perfTime += (perfEnd - perfStart);
     perfCnt += 1;
 #endif
