@@ -331,7 +331,7 @@ void _detile_generic_simple(int w, int h,
 }
 
 
-static void _detile_generic_opti(const int w, const int h,
+void _detile_generic_opti(const int w, const int h,
                                 uint8_t *dst, const int dstLineSize,
                                 const uint8_t *src, const int srcLineSize,
                                 const int bytesPerPixel,
