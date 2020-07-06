@@ -73,36 +73,6 @@ int fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVP
 
 
 /**
- * Detile legacy intel tile-x layout into linear layout.
- *
- * @param w width of the image
- * @param h height of the image
- * @param dst the destination image buffer
- * @param dstLineSize the size of each row in dst image, in bytes
- * @param src the source image buffer
- * @param srcLineSize the size of each row in src image, in bytes
- */
-void detile_intelx(int w, int h,
-                          uint8_t *dst, int dstLineSize,
-                          const uint8_t *src, int srcLineSize);
-
-
-/**
- * Detile legacy intel tile-y layout into linear layout.
- *
- * @param w width of the image
- * @param h height of the image
- * @param dst the destination image buffer
- * @param dstLineSize the size of each row in dst image, in bytes
- * @param src the source image buffer
- * @param srcLineSize the size of each row in src image, in bytes
- */
-void detile_intely(int w, int h,
-                          uint8_t *dst, int dstLineSize,
-                          const uint8_t *src, int srcLineSize);
-
-
-/**
  * Generic Logic.
  */
 
@@ -128,42 +98,12 @@ struct TileWalk {
 };
 
 /**
- * Settings for Intel Tile-Yf framebuffer layout.
- * May need to swap the 4 pixel wide subtile, have to check doc bit more
+ * Tile Walk parameters for Tile-X, Tile-Y, Tile-Yf
  */
-extern const int tyfBytesPerPixel;
-extern const int tyfSubTileWidth;
-extern const int tyfSubTileHeight;
-extern const int tyfSubTileWidthBytes;
-extern const int tyfTileWidth;
-extern const int tyfTileHeight;
-extern const int tyfNumDirChanges;
-extern struct dirChange tyfDirChanges[];
-/**
- * Setting for Intel Tile-X framebuffer layout
- */
-extern const int txBytesPerPixel;
-extern const int txSubTileWidth;
-extern const int txSubTileHeight;
-extern const int txSubTileWidthBytes;
-extern const int txTileWidth;
-extern const int txTileHeight;
-extern const int txNumDirChanges;
-extern struct dirChange txDirChanges[];
-/**
- * Setting for Intel Tile-Y framebuffer layout
- * Even thou a simple generic detiling logic doesnt require the
- * dummy 256 posOffset entry. The pseudo parallel detiling based
- * opti logic requires to know about the Tile boundry.
- */
-extern const int tyBytesPerPixel;
-extern const int tySubTileWidth;
-extern const int tySubTileHeight;
-extern const int tySubTileWidthBytes;
-extern const int tyTileWidth;
-extern const int tyTileHeight;
-extern const int tyNumDirChanges;
-extern struct dirChange tyDirChanges[];
+extern struct TileWalk tyfTileWalk;
+extern struct TileWalk txTileWalk;
+extern struct TileWalk tyTileWalk;
+
 
 /**
  * Generic Logic to Detile into linear layout.
@@ -174,12 +114,16 @@ extern struct dirChange tyDirChanges[];
  * @param dstLineSize the size of each row in dst image, in bytes
  * @param src the source image buffer
  * @param srcLineSize the size of each row in src image, in bytes
- * @param bytesPerPixel the bytes per pixel for the image
- * @param subTileWidth the width of subtile within the tile, in pixels
- * @param subTileHeight the height of subtile within the tile, in pixels
- * @param subTileWidthBytes the width of subtile within the tile, in bytes
- * @param tileWidth the width of the tile, in pixels
- * @param tileHeight the height of the tile, in pixels
+ * the wide _func additional explicit options
+ *     @param bytesPerPixel the bytes per pixel for the image
+ *     @param subTileWidth the width of subtile within the tile, in pixels
+ *     @param subTileHeight the height of subtile within the tile, in pixels
+ *     @param tileWidth the width of the tile, in pixels
+ *     @param tileHeight the height of the tile, in pixels
+ *     @param numDirChanges the number of dir changes involved in tile walk
+ *     @param dirChanges the array of dir changes for the tile walk required
+ * the compact func additional options
+ *     @param tw the structure which contains the tile walk parameters
  */
 
 

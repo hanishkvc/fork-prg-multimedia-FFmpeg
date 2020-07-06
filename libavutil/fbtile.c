@@ -81,144 +81,6 @@ int fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVP
 }
 
 
-void detile_intelx(int w, int h,
-                          uint8_t *dst, int dstLineSize,
-                          const uint8_t *src, int srcLineSize)
-{
-    // Offsets and LineSize are in bytes
-    const int pixBytes = 4;                     // bytes per pixel
-    const int tileW = 128;                      // tileWidth inPixels, 512/4, For a 32Bits/Pixel framebuffer
-    const int tileH = 8;                        // tileHeight inPixelLines
-    const int tileWBytes = tileW*pixBytes;      // tileWidth inBytes
-
-    if (w*pixBytes != srcLineSize) {
-        av_log(NULL, AV_LOG_ERROR, "fbdetile:intelx: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
-        av_log(NULL, AV_LOG_ERROR, "fbdetile:intelx: dont support LineSize | Pitch going beyond width\n");
-    }
-    int sO = 0;                 // srcOffset inBytes
-    int dX = 0;                 // destX inPixels
-    int dY = 0;                 // destY inPixels
-    int nTLines = (w*h)/tileW;  // numTileLines; One TileLine = One TileWidth
-    int cTL = 0;                // curTileLine
-    while (cTL < nTLines) {
-        int dO = dY*dstLineSize + dX*pixBytes;
-#ifdef DEBUG_FBTILE
-        av_log(NULL, AV_LOG_DEBUG, "fbdetile:intelx: dX%d dY%d; sO%d, dO%d; %d/%d\n", dX, dY, sO, dO, cTL, nTLines);
-#endif
-        memcpy(dst+dO+0*dstLineSize, src+sO+0*tileWBytes, tileWBytes);
-        memcpy(dst+dO+1*dstLineSize, src+sO+1*tileWBytes, tileWBytes);
-        memcpy(dst+dO+2*dstLineSize, src+sO+2*tileWBytes, tileWBytes);
-        memcpy(dst+dO+3*dstLineSize, src+sO+3*tileWBytes, tileWBytes);
-        memcpy(dst+dO+4*dstLineSize, src+sO+4*tileWBytes, tileWBytes);
-        memcpy(dst+dO+5*dstLineSize, src+sO+5*tileWBytes, tileWBytes);
-        memcpy(dst+dO+6*dstLineSize, src+sO+6*tileWBytes, tileWBytes);
-        memcpy(dst+dO+7*dstLineSize, src+sO+7*tileWBytes, tileWBytes);
-        dX += tileW;
-        if (dX >= w) {
-            dX = 0;
-            dY += tileH;
-        }
-        sO = sO + tileW*tileH*pixBytes;
-        cTL += tileH;
-    }
-}
-
-
-/*
- * Intel Legacy Tile-Y layout conversion support
- *
- * currently done in a simple dumb way. Two low hanging optimisations
- * that could be readily applied are
- *
- * a) unrolling the inner for loop
- *    --- Given small size memcpy, should help, DONE
- *
- * b) using simd based 128bit loading and storing along with prefetch
- *    hinting.
- *
- *    TOTHINK|CHECK: Does memcpy already does this and more if situation
- *    is right?!
- *
- *    As code (or even intrinsics) would be specific to each architecture,
- *    avoiding for now. Later have to check if vector_size attribute and
- *    corresponding implementation by gcc can handle different architectures
- *    properly, such that it wont become worse than memcpy provided for that
- *    architecture.
- *
- * Or maybe I could even merge the two intel detiling logics into one, as
- * the semantic and flow is almost same for both logics.
- *
- */
-void detile_intely(int w, int h,
-                          uint8_t *dst, int dstLineSize,
-                          const uint8_t *src, int srcLineSize)
-{
-    // Offsets and LineSize are in bytes
-    const int pixBytes = 4;                 // bytesPerPixel
-    // tileW represents subTileWidth here, as it can be repeated to fill a tile
-    const int tileW = 4;                    // tileWidth inPixels, 16/4, For a 32Bits/Pixel framebuffer
-    const int tileH = 32;                   // tileHeight inPixelLines
-    const int tileWBytes = tileW*pixBytes;  // tileWidth inBytes
-
-    if (w*pixBytes != srcLineSize) {
-        av_log(NULL, AV_LOG_ERROR, "fbdetile:intely: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
-        av_log(NULL, AV_LOG_ERROR, "fbdetile:intely: dont support LineSize | Pitch going beyond width\n");
-    }
-    int sO = 0;
-    int dX = 0;
-    int dY = 0;
-    const int nTLines = (w*h)/tileW;
-    int cTL = 0;
-    while (cTL < nTLines) {
-        int dO = dY*dstLineSize + dX*pixBytes;
-#ifdef DEBUG_FBTILE
-        av_log(NULL, AV_LOG_DEBUG, "fbdetile:intely: dX%d dY%d; sO%d, dO%d; %d/%d\n", dX, dY, sO, dO, cTL, nTLines);
-#endif
-
-        memcpy(dst+dO+0*dstLineSize, src+sO+0*tileWBytes, tileWBytes);
-        memcpy(dst+dO+1*dstLineSize, src+sO+1*tileWBytes, tileWBytes);
-        memcpy(dst+dO+2*dstLineSize, src+sO+2*tileWBytes, tileWBytes);
-        memcpy(dst+dO+3*dstLineSize, src+sO+3*tileWBytes, tileWBytes);
-        memcpy(dst+dO+4*dstLineSize, src+sO+4*tileWBytes, tileWBytes);
-        memcpy(dst+dO+5*dstLineSize, src+sO+5*tileWBytes, tileWBytes);
-        memcpy(dst+dO+6*dstLineSize, src+sO+6*tileWBytes, tileWBytes);
-        memcpy(dst+dO+7*dstLineSize, src+sO+7*tileWBytes, tileWBytes);
-        memcpy(dst+dO+8*dstLineSize, src+sO+8*tileWBytes, tileWBytes);
-        memcpy(dst+dO+9*dstLineSize, src+sO+9*tileWBytes, tileWBytes);
-        memcpy(dst+dO+10*dstLineSize, src+sO+10*tileWBytes, tileWBytes);
-        memcpy(dst+dO+11*dstLineSize, src+sO+11*tileWBytes, tileWBytes);
-        memcpy(dst+dO+12*dstLineSize, src+sO+12*tileWBytes, tileWBytes);
-        memcpy(dst+dO+13*dstLineSize, src+sO+13*tileWBytes, tileWBytes);
-        memcpy(dst+dO+14*dstLineSize, src+sO+14*tileWBytes, tileWBytes);
-        memcpy(dst+dO+15*dstLineSize, src+sO+15*tileWBytes, tileWBytes);
-        memcpy(dst+dO+16*dstLineSize, src+sO+16*tileWBytes, tileWBytes);
-        memcpy(dst+dO+17*dstLineSize, src+sO+17*tileWBytes, tileWBytes);
-        memcpy(dst+dO+18*dstLineSize, src+sO+18*tileWBytes, tileWBytes);
-        memcpy(dst+dO+19*dstLineSize, src+sO+19*tileWBytes, tileWBytes);
-        memcpy(dst+dO+20*dstLineSize, src+sO+20*tileWBytes, tileWBytes);
-        memcpy(dst+dO+21*dstLineSize, src+sO+21*tileWBytes, tileWBytes);
-        memcpy(dst+dO+22*dstLineSize, src+sO+22*tileWBytes, tileWBytes);
-        memcpy(dst+dO+23*dstLineSize, src+sO+23*tileWBytes, tileWBytes);
-        memcpy(dst+dO+24*dstLineSize, src+sO+24*tileWBytes, tileWBytes);
-        memcpy(dst+dO+25*dstLineSize, src+sO+25*tileWBytes, tileWBytes);
-        memcpy(dst+dO+26*dstLineSize, src+sO+26*tileWBytes, tileWBytes);
-        memcpy(dst+dO+27*dstLineSize, src+sO+27*tileWBytes, tileWBytes);
-        memcpy(dst+dO+28*dstLineSize, src+sO+28*tileWBytes, tileWBytes);
-        memcpy(dst+dO+29*dstLineSize, src+sO+29*tileWBytes, tileWBytes);
-        memcpy(dst+dO+30*dstLineSize, src+sO+30*tileWBytes, tileWBytes);
-        memcpy(dst+dO+31*dstLineSize, src+sO+31*tileWBytes, tileWBytes);
-
-        dX += tileW;
-        if (dX >= w) {
-            dX = 0;
-            dY += tileH;
-        }
-        sO = sO + tileW*tileH*pixBytes;
-        cTL += tileH;
-    }
-}
-
-
 /*
  * Generic detile logic
  */
@@ -227,14 +89,6 @@ void detile_intely(int w, int h,
  * Settings for Intel Tile-Yf framebuffer layout.
  * May need to swap the 4 pixel wide subtile, have to check doc bit more
  */
-const int tyfBytesPerPixel = 4;
-const int tyfSubTileWidth = 4;
-const int tyfSubTileHeight = 8;
-const int tyfSubTileWidthBytes = tyfSubTileWidth*tyfBytesPerPixel; //16
-const int tyfTileWidth = 32;
-const int tyfTileHeight = 32;
-const int tyfNumDirChanges = 6;
-struct dirChange tyfDirChanges[] = { {8, 4, 0}, {16, -4, 8}, {32, 4, -8}, {64, -12, 8 }, {128, 4, -24}, {256, 4, -24} };
 struct TileWalk tyfTileWalk = {
                     .bytesPerPixel = 4,
                     .subTileWidth = 4, .subTileHeight = 8,
@@ -246,14 +100,6 @@ struct TileWalk tyfTileWalk = {
 /**
  * Setting for Intel Tile-X framebuffer layout
  */
-const int txBytesPerPixel = 4;
-const int txSubTileWidth = 128;
-const int txSubTileHeight = 8;
-const int txSubTileWidthBytes = txSubTileWidth*txBytesPerPixel; //512
-const int txTileWidth = 128;
-const int txTileHeight = 8;
-const int txNumDirChanges = 1;
-struct dirChange txDirChanges[] = { {8, 128, 0} };
 struct TileWalk txTileWalk = {
                     .bytesPerPixel = 4,
                     .subTileWidth = 128, .subTileHeight = 8,
@@ -268,14 +114,6 @@ struct TileWalk txTileWalk = {
  * dummy 256 posOffset entry. The pseudo parallel detiling based
  * opti logic requires to know about the Tile boundry.
  */
-const int tyBytesPerPixel = 4;
-const int tySubTileWidth = 4;
-const int tySubTileHeight = 32;
-const int tySubTileWidthBytes = tySubTileWidth*tyBytesPerPixel; //16
-const int tyTileWidth = 32;
-const int tyTileHeight = 32;
-const int tyNumDirChanges = 2;
-struct dirChange tyDirChanges[] = { {32, 4, 0}, {256, 4, 0} };
 struct TileWalk tyTileWalk = {
                     .bytesPerPixel = 4,
                     .subTileWidth = 4, .subTileHeight = 32,
@@ -456,15 +294,11 @@ int detile_this(int mode, uint64_t arg1,
     }
 
     if (mode == TILE_INTELX) {
-        detile_intelx(w, h, dst, dstLineSize, src, srcLineSize);
+        detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk);
     } else if (mode == TILE_INTELY) {
-        detile_intely(w, h, dst, dstLineSize, src, srcLineSize);
+        detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk);
     } else if (mode == TILE_INTELYF) {
         detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
-    } else if (mode == TILE_INTELGX) {
-        detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk);
-    } else if (mode == TILE_INTELGY) {
-        detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk);
     } else if (mode == TILE_NONE_END) {
         av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logState, "fbtile:detile_this:TILE_AUTOOr???: invalid or unsupported format_modifier:%"PRIx64"\n",arg1);
         return 1;
