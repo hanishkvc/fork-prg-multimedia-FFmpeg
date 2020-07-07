@@ -74,7 +74,7 @@
 #include "video.h"
 
 
-// Print time taken by detile using performance counter
+// Print time taken by tile/detile using performance counter
 #if ARCH_X86
 #define DEBUG_PERF 1
 #else
@@ -94,16 +94,16 @@ enum FBTileOp {
     FB_TILEOP_UNKNOWN
 };
 
-typedef struct FBDetileContext {
+typedef struct FBTilerContext {
     const AVClass *class;
     int width, height;
     int type;
     int op;
-} FBDetileContext;
+} FBTilerContext;
 
-#define OFFSET(x) offsetof(FBDetileContext, x)
+#define OFFSET(x) offsetof(FBTilerContext, x)
 #define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM
-static const AVOption fbdetile_options[] = {
+static const AVOption fbtiler_options[] = {
     { "type", "set framebuffer tile|format_modifier conversion type", OFFSET(type), AV_OPT_TYPE_INT, {.i64=TILE_INTELX}, 0, TILE_UNKNOWN-1, FLAGS, "type" },
         { "None", "Linear layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_NONE}, INT_MIN, INT_MAX, FLAGS, "type" },
         { "intelx", "Intel Tile-X layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELX}, INT_MIN, INT_MAX, FLAGS, "type" },
@@ -116,35 +116,35 @@ static const AVOption fbdetile_options[] = {
     { NULL }
 };
 
-AVFILTER_DEFINE_CLASS(fbdetile);
+AVFILTER_DEFINE_CLASS(fbtiler);
 
 static av_cold int init(AVFilterContext *ctx)
 {
-    FBDetileContext *fbdetile = ctx->priv;
+    FBTilerContext *fbtiler = ctx->priv;
 
-    if (fbdetile->op == FB_TILEOP_NONE) {
+    if (fbtiler->op == FB_TILEOP_NONE) {
         av_log(ctx, AV_LOG_INFO, "init:Op: None, Pass through\n");
-    } else if (fbdetile->op == FB_TILEOP_TILE) {
+    } else if (fbtiler->op == FB_TILEOP_TILE) {
         av_log(ctx, AV_LOG_INFO, "init:Op: Apply tiling\n");
-    } else if (fbdetile->op == FB_TILEOP_DETILE) {
+    } else if (fbtiler->op == FB_TILEOP_DETILE) {
         av_log(ctx, AV_LOG_INFO, "init:Op: Apply detiling\n");
     } else {
         av_log(ctx, AV_LOG_ERROR, "init:Op: Unknown, shouldnt reach here\n");
     }
 
-    if (fbdetile->type == TILE_NONE) {
+    if (fbtiler->type == TILE_NONE) {
         av_log(ctx, AV_LOG_INFO, "init:Type: pass through\n");
-    } else if (fbdetile->type == TILE_INTELX) {
+    } else if (fbtiler->type == TILE_INTELX) {
         av_log(ctx, AV_LOG_INFO, "init:Type: Intel tile-x\n");
-    } else if (fbdetile->type == TILE_INTELY) {
+    } else if (fbtiler->type == TILE_INTELY) {
         av_log(ctx, AV_LOG_INFO, "init:Type: Intel tile-y\n");
-    } else if (fbdetile->type == TILE_INTELYF) {
+    } else if (fbtiler->type == TILE_INTELYF) {
         av_log(ctx, AV_LOG_INFO, "init:Type: Intel tile-yf\n");
     } else {
         av_log(ctx, AV_LOG_ERROR, "init: Unknown Tile format specified, shouldnt reach here\n");
     }
-    fbdetile->width = 1920;
-    fbdetile->height = 1088;
+    fbtiler->width = 1920;
+    fbtiler->height = 1088;
     return 0;
 }
 
@@ -161,11 +161,11 @@ static int query_formats(AVFilterContext *ctx)
 static int config_props(AVFilterLink *inlink)
 {
     AVFilterContext *ctx = inlink->dst;
-    FBDetileContext *fbdetile = ctx->priv;
+    FBTilerContext *fbtiler = ctx->priv;
 
-    fbdetile->width = inlink->w;
-    fbdetile->height = inlink->h;
-    av_log(ctx, AV_LOG_INFO, "config_props: %d x %d\n", fbdetile->width, fbdetile->height);
+    fbtiler->width = inlink->w;
+    fbtiler->height = inlink->h;
+    av_log(ctx, AV_LOG_INFO, "config_props: %d x %d\n", fbtiler->width, fbtiler->height);
 
     return 0;
 }
@@ -174,11 +174,11 @@ static int config_props(AVFilterLink *inlink)
 static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 {
     AVFilterContext *ctx = inlink->dst;
-    FBDetileContext *fbdetile = ctx->priv;
+    FBTilerContext *fbtiler = ctx->priv;
     AVFilterLink *outlink = ctx->outputs[0];
     AVFrame *out;
 
-    if ((fbdetile->op == FB_TILEOP_NONE) || (fbdetile->type == TILE_NONE))
+    if ((fbtiler->op == FB_TILEOP_NONE) || (fbtiler->type == TILE_NONE))
         return ff_filter_frame(outlink, in);
 
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
@@ -193,12 +193,12 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     uint64_t perfStart = __rdtscp(&tscArg);
 #endif
 
-    if (fbdetile->op == FB_TILEOP_TILE) {
-        tile_this(fbdetile->type, 0, fbdetile->width, fbdetile->height,
+    if (fbtiler->op == FB_TILEOP_TILE) {
+        tile_this(fbtiler->type, 0, fbtiler->width, fbtiler->height,
                         out->data[0], out->linesize[0],
                         in->data[0], in->linesize[0], 4);
     } else {
-        detile_this(fbdetile->type, 0, fbdetile->width, fbdetile->height,
+        detile_this(fbtiler->type, 0, fbtiler->width, fbtiler->height,
                         out->data[0], out->linesize[0],
                         in->data[0], in->linesize[0], 4);
     }
@@ -222,7 +222,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 #endif
 }
 
-static const AVFilterPad fbdetile_inputs[] = {
+static const AVFilterPad fbtiler_inputs[] = {
     {
         .name         = "default",
         .type         = AVMEDIA_TYPE_VIDEO,
@@ -232,7 +232,7 @@ static const AVFilterPad fbdetile_inputs[] = {
     { NULL }
 };
 
-static const AVFilterPad fbdetile_outputs[] = {
+static const AVFilterPad fbtiler_outputs[] = {
     {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
@@ -240,16 +240,16 @@ static const AVFilterPad fbdetile_outputs[] = {
     { NULL }
 };
 
-AVFilter ff_vf_fbdetile = {
-    .name          = "fbdetile",
+AVFilter ff_vf_fbtiler = {
+    .name          = "fbtiler",
     .description   = NULL_IF_CONFIG_SMALL("Tile|Detile Framebuffer using CPU"),
-    .priv_size     = sizeof(FBDetileContext),
+    .priv_size     = sizeof(FBTilerContext),
     .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = fbdetile_inputs,
-    .outputs       = fbdetile_outputs,
-    .priv_class    = &fbdetile_class,
+    .inputs        = fbtiler_inputs,
+    .outputs       = fbtiler_outputs,
+    .priv_class    = &fbtiler_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };
 
