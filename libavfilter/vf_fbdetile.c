@@ -85,10 +85,18 @@ uint64_t perfTime = 0;
 int perfCnt = 0;
 #endif
 
+enum FBTileOp {
+    FB_TILEOP_NONE,
+    FB_TILEOP_TILE,
+    FB_TILEOP_DETILE,
+    FB_TILEOP_UNKNOWN
+};
+
 typedef struct FBDetileContext {
     const AVClass *class;
     int width, height;
     int type;
+    int op;
 } FBDetileContext;
 
 #define OFFSET(x) offsetof(FBDetileContext, x)
@@ -99,6 +107,10 @@ static const AVOption fbdetile_options[] = {
         { "intelx", "Intel Tile-X layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELX}, INT_MIN, INT_MAX, FLAGS, "type" },
         { "intely", "Intel Tile-Y layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELY}, INT_MIN, INT_MAX, FLAGS, "type" },
         { "intelyf", "Intel Tile-Yf layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELYF}, INT_MIN, INT_MAX, FLAGS, "type" },
+    { "op", "select framebuffer tiling operations i.e tile or detile", OFFSET(op), AV_OPT_TYPE_INT, {.i64=FB_TILEOP_NONE}, 0, FB_TILEOP_UNKNOWN-1, FLAGS, "op" },
+        { "None", "Nop", 0, AV_OPT_TYPE_CONST, {.i64=FB_TILEOP_NONE}, INT_MIN, INT_MAX, FLAGS, "op" },
+        { "tile", "Apply tiling operation", 0, AV_OPT_TYPE_CONST, {.i64=FB_TILEOP_TILE}, INT_MIN, INT_MAX, FLAGS, "op" },
+        { "detile", "Apply detiling operation", 0, AV_OPT_TYPE_CONST, {.i64=FB_TILEOP_DETILE}, INT_MIN, INT_MAX, FLAGS, "op" },
     { NULL }
 };
 
@@ -107,6 +119,16 @@ AVFILTER_DEFINE_CLASS(fbdetile);
 static av_cold int init(AVFilterContext *ctx)
 {
     FBDetileContext *fbdetile = ctx->priv;
+
+    if (fbdetile->op == FB_TILEOP_NONE) {
+        av_log(ctx, AV_LOG_INFO, "init:Op: None, Pass through\n");
+    } else if (fbdetile->op == FB_TILEOP_TILE) {
+        av_log(ctx, AV_LOG_INFO, "init:Op: Apply tiling\n");
+    } else if (fbdetile->op == FB_TILEOP_DETILE) {
+        av_log(ctx, AV_LOG_INFO, "init:Op: Apply detiling\n");
+    } else {
+        av_log(ctx, AV_LOG_ERROR, "init:Op: Unknown, shouldnt reach here\n");
+    }
 
     if (fbdetile->type == TILE_NONE) {
         av_log(ctx, AV_LOG_INFO, "init: Wont detile, pass through\n");
@@ -154,7 +176,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     AVFilterLink *outlink = ctx->outputs[0];
     AVFrame *out;
 
-    if (fbdetile->type == TILE_NONE)
+    if ((fbdetile->op == FB_TILEOP_NONE) || (fbdetile->type == TILE_NONE))
         return ff_filter_frame(outlink, in);
 
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
@@ -169,9 +191,15 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     uint64_t perfStart = __rdtscp(&tscArg);
 #endif
 
-    detile_this(fbdetile->type, 0, fbdetile->width, fbdetile->height,
+    if (fbdetile->op == FB_TILEOP_TILE) {
+        tile_this(fbdetile->type, 0, fbdetile->width, fbdetile->height,
                         out->data[0], out->linesize[0],
                         in->data[0], in->linesize[0], 4);
+    } else {
+        detile_this(fbdetile->type, 0, fbdetile->width, fbdetile->height,
+                        out->data[0], out->linesize[0],
+                        in->data[0], in->linesize[0], 4);
+    }
 
 #ifdef DEBUG_PERF
     uint64_t perfEnd = __rdtscp(&tscArg);
