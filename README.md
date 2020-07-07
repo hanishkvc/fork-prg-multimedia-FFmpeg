@@ -3,17 +3,17 @@ FFmpeg README
 
 # HanishKVC's FFMpeg Fork Notes
 
-## Branch: hkvcFBTilePlus
+## Branch: hkvcFBTilePlusLean
 
 Contains libavutil/fbtile.c|h, which allows tiling transform wrt framebuffer
 
+Contains hwcontext_drm detile support.
+
 Contains hwdownload with fbdetile option, which allows detiling while capturing
-live, if required.
+live, if requested by user.
 
 Contains fbdetile video filter which allows detiling on already captured content,
 as a seperate pass.
-
-Contains hwcontext_drm detile support.
 
 KMSGrab GetFB2 for format_modifier
 
