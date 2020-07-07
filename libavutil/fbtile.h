@@ -139,16 +139,16 @@ extern struct TileWalk tyTileWalk;
 
 
 /**
- * Generic detile simple version, which is fine-grained.
+ * Generic tile simple version.
  */
-int _detile_generic_simple(const int w, const int h,
+int _tile_generic_simple(const int w, const int h,
                            uint8_t *dst, const int dstLineSize,
                            const uint8_t *src, const int srcLineSize,
                            const int bytesPerPixel,
                            const int subTileWidth, const int subTileHeight,
                            const int tileWidth, const int tileHeight,
                            const int numDirChanges, const struct dirChange *dirChanges);
-int detile_generic_simple(const int w, const int h,
+int tile_generic_simple(const int w, const int h,
                           uint8_t *dst, const int dstLineSize,
                           const uint8_t *src, const int srcLineSize,
                           const struct TileWalk *tw);
@@ -170,17 +170,12 @@ int detile_generic_opti(const int w, const int h,
                         const struct TileWalk *tw);
 
 
-// Use Optimised detile_generic or the Simpler but more fine grained one
-#define DETILE_GENERIC_OPTI 1
-#ifdef DETILE_GENERIC_OPTI
 #define detile_generic detile_generic_opti
-#else
-#define detile_generic detile_generic_simple
-#endif
+#define tile_generic tile_generic_simple
 
 
 /**
- * detile demuxer.
+ * tile/detile demuxers.
  *
  * @param mode the fbtile mode based detiling to call
  * @param arg1 the format_modifier, in case mode is TILE_AUTO
@@ -194,6 +189,11 @@ int detile_generic_opti(const int w, const int h,
  *
  * @return 0 if detiled, 1 if not
  */
+int tile_this(enum FBTileMode mode, uint64_t arg1,
+                int w, int h,
+                uint8_t *dst, int dstLineSize,
+                uint8_t *src, int srcLineSize,
+                int bytesPerPixel);
 int detile_this(enum FBTileMode mode, uint64_t arg1,
                 int w, int h,
                 uint8_t *dst, int dstLineSize,
