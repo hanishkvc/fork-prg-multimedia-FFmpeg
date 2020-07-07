@@ -20,13 +20,14 @@
 
 /**
  * @file
- * Detile the Frame buffer's tile layout using the cpu
- * Currently it supports detiling of following layouts
+ * Tile or Detile the Frame buffer using cpu
+ * Currently it supports the following layouts
  *     legacy Intel Tile-X
  *     legacy Intel Tile-Y
  *     newer Intel Tile-Yf
+ * It uses the fbtile helper library to do its job.
  * More tiling layouts can be easily supported by adding configuration data
- * for the generic detile logic, wrt the required tiling schemes.
+ * for tile walking into fbtile library or its tile|detile_generic function.
  *
  */
 
@@ -54,12 +55,13 @@
  * Run Type      : Type   : Seconds Min, Max : TSCCnt Min, Max
  * Non filter run:        :  10.04s, 09.97s  :  00.00M, 00.00M
  * fbdetile=0 run: PasThro:  12.70s, 13.20s  :  00.00M, 00.00M
- * fbdetile=2 run: TileX  :  12.45s, 13.41s  :  05.95M, 06.05M
- * fbdetile=3 run: TileY  :  13.47s, 13.89s  :  06.31M, 06.38M
- * fbdetile=4 run: TileYf :  13.73s, 13.83s  :  11.41M, 11.83M  ; Simple
- * fbdetile=4 run: TileYf :  13.73s, 13.83s  :  09.82M, 09.92M  ; Opti
- * fbdetile=5 run: TileGX :  13.34s, 13.52s  :  06.13M, 06.20M
- * fbdetile=6 run: TileGY :  13.59s, 13.68s  :  08.60M, 08.97M
+ * fbdetile=1 run: TileX  :  13.34s, 13.52s  :  06.13M, 06.20M  ; Opti generic
+ * fbdetile=2 run: TileY  :  13.59s, 13.68s  :  08.60M, 08.97M  ; Opti generic
+ * fbdetile=3 run: TileYf :  13.73s, 13.83s  :  09.82M, 09.92M  ; Opti generic
+ * The Older logics
+ * fbdetile=2 run: TileX  :  12.45s, 13.41s  :  05.95M, 06.05M  ; prev custom
+ * fbdetile=3 run: TileY  :  13.47s, 13.89s  :  06.31M, 06.38M  ; prev custom
+ * fbdetile=4 run: TileYf :  13.73s, 13.83s  :  11.41M, 11.83M  ; Simple generic
  */
 
 #include "libavutil/avassert.h"
@@ -103,7 +105,7 @@ typedef struct FBDetileContext {
 #define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM
 static const AVOption fbdetile_options[] = {
     { "type", "set framebuffer tile|format_modifier conversion type", OFFSET(type), AV_OPT_TYPE_INT, {.i64=TILE_INTELX}, 0, TILE_UNKNOWN-1, FLAGS, "type" },
-        { "None", "Dont detile", 0, AV_OPT_TYPE_CONST, {.i64=TILE_NONE}, INT_MIN, INT_MAX, FLAGS, "type" },
+        { "None", "Linear layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_NONE}, INT_MIN, INT_MAX, FLAGS, "type" },
         { "intelx", "Intel Tile-X layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELX}, INT_MIN, INT_MAX, FLAGS, "type" },
         { "intely", "Intel Tile-Y layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELY}, INT_MIN, INT_MAX, FLAGS, "type" },
         { "intelyf", "Intel Tile-Yf layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELYF}, INT_MIN, INT_MAX, FLAGS, "type" },
@@ -131,18 +133,18 @@ static av_cold int init(AVFilterContext *ctx)
     }
 
     if (fbdetile->type == TILE_NONE) {
-        av_log(ctx, AV_LOG_INFO, "init: Wont detile, pass through\n");
+        av_log(ctx, AV_LOG_INFO, "init:Type: pass through\n");
     } else if (fbdetile->type == TILE_INTELX) {
-        av_log(ctx, AV_LOG_INFO, "init: Intel tile-x to linear\n");
+        av_log(ctx, AV_LOG_INFO, "init:Type: Intel tile-x\n");
     } else if (fbdetile->type == TILE_INTELY) {
-        av_log(ctx, AV_LOG_INFO, "init: Intel tile-y to linear\n");
+        av_log(ctx, AV_LOG_INFO, "init:Type: Intel tile-y\n");
     } else if (fbdetile->type == TILE_INTELYF) {
-        av_log(ctx, AV_LOG_INFO, "init: Intel tile-yf to linear\n");
+        av_log(ctx, AV_LOG_INFO, "init:Type: Intel tile-yf\n");
     } else {
         av_log(ctx, AV_LOG_ERROR, "init: Unknown Tile format specified, shouldnt reach here\n");
     }
     fbdetile->width = 1920;
-    fbdetile->height = 1080;
+    fbdetile->height = 1088;
     return 0;
 }
 
@@ -240,7 +242,7 @@ static const AVFilterPad fbdetile_outputs[] = {
 
 AVFilter ff_vf_fbdetile = {
     .name          = "fbdetile",
-    .description   = NULL_IF_CONFIG_SMALL("Detile Framebuffer using CPU"),
+    .description   = NULL_IF_CONFIG_SMALL("Tile|Detile Framebuffer using CPU"),
     .priv_size     = sizeof(FBDetileContext),
     .init          = init,
     .uninit        = uninit,
