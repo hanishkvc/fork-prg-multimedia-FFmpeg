@@ -83,6 +83,7 @@ static int hwdownload_query_formats(AVFilterContext *avctx)
 
 static int hwdownload_config_input(AVFilterLink *inlink)
 {
+    int err;
     AVFilterContext *avctx = inlink->dst;
     HWDownloadContext *ctx = avctx->priv;
 
@@ -100,10 +101,9 @@ static int hwdownload_config_input(AVFilterLink *inlink)
 
     ctx->hwframes = (AVHWFramesContext*)ctx->hwframes_ref->data;
 
-    int found = 0;
     if (ctx->fbdetile != 0) {
-        found = fbtile_checkpixformats(ctx->hwframes->sw_format, fbtilePixFormats[0]);
-        if (!found) {
+        err = fbtile_checkpixformats(ctx->hwframes->sw_format, fbtilePixFormats[0]);
+        if (err) {
             av_log(ctx, AV_LOG_ERROR, "Invalid input format %s for fbdetile.\n",
                    av_get_pix_fmt_name(ctx->hwframes->sw_format));
             return AVERROR(EINVAL);
@@ -146,8 +146,8 @@ static int hwdownload_config_output(AVFilterLink *outlink)
     }
 
     if (ctx->fbdetile != 0) {
-        found = fbtile_checkpixformats(outlink->format, fbtilePixFormats[0]);
-        if (!found) {
+        err = fbtile_checkpixformats(outlink->format, fbtilePixFormats[0]);
+        if (err) {
             av_log(ctx, AV_LOG_ERROR, "Invalid output format %s for fbdetile.\n",
                    av_get_pix_fmt_name(outlink->format));
             return AVERROR(EINVAL);
