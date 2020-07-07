@@ -13,7 +13,7 @@ Contains hwdownload with fbdetile option, which allows detiling while capturing
 live, if requested by user.
 
 Contains fbdetile video filter which allows detiling on already captured content,
-as a seperate pass.
+as a seperate pass. It also allows tiling of a already captured content.
 
 KMSGrab GetFB2 for format_modifier
 
