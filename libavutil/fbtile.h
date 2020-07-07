@@ -48,12 +48,9 @@
  */
 enum FBTileMode {
     TILE_NONE,
-    TILE_AUTO,
     TILE_INTELX,
     TILE_INTELY,
     TILE_INTELYF,
-    TILE_INTELGX,
-    TILE_INTELGY,
     TILE_NONE_END,
 };
 

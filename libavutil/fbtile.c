@@ -300,11 +300,8 @@ int detile_this(int mode, uint64_t arg1,
                         uint8_t *src, int srcLineSize,
                         int bytesPerPixel)
 {
-    static int logState=0;
-    if (mode == TILE_AUTO) {
-        mode = fbtilemode_from_drmformatmodifier(arg1);
-    }
     if (mode == TILE_NONE) {
+        av_log(NULL, AV_LOG_WARNING, "fbtile:detile_this:TILE_NONE: not detiling\n");
         return FBT_ERR;
     }
 
@@ -314,11 +311,8 @@ int detile_this(int mode, uint64_t arg1,
         return detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk);
     } else if (mode == TILE_INTELYF) {
         return detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
-    } else if (mode == TILE_NONE_END) {
-        av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logState, "fbtile:detile_this:TILE_AUTOOr???: invalid or unsupported format_modifier:%"PRIx64"\n",arg1);
-        return FBT_ERR;
     } else {
-        av_log(NULL, AV_LOG_ERROR, "fbtile:detile_this:????: unknown mode specified, check caller\n");
+        av_log(NULL, AV_LOG_WARNING, "fbtile:detile_this:%d: unknown mode specified, not detiling\n", mode);
         return FBT_ERR;
     }
     return FBT_ERR;

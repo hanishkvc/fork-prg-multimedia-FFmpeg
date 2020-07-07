@@ -96,12 +96,9 @@ typedef struct FBDetileContext {
 static const AVOption fbdetile_options[] = {
     { "type", "set framebuffer tile|format_modifier conversion type", OFFSET(type), AV_OPT_TYPE_INT, {.i64=TILE_INTELX}, 0, TILE_NONE_END-1, FLAGS, "type" },
         { "None", "Dont detile", 0, AV_OPT_TYPE_CONST, {.i64=TILE_NONE}, INT_MIN, INT_MAX, FLAGS, "type" },
-        { "Auto", "Auto detect tile conversion type, NotImplemented", 0, AV_OPT_TYPE_CONST, {.i64=TILE_AUTO}, INT_MIN, INT_MAX, FLAGS, "type" },
         { "intelx", "Intel Tile-X layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELX}, INT_MIN, INT_MAX, FLAGS, "type" },
         { "intely", "Intel Tile-Y layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELY}, INT_MIN, INT_MAX, FLAGS, "type" },
         { "intelyf", "Intel Tile-Yf layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELYF}, INT_MIN, INT_MAX, FLAGS, "type" },
-        { "intelgx", "Intel Tile-X layout, GenericDetile", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELGX}, INT_MIN, INT_MAX, FLAGS, "type" },
-        { "intelgy", "Intel Tile-Y layout, GenericDetile", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELGY}, INT_MIN, INT_MAX, FLAGS, "type" },
     { NULL }
 };
 
@@ -113,19 +110,12 @@ static av_cold int init(AVFilterContext *ctx)
 
     if (fbdetile->type == TILE_NONE) {
         av_log(ctx, AV_LOG_INFO, "init: Wont detile, pass through\n");
-    } else if (fbdetile->type == TILE_AUTO) {
-        av_log(ctx, AV_LOG_WARNING, "init: Auto detile mode detect, not supported, pass through\n");
-        fbdetile->type = TILE_NONE;
     } else if (fbdetile->type == TILE_INTELX) {
         av_log(ctx, AV_LOG_INFO, "init: Intel tile-x to linear\n");
     } else if (fbdetile->type == TILE_INTELY) {
         av_log(ctx, AV_LOG_INFO, "init: Intel tile-y to linear\n");
     } else if (fbdetile->type == TILE_INTELYF) {
         av_log(ctx, AV_LOG_INFO, "init: Intel tile-yf to linear\n");
-    } else if (fbdetile->type == TILE_INTELGX) {
-        av_log(ctx, AV_LOG_INFO, "init: Intel tile-x to linear, using generic detile\n");
-    } else if (fbdetile->type == TILE_INTELGY) {
-        av_log(ctx, AV_LOG_INFO, "init: Intel tile-y to linear, using generic detile\n");
     } else {
         av_log(ctx, AV_LOG_ERROR, "init: Unknown Tile format specified, shouldnt reach here\n");
     }
