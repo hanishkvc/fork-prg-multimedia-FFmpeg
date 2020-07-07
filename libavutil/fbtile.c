@@ -83,6 +83,10 @@ int fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVP
 
 /*
  * Generic detile logic
+ * The tile layout data is assumed to be tightly packed, with no gaps inbetween.
+ * However the logic does try to accomodate a destination linear layout memory,
+ * where there is possibly some additional bytes beyond the width in each line
+ * of pixel data.
  */
 
 /**
@@ -124,7 +128,8 @@ struct TileWalk tyTileWalk = {
 
 
 /**
- * Use _detile_generic_opti in general, available here just for reference
+ * Use _detile_generic_opti in general
+ * This is available here just for reference
  * and for use in any strange corner case situation, if at all.
  */
 int _detile_generic_simple(const int w, const int h,
@@ -139,7 +144,7 @@ int _detile_generic_simple(const int w, const int h,
 
     if (w*bytesPerPixel != srcLineSize) {
         av_log(NULL, AV_LOG_ERROR, "fbdetile:genericsimp: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
-        av_log(NULL, AV_LOG_ERROR, "fbdetile:genericsimp: dont support LineSize | Pitch going beyond width\n");
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:genericsimp: dont support srcLineSize | Pitch going beyond width\n");
         return FBT_ERR;
     }
     int sO = 0;
@@ -201,25 +206,24 @@ int _detile_generic_opti(const int w, const int h,
 
     if (w*bytesPerPixel != srcLineSize) {
         av_log(NULL, AV_LOG_ERROR, "fbdetile:genericopti: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
-        av_log(NULL, AV_LOG_ERROR, "fbdetile:genericopti: dont support LineSize | Pitch going beyond width\n");
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:genericopti: dont support srcLineSize | Pitch going beyond width\n");
         return FBT_ERR;
     }
     if (w%tileWidth != 0) {
-        av_log(NULL, AV_LOG_ERROR, "fbdetile:genericopti:NotSupported:NonMultWidth: width%d, tileWidth%d\n", w, tileWidth);
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:genericopti:NotSupported:Width being non-mult Of TileWidth: width%d, tileWidth%d\n", w, tileWidth);
         return FBT_ERR;
     }
     int sO = 0;
     int sOPrev = 0;
     int dX = 0;
     int dY = 0;
-    int nSTLines = (w*h)/subTileWidth;
-    //int nSTLinesInATile = (tileWidth*tileHeight)/subTileWidth;
     int nTilesInARow = w/tileWidth;
     for (parallel=8; parallel>0; parallel--) {
         if (nTilesInARow%parallel == 0)
             break;
     }
-    int cSTL = 0;
+    int nSTLines = (w*h)/subTileWidth;  // numSubTileLines
+    int cSTL = 0;                       // curSubTileLine
     int curTileInRow = 0;
     while (cSTL < nSTLines) {
         int dO = dY*dstLineSize + dX*bytesPerPixel;
@@ -230,9 +234,10 @@ int _detile_generic_opti(const int w, const int h,
         // As most tiling layouts have a minimum subtile of 4x4, if I remember correctly,
         // so this loop can be unrolled to be multiples of 4, and speed up a bit.
         // However tiling involving 3x3 or 2x2 wont be handlable. In which one will have to use
-        // detile_generic_simple for such tile layouts.
-        // Detile parallely to a limited extent. To avoid any cache set-associativity and or
-        // limited cache based thrashing, keep it spacially and inturn temporaly small at one level.
+        // detile_generic_simple for such tile layouts. So not unrolling for now.
+        // Detile parallely to a limited extent. Gain some speed by reusing calcs, but still avoid
+        // any cache set-associativity and or limited cache based thrashing. Keep it spatially and
+        // inturn temporaly small at one level.
         for (int k = 0; k < subTileHeight; k+=1) {
             for (int p = 0; p < parallel; p++) {
                 int pSrcOffset = p*tileWidth*tileHeight*bytesPerPixel;
@@ -245,9 +250,10 @@ int _detile_generic_opti(const int w, const int h,
                 */
             }
         }
-        sO = sO + subTileHeight*subTileWidthBytes;
 
+        sO = sO + subTileHeight*subTileWidthBytes;
         cSTL += subTileHeight;
+
         for (int i=numDirChanges-1; i>=0; i--) {
             if ((cSTL%dirChanges[i].posOffset) == 0) {
                 if (i == numDirChanges-1) {
