@@ -201,8 +201,8 @@ int detile_this(enum FBTileMode mode, uint64_t arg1,
                 int bytesPerPixel);
 
 
-int detile_frame(AVFrame *dst, enum FBTileMode dstTileMode,
-                 AVFrame *src, enum FBTileMode srcTileMode);
+int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileMode dstTileMode,
+                              AVFrame *src, enum FBTileMode srcTileMode);
 
 
 /**

@@ -128,64 +128,64 @@ struct TileWalk tyTileWalk = {
 
 
 /**
- * Use _detile_generic_opti in general
- * This is available here just for reference
- * and for use in any strange corner case situation, if at all.
+ * _tile_generic_simple to tile a linear layout
  */
-int _detile_generic_simple(const int w, const int h,
-                           uint8_t *dst, const int dstLineSize,
-                           const uint8_t *src, const int srcLineSize,
-                           const int bytesPerPixel,
-                           const int subTileWidth, const int subTileHeight,
-                           const int tileWidth, const int tileHeight,
-                           const int numDirChanges, const struct dirChange *dirChanges)
+int _tile_generic_simple(const int w, const int h,
+                         uint8_t *dst, const int dstLineSize,
+                         const uint8_t *src, const int srcLineSize,
+                         const int bytesPerPixel,
+                         const int subTileWidth, const int subTileHeight,
+                         const int tileWidth, const int tileHeight,
+                         const int numDirChanges, const struct dirChange *dirChanges)
 {
     const int subTileWidthBytes = subTileWidth*bytesPerPixel;
 
-    if (w*bytesPerPixel != srcLineSize) {
-        av_log(NULL, AV_LOG_ERROR, "fbdetile:genericsimp: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
-        av_log(NULL, AV_LOG_ERROR, "fbdetile:genericsimp: dont support srcLineSize | Pitch going beyond width\n");
+    // To keep things sane and simple tile layout is assumed to be tightly packed,
+    // so below check is a indirect logical assumption, even thou dstLineSize is not directly mappable at one level
+    if (w*bytesPerPixel != dstLineSize) {
+        av_log(NULL, AV_LOG_ERROR, "fbtile:genericsimp: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
+        av_log(NULL, AV_LOG_ERROR, "fbtile:genericsimp: dont support dstLineSize | Pitch going beyond width\n");
         return FBT_ERR;
     }
-    int sO = 0;
-    int dX = 0;
-    int dY = 0;
+    int dO = 0;
+    int sX = 0;
+    int sY = 0;
     int nSTLines = (w*h)/subTileWidth;  // numSubTileLines
     int cSTL = 0;                       // curSubTileLine
     while (cSTL < nSTLines) {
-        int dO = dY*dstLineSize + dX*bytesPerPixel;
+        int sO = sY*srcLineSize + sX*bytesPerPixel;
 #ifdef DEBUG_FBTILE
-        av_log(NULL, AV_LOG_DEBUG, "fbdetile:genericsimp: dX%d dY%d; sO%d, dO%d; %d/%d\n", dX, dY, sO, dO, cSTL, nSTLines);
+        av_log(NULL, AV_LOG_DEBUG, "fbtile:genericsimp: sX%d sY%d; sO%d, dO%d; %d/%d\n", sX, sY, sO, dO, cSTL, nSTLines);
 #endif
 
         for (int k = 0; k < subTileHeight; k++) {
-            memcpy(dst+dO+k*dstLineSize, src+sO+k*subTileWidthBytes, subTileWidthBytes);
+            memcpy(dst+dO+k*subTileWidthBytes, src+sO+k*srcLineSize, subTileWidthBytes);
         }
-        sO = sO + subTileHeight*subTileWidthBytes;
+        dO = dO + subTileHeight*subTileWidthBytes;
 
         cSTL += subTileHeight;
         for (int i=numDirChanges-1; i>=0; i--) {
             if ((cSTL%dirChanges[i].posOffset) == 0) {
-                dX += dirChanges[i].xDelta;
-                dY += dirChanges[i].yDelta;
+                sX += dirChanges[i].xDelta;
+                sY += dirChanges[i].yDelta;
                 break;
             }
         }
-        if (dX >= w) {
-            dX = 0;
-            dY += tileHeight;
+        if (sX >= w) {
+            sX = 0;
+            sY += tileHeight;
         }
     }
     return FBT_OK;
 }
 
 
-int detile_generic_simple(const int w, const int h,
+int tile_generic_simple(const int w, const int h,
                           uint8_t *dst, const int dstLineSize,
                           const uint8_t *src, const int srcLineSize,
                           const struct TileWalk *tw)
 {
-    return _detile_generic_simple(w, h, dst, dstLineSize, src, srcLineSize,
+    return _tile_generic_simple(w, h, dst, dstLineSize, src, srcLineSize,
                                   tw->bytesPerPixel,
                                   tw->subTileWidth, tw->subTileHeight,
                                   tw->tileWidth, tw->tileHeight,
@@ -294,6 +294,31 @@ int detile_generic_opti(const int w, const int h,
 }
 
 
+int tile_this(enum FBTileMode mode, uint64_t arg1,
+                        int w, int h,
+                        uint8_t *dst, int dstLineSize,
+                        uint8_t *src, int srcLineSize,
+                        int bytesPerPixel)
+{
+    if (mode == TILE_NONE) {
+        av_log(NULL, AV_LOG_WARNING, "fbtile:tile_this:TILE_NONE: not tiling\n");
+        return FBT_ERR;
+    }
+
+    if (mode == TILE_INTELX) {
+        return tile_generic(w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk);
+    } else if (mode == TILE_INTELY) {
+        return tile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk);
+    } else if (mode == TILE_INTELYF) {
+        return tile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
+    } else {
+        av_log(NULL, AV_LOG_WARNING, "fbtile:tile_this:%d: unknown mode specified, not tiling\n", mode);
+        return FBT_ERR;
+    }
+    return FBT_ERR;
+}
+
+
 int detile_this(enum FBTileMode mode, uint64_t arg1,
                         int w, int h,
                         uint8_t *dst, int dstLineSize,
@@ -319,7 +344,7 @@ int detile_this(enum FBTileMode mode, uint64_t arg1,
 }
 
 
-int detile_frame(AVFrame *dst, enum FBTileMode dstTileMode, AVFrame *src, enum FBTileMode srcTileMode)
+int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileMode dstTileMode, AVFrame *src, enum FBTileMode srcTileMode)
 {
     int err;
 
@@ -327,6 +352,16 @@ int detile_frame(AVFrame *dst, enum FBTileMode dstTileMode, AVFrame *src, enum F
         err = fbtile_checkpixformats(src->format, dst->format);
         if (!err) {
             err = detile_this(srcTileMode, 0, dst->width, dst->height,
+                              dst->data[0], dst->linesize[0],
+                              src->data[0], src->linesize[0], 4);
+            if (!err) {
+                return FBT_OK;
+            }
+        }
+    } else if (srcTileMode == TILE_NONE) {  // i.e Tile
+        err = fbtile_checkpixformats(src->format, dst->format);
+        if (!err) {
+            err = tile_this(dstTileMode, 0, src->width, src->height,
                               dst->data[0], dst->linesize[0],
                               src->data[0], src->linesize[0], 4);
             if (!err) {
