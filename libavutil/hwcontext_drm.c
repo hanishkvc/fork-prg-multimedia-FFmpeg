@@ -194,12 +194,13 @@ static int drm_transfer_get_formats(AVHWFramesContext *ctx,
 static int drm_transfer_with_detile(const AVFrame *hwAVFrame, AVFrame *dst, const AVFrame *src)
 {
     int err;
+    uint64_t formatModifier;
 
     if (hwAVFrame->format  == AV_PIX_FMT_DRM_PRIME) {
         err = fbtile_checkpixformats(src->format, dst->format);
         if (!err) {
             AVDRMFrameDescriptor *drmFrame = (AVDRMFrameDescriptor*)hwAVFrame->data[0];
-            uint64_t formatModifier = drmFrame->objects[0].format_modifier;
+            formatModifier = drmFrame->objects[0].format_modifier;
             if (formatModifier != DRM_FORMAT_MOD_LINEAR) {
                 err = detile_this(TILE_AUTO, formatModifier, dst->width, dst->height,
                                   dst->data[0], dst->linesize[0],
