@@ -147,11 +147,12 @@ int _tile_generic_simple(const int w, const int h,
                            const int bytesPerPixel,
                            const int subTileWidth, const int subTileHeight,
                            const int tileWidth, const int tileHeight,
-                           const int numDirChanges, const struct dirChange *dirChanges);
+                           const int numDirChanges, const struct dirChange *dirChanges,
+                           int op);
 int tile_generic_simple(const int w, const int h,
                           uint8_t *dst, const int dstLineSize,
                           const uint8_t *src, const int srcLineSize,
-                          const struct TileWalk *tw);
+                          const struct TileWalk *tw, int op);
 
 
 /**
@@ -193,7 +194,7 @@ int tile_this(enum FBTileMode mode, uint64_t arg1,
                 int w, int h,
                 uint8_t *dst, int dstLineSize,
                 uint8_t *src, int srcLineSize,
-                int bytesPerPixel);
+                int bytesPerPixel, int op);
 int detile_this(enum FBTileMode mode, uint64_t arg1,
                 int w, int h,
                 uint8_t *dst, int dstLineSize,

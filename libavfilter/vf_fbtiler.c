@@ -196,11 +196,16 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     if (fbtiler->op == FB_TILEOP_TILE) {
         tile_this(fbtiler->type, 0, fbtiler->width, fbtiler->height,
                         out->data[0], out->linesize[0],
-                        in->data[0], in->linesize[0], 4);
+                        in->data[0], in->linesize[0], 4, 1);
     } else {
+        tile_this(fbtiler->type, 0, fbtiler->width, fbtiler->height,
+                        out->data[0], out->linesize[0],
+                        in->data[0], in->linesize[0], 4, 0);
+        /*
         detile_this(fbtiler->type, 0, fbtiler->width, fbtiler->height,
                         out->data[0], out->linesize[0],
                         in->data[0], in->linesize[0], 4);
+        */
     }
 
 #ifdef DEBUG_PERF

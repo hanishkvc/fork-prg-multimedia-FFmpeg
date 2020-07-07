@@ -318,7 +318,7 @@ int tile_this(enum FBTileMode mode, uint64_t arg1,
                         int w, int h,
                         uint8_t *dst, int dstLineSize,
                         uint8_t *src, int srcLineSize,
-                        int bytesPerPixel)
+                        int bytesPerPixel, int op)
 {
     if (mode == TILE_NONE) {
         av_log(NULL, AV_LOG_WARNING, "fbtile:tile_this:TILE_NONE: not tiling\n");
@@ -326,11 +326,11 @@ int tile_this(enum FBTileMode mode, uint64_t arg1,
     }
 
     if (mode == TILE_INTELX) {
-        return tile_generic(w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk);
+        return tile_generic(w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk, op);
     } else if (mode == TILE_INTELY) {
-        return tile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk);
+        return tile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk, op);
     } else if (mode == TILE_INTELYF) {
-        return tile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
+        return tile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk, op);
     } else {
         av_log(NULL, AV_LOG_WARNING, "fbtile:tile_this:%d: unknown mode specified, not tiling\n", mode);
         return FBT_ERR;
@@ -383,7 +383,7 @@ int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileMode dstTileMode, AVFrame
         if (!err) {
             err = tile_this(dstTileMode, 0, src->width, src->height,
                               dst->data[0], dst->linesize[0],
-                              src->data[0], src->linesize[0], 4);
+                              src->data[0], src->linesize[0], 4, 1);
             if (!err) {
                 return FBT_OK;
             }
