@@ -130,15 +130,31 @@ struct TileWalk tyTileWalk = {
 /**
  * _tile_generic_simple to tile a linear layout
  */
+#define OP_TILE 1
 int _tile_generic_simple(const int w, const int h,
                          uint8_t *dst, const int dstLineSize,
                          const uint8_t *src, const int srcLineSize,
                          const int bytesPerPixel,
                          const int subTileWidth, const int subTileHeight,
                          const int tileWidth, const int tileHeight,
-                         const int numDirChanges, const struct dirChange *dirChanges)
+                         const int numDirChanges, const struct dirChange *dirChanges,
+                         int op)
 {
+    uint8_t *tld, *lin;
+    int tldLineSize, linLineSize;
     const int subTileWidthBytes = subTileWidth*bytesPerPixel;
+
+    if (op == OP_TILE) {
+        lin = src;
+        linLineSize = srcLineSize;
+        tld = dst;
+        tldLineSize = dstLineSize;
+    } else {
+        tld = src;
+        tldLineSize = srcLineSize;
+        lin = dst;
+        linLineSize = dstLineSize;
+    }
 
     // To keep things sane and simple tile layout is assumed to be tightly packed,
     // so below check is a indirect logical assumption, even thou tldLineSize is not directly mappable at one level
@@ -159,7 +175,11 @@ int _tile_generic_simple(const int w, const int h,
 #endif
 
         for (int k = 0; k < subTileHeight; k++) {
-            memcpy(tld+tO+k*subTileWidthBytes, lin+lO+k*linLineSize, subTileWidthBytes);
+            if (op == OP_TILE) {
+                memcpy(tld+tO+k*subTileWidthBytes, lin+lO+k*linLineSize, subTileWidthBytes);
+            } else {
+                memcpy(lin+lO+k*linLineSize, tld+tO+k*subTileWidthBytes, subTileWidthBytes);
+            }
         }
         tO = tO + subTileHeight*subTileWidthBytes;
 
@@ -183,13 +203,13 @@ int _tile_generic_simple(const int w, const int h,
 int tile_generic_simple(const int w, const int h,
                           uint8_t *dst, const int dstLineSize,
                           const uint8_t *src, const int srcLineSize,
-                          const struct TileWalk *tw)
+                          const struct TileWalk *tw, int op)
 {
     return _tile_generic_simple(w, h, dst, dstLineSize, src, srcLineSize,
                                   tw->bytesPerPixel,
                                   tw->subTileWidth, tw->subTileHeight,
                                   tw->tileWidth, tw->tileHeight,
-                                  tw->numDirChanges, tw->dirChanges);
+                                  tw->numDirChanges, tw->dirChanges, op);
 }
 
 
