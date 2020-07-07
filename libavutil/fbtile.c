@@ -28,9 +28,9 @@
 #endif
 
 
-int fbtilemode_from_drmformatmodifier(uint64_t formatModifier)
+enum FBTileMode fbtilemode_from_drmformatmodifier(uint64_t formatModifier)
 {
-    int mode = TILE_UNKNOWN;
+    enum FBTileMode mode = TILE_UNKNOWN;
 
 #if CONFIG_LIBDRM
     switch(formatModifier) {
@@ -294,7 +294,7 @@ int detile_generic_opti(const int w, const int h,
 }
 
 
-int detile_this(int mode, uint64_t arg1,
+int detile_this(enum FBTileMode mode, uint64_t arg1,
                         int w, int h,
                         uint8_t *dst, int dstLineSize,
                         uint8_t *src, int srcLineSize,
@@ -319,8 +319,10 @@ int detile_this(int mode, uint64_t arg1,
 }
 
 
-int detile_frame(AVFrame *dst, FBTileMode dstTileMode, AVFrame *src, FBTileMode srcTileMode)
+int detile_frame(AVFrame *dst, enum FBTileMode dstTileMode, AVFrame *src, enum FBTileMode srcTileMode)
 {
+    int err;
+
     if (dstTileMode == TILE_NONE) {         // i.e DeTile
         err = fbtile_checkpixformats(src->format, dst->format);
         if (!err) {
@@ -328,7 +330,7 @@ int detile_frame(AVFrame *dst, FBTileMode dstTileMode, AVFrame *src, FBTileMode 
                               dst->data[0], dst->linesize[0],
                               src->data[0], src->linesize[0], 4);
             if (!err) {
-                return 0;
+                return FBT_OK;
             }
         }
     }

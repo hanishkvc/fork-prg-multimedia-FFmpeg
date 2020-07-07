@@ -63,7 +63,7 @@ enum FBTileMode {
  * @return the fbtile's equivalent internal mode
  */
 #undef DEBUG_FBTILE_FORMATMODIFIER_MAPPING
-int fbtilemode_from_drmformatmodifier(uint64_t formatModifier);
+enum FBTileMode fbtilemode_from_drmformatmodifier(uint64_t formatModifier);
 
 
 /**
@@ -194,11 +194,15 @@ int detile_generic_opti(const int w, const int h,
  *
  * @return 0 if detiled, 1 if not
  */
-int detile_this(int mode, uint64_t arg1,
+int detile_this(enum FBTileMode mode, uint64_t arg1,
                 int w, int h,
                 uint8_t *dst, int dstLineSize,
                 uint8_t *src, int srcLineSize,
                 int bytesPerPixel);
+
+
+int detile_frame(AVFrame *dst, enum FBTileMode dstTileMode,
+                 AVFrame *src, enum FBTileMode srcTileMode);
 
 
 /**
