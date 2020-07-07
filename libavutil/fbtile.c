@@ -30,7 +30,7 @@
 
 int fbtilemode_from_drmformatmodifier(uint64_t formatModifier)
 {
-    int mode = TILE_NONE_END;
+    int mode = TILE_UNKNOWN;
 
 #if CONFIG_LIBDRM
     switch(formatModifier) {
@@ -47,7 +47,7 @@ int fbtilemode_from_drmformatmodifier(uint64_t formatModifier)
             mode = TILE_INTELYF;
             break;
         default:
-            mode = TILE_NONE_END;
+            mode = TILE_UNKNOWN;
             break;
     }
 #endif
