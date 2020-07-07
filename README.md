@@ -5,7 +5,8 @@ FFmpeg README
 
 ## Branch: hkvcFBTilePlusLean
 
-Contains libavutil/fbtile.c|h, which allows tiling transform wrt framebuffer
+Contains libavutil/fbtile.c|h, which allows tiling transform wrt framebuffer.
+i.e tiling and detiling.
 
 Contains hwcontext_drm detile support.
 

@@ -52,20 +52,21 @@ function _time_ffmpeg() {
 	echo "AvgTime=$AvgTime, AvgTSC=$AvgTSC"
 }
 
-function time_fbdetile() {
-	_time_ffmpeg "-vf fbdetile=1"
+function time_fbtiler_detile() {
+	_time_ffmpeg "-vf fbtiler=op=2:type=1"
 	_time_ffmpeg
-	_time_ffmpeg "-vf fbdetile=0"
-	_time_ffmpeg "-vf fbdetile=1"
-	_time_ffmpeg "-vf fbdetile=2"
-	_time_ffmpeg "-vf fbdetile=3"
+	_time_ffmpeg "-vf fbtiler=op=2:type=0"
+	_time_ffmpeg "-vf fbtiler=op=2:type=1"
+	_time_ffmpeg "-vf fbtiler=op=2:type=2"
+	_time_ffmpeg "-vf fbtiler=op=2:type=3"
 }
 
-function test_fbdetile() {
+function test_fbtiler_detile() {
 	hkvc/hkvc-tile-image.py
 	for i in 0 1 2 3 4; do
-		rm /tmp/t.png; ./ffmpeg -i /tmp/ssti.png -vf fbdetile=$i /tmp/t.png; xdg-open /tmp/t.png
-		read -p "that was fbdetile=$i"
+		op="-vf fbtiler=op=2:$i"
+		rm /tmp/t.png; ./ffmpeg -i /tmp/ssti.png $op /tmp/t.png; xdg-open /tmp/t.png
+		read -p "that was $op"
 	done
 }
 
@@ -78,15 +79,16 @@ function _test_fbtiler() {
 }
 
 function test_fbtiler() {
-	_test_fbtiler "-vf fbdetile=op=0:type=0" ssti.png t.png
-	_test_fbtiler "-vf fbdetile=op=1:type=0" ssti.png t.png
-	_test_fbtiler "-vf fbdetile=op=2:type=0" ssti.png t.png
-	_test_fbtiler "-vf fbdetile=op=1:type=1" ssti.png t_tx.png
-	_test_fbtiler "-vf fbdetile=op=2:type=1" t_tx.png t_dx.png
-	_test_fbtiler "-vf fbdetile=op=1:type=2" ssti.png t_ty.png
-	_test_fbtiler "-vf fbdetile=op=2:type=2" t_ty.png t_dy.png
-	_test_fbtiler "-vf fbdetile=op=1:type=3" ssti.png t_tyf.png
-	_test_fbtiler "-vf fbdetile=op=2:type=3" t_tyf.png t_dyf.png
+	hkvc/hkvc-tile-image.py
+	_test_fbtiler "-vf fbtiler=op=0:type=0" ssti.png t.png
+	_test_fbtiler "-vf fbtiler=op=1:type=0" ssti.png t.png
+	_test_fbtiler "-vf fbtiler=op=2:type=0" ssti.png t.png
+	_test_fbtiler "-vf fbtiler=op=1:type=1" ssti.png t_tx.png
+	_test_fbtiler "-vf fbtiler=op=2:type=1" t_tx.png t_dx.png
+	_test_fbtiler "-vf fbtiler=op=1:type=2" ssti.png t_ty.png
+	_test_fbtiler "-vf fbtiler=op=2:type=2" t_ty.png t_dy.png
+	_test_fbtiler "-vf fbtiler=op=1:type=3" ssti.png t_tyf.png
+	_test_fbtiler "-vf fbtiler=op=2:type=3" t_tyf.png t_dyf.png
 }
 
 $@
