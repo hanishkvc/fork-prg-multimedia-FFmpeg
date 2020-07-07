@@ -123,6 +123,10 @@ struct TileWalk tyTileWalk = {
                 };
 
 
+/**
+ * Use _detile_generic_opti in general, available here just for reference
+ * and for use in any strange corner case situation, if at all.
+ */
 void _detile_generic_simple(const int w, const int h,
                                   uint8_t *dst, const int dstLineSize,
                                   const uint8_t *src, const int srcLineSize,
@@ -220,16 +224,16 @@ void _detile_generic_opti(const int w, const int h,
 #endif
 
         // As most tiling layouts have a minimum subtile of 4x4, if I remember correctly,
-        // so this loop has been unrolled to be multiples of 4, and speed up a bit.
-        // However tiling involving 3x3 or 2x2 wont be handlable. Use detile_generic_simple
-        // for such tile layouts.
+        // so this loop can be unrolled to be multiples of 4, and speed up a bit.
+        // However tiling involving 3x3 or 2x2 wont be handlable. In which one will have to use
+        // detile_generic_simple for such tile layouts.
         // Detile parallely to a limited extent. To avoid any cache set-associativity and or
         // limited cache based thrashing, keep it spacially and inturn temporaly small at one level.
         for (int k = 0; k < subTileHeight; k+=1) {
             for (int p = 0; p < parallel; p++) {
                 int pSrcOffset = p*tileWidth*tileHeight*bytesPerPixel;
                 int pDstOffset = p*tileWidth*bytesPerPixel;
-                memcpy(dst+dO+k*dstLineSize+pDstOffset, src+sO+k*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
+                memcpy(dst+dO+(k+0)*dstLineSize+pDstOffset, src+sO+(k+0)*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
                 /*
                 memcpy(dst+dO+(k+1)*dstLineSize+pDstOffset, src+sO+(k+1)*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
                 memcpy(dst+dO+(k+2)*dstLineSize+pDstOffset, src+sO+(k+2)*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
