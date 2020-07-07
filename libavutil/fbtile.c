@@ -127,19 +127,20 @@ struct TileWalk tyTileWalk = {
  * Use _detile_generic_opti in general, available here just for reference
  * and for use in any strange corner case situation, if at all.
  */
-void _detile_generic_simple(const int w, const int h,
-                                  uint8_t *dst, const int dstLineSize,
-                                  const uint8_t *src, const int srcLineSize,
-                                  const int bytesPerPixel,
-                                  const int subTileWidth, const int subTileHeight,
-                                  const int tileWidth, const int tileHeight,
-                                  const int numDirChanges, const struct dirChange *dirChanges)
+int _detile_generic_simple(const int w, const int h,
+                           uint8_t *dst, const int dstLineSize,
+                           const uint8_t *src, const int srcLineSize,
+                           const int bytesPerPixel,
+                           const int subTileWidth, const int subTileHeight,
+                           const int tileWidth, const int tileHeight,
+                           const int numDirChanges, const struct dirChange *dirChanges)
 {
     const int subTileWidthBytes = subTileWidth*bytesPerPixel;
 
     if (w*bytesPerPixel != srcLineSize) {
         av_log(NULL, AV_LOG_ERROR, "fbdetile:genericsimp: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
         av_log(NULL, AV_LOG_ERROR, "fbdetile:genericsimp: dont support LineSize | Pitch going beyond width\n");
+        return FBT_ERR;
     }
     int sO = 0;
     int dX = 0;
@@ -170,29 +171,30 @@ void _detile_generic_simple(const int w, const int h,
             dY += tileHeight;
         }
     }
+    return FBT_OK;
 }
 
 
-void detile_generic_simple(const int w, const int h,
-                                uint8_t *dst, const int dstLineSize,
-                                const uint8_t *src, const int srcLineSize,
-                                const struct TileWalk *tw)
+int detile_generic_simple(const int w, const int h,
+                          uint8_t *dst, const int dstLineSize,
+                          const uint8_t *src, const int srcLineSize,
+                          const struct TileWalk *tw)
 {
-    _detile_generic_simple(w, h, dst, dstLineSize, src, srcLineSize,
-                            tw->bytesPerPixel,
-                            tw->subTileWidth, tw->subTileHeight,
-                            tw->tileWidth, tw->tileHeight,
-                            tw->numDirChanges, tw->dirChanges);
+    return _detile_generic_simple(w, h, dst, dstLineSize, src, srcLineSize,
+                                  tw->bytesPerPixel,
+                                  tw->subTileWidth, tw->subTileHeight,
+                                  tw->tileWidth, tw->tileHeight,
+                                  tw->numDirChanges, tw->dirChanges);
 }
 
 
-void _detile_generic_opti(const int w, const int h,
-                                uint8_t *dst, const int dstLineSize,
-                                const uint8_t *src, const int srcLineSize,
-                                const int bytesPerPixel,
-                                const int subTileWidth, const int subTileHeight,
-                                const int tileWidth, const int tileHeight,
-                                const int numDirChanges, const struct dirChange *dirChanges)
+int _detile_generic_opti(const int w, const int h,
+                         uint8_t *dst, const int dstLineSize,
+                         const uint8_t *src, const int srcLineSize,
+                         const int bytesPerPixel,
+                         const int subTileWidth, const int subTileHeight,
+                         const int tileWidth, const int tileHeight,
+                         const int numDirChanges, const struct dirChange *dirChanges)
 {
     const int subTileWidthBytes = subTileWidth*bytesPerPixel;
     int parallel = 1;
@@ -200,9 +202,11 @@ void _detile_generic_opti(const int w, const int h,
     if (w*bytesPerPixel != srcLineSize) {
         av_log(NULL, AV_LOG_ERROR, "fbdetile:genericopti: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
         av_log(NULL, AV_LOG_ERROR, "fbdetile:genericopti: dont support LineSize | Pitch going beyond width\n");
+        return FBT_ERR;
     }
     if (w%tileWidth != 0) {
         av_log(NULL, AV_LOG_ERROR, "fbdetile:genericopti:NotSupported:NonMultWidth: width%d, tileWidth%d\n", w, tileWidth);
+        return FBT_ERR;
     }
     int sO = 0;
     int sOPrev = 0;
@@ -267,19 +271,20 @@ void _detile_generic_opti(const int w, const int h,
             }
         }
     }
+    return FBT_OK;
 }
 
 
-void detile_generic_opti(const int w, const int h,
-                                uint8_t *dst, const int dstLineSize,
-                                const uint8_t *src, const int srcLineSize,
-                                const struct TileWalk *tw)
+int detile_generic_opti(const int w, const int h,
+                        uint8_t *dst, const int dstLineSize,
+                        const uint8_t *src, const int srcLineSize,
+                        const struct TileWalk *tw)
 {
-    _detile_generic_opti(w, h, dst, dstLineSize, src, srcLineSize,
-                            tw->bytesPerPixel,
-                            tw->subTileWidth, tw->subTileHeight,
-                            tw->tileWidth, tw->tileHeight,
-                            tw->numDirChanges, tw->dirChanges);
+    return _detile_generic_opti(w, h, dst, dstLineSize, src, srcLineSize,
+                                tw->bytesPerPixel,
+                                tw->subTileWidth, tw->subTileHeight,
+                                tw->tileWidth, tw->tileHeight,
+                                tw->numDirChanges, tw->dirChanges);
 }
 
 
@@ -294,23 +299,23 @@ int detile_this(int mode, uint64_t arg1,
         mode = fbtilemode_from_drmformatmodifier(arg1);
     }
     if (mode == TILE_NONE) {
-        return 1;
+        return FBT_ERR;
     }
 
     if (mode == TILE_INTELX) {
-        detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk);
+        return detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk);
     } else if (mode == TILE_INTELY) {
-        detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk);
+        return detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk);
     } else if (mode == TILE_INTELYF) {
-        detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
+        return detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
     } else if (mode == TILE_NONE_END) {
         av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logState, "fbtile:detile_this:TILE_AUTOOr???: invalid or unsupported format_modifier:%"PRIx64"\n",arg1);
-        return 1;
+        return FBT_ERR;
     } else {
         av_log(NULL, AV_LOG_ERROR, "fbtile:detile_this:????: unknown mode specified, check caller\n");
-        return 1;
+        return FBT_ERR;
     }
-    return 0;
+    return FBT_ERR;
 }
 
 

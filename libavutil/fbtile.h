@@ -37,6 +37,15 @@
 //#define DEBUG_FBTILE 1
 
 
+// Common return values
+#define FBT_OK 0
+#define FBT_ERR 1
+
+
+/**
+ * The FBTile related modes
+ * This identifies the supported tile layouts
+ */
 enum FBTileMode {
     TILE_NONE,
     TILE_AUTO,
@@ -124,39 +133,41 @@ extern struct TileWalk tyTileWalk;
  *     @param dirChanges the array of dir changes for the tile walk required
  * the compact func additional options
  *     @param tw the structure which contains the tile walk parameters
+ *
+ * @return 0 if detiled, 1 if not
  */
 
 
 /**
  * Generic detile simple version, which is fine-grained.
  */
-void _detile_generic_simple(const int w, const int h,
-                                    uint8_t *dst, const int dstLineSize,
-                                    const uint8_t *src, const int srcLineSize,
-                                    const int bytesPerPixel,
-                                    const int subTileWidth, const int subTileHeight,
-                                    const int tileWidth, const int tileHeight,
-                                    const int numDirChanges, const struct dirChange *dirChanges);
-void detile_generic_simple(const int w, const int h,
-                                    uint8_t *dst, const int dstLineSize,
-                                    const uint8_t *src, const int srcLineSize,
-                                    const struct TileWalk *tw);
+int _detile_generic_simple(const int w, const int h,
+                           uint8_t *dst, const int dstLineSize,
+                           const uint8_t *src, const int srcLineSize,
+                           const int bytesPerPixel,
+                           const int subTileWidth, const int subTileHeight,
+                           const int tileWidth, const int tileHeight,
+                           const int numDirChanges, const struct dirChange *dirChanges);
+int detile_generic_simple(const int w, const int h,
+                          uint8_t *dst, const int dstLineSize,
+                          const uint8_t *src, const int srcLineSize,
+                          const struct TileWalk *tw);
 
 
 /**
  * Generic detile optimised version, minimum subtile supported 4x4.
  */
-void _detile_generic_opti(const int w, const int h,
-                                uint8_t *dst, const int dstLineSize,
-                                const uint8_t *src, const int srcLineSize,
-                                const int bytesPerPixel,
-                                const int subTileWidth, const int subTileHeight,
-                                const int tileWidth, const int tileHeight,
-                                const int numDirChanges, const struct dirChange *dirChanges);
-void detile_generic_opti(const int w, const int h,
-                                uint8_t *dst, const int dstLineSize,
-                                const uint8_t *src, const int srcLineSize,
-                                const struct TileWalk *tw);
+int _detile_generic_opti(const int w, const int h,
+                         uint8_t *dst, const int dstLineSize,
+                         const uint8_t *src, const int srcLineSize,
+                         const int bytesPerPixel,
+                         const int subTileWidth, const int subTileHeight,
+                         const int tileWidth, const int tileHeight,
+                         const int numDirChanges, const struct dirChange *dirChanges);
+int detile_generic_opti(const int w, const int h,
+                        uint8_t *dst, const int dstLineSize,
+                        const uint8_t *src, const int srcLineSize,
+                        const struct TileWalk *tw);
 
 
 // Use Optimised detile_generic or the Simpler but more fine grained one
@@ -184,10 +195,10 @@ void detile_generic_opti(const int w, const int h,
  * @return 0 if detiled, 1 if not
  */
 int detile_this(int mode, uint64_t arg1,
-                        int w, int h,
-                        uint8_t *dst, int dstLineSize,
-                        uint8_t *src, int srcLineSize,
-                        int bytesPerPixel);
+                int w, int h,
+                uint8_t *dst, int dstLineSize,
+                uint8_t *src, int srcLineSize,
+                int bytesPerPixel);
 
 
 /**
