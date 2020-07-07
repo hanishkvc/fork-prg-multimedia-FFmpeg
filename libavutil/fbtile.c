@@ -141,39 +141,39 @@ int _tile_generic_simple(const int w, const int h,
     const int subTileWidthBytes = subTileWidth*bytesPerPixel;
 
     // To keep things sane and simple tile layout is assumed to be tightly packed,
-    // so below check is a indirect logical assumption, even thou dstLineSize is not directly mappable at one level
-    if (w*bytesPerPixel != dstLineSize) {
-        av_log(NULL, AV_LOG_ERROR, "fbtile:genericsimp: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
-        av_log(NULL, AV_LOG_ERROR, "fbtile:genericsimp: dont support dstLineSize | Pitch going beyond width\n");
+    // so below check is a indirect logical assumption, even thou tldLineSize is not directly mappable at one level
+    if (w*bytesPerPixel != tldLineSize) {
+        av_log(NULL, AV_LOG_ERROR, "fbtile:genericsimp: w%dxh%d, dL%d, sL%d\n", w, h, tldLineSize, linLineSize);
+        av_log(NULL, AV_LOG_ERROR, "fbtile:genericsimp: dont support tldLineSize | Pitch going beyond width\n");
         return FBT_ERR;
     }
-    int dO = 0;
-    int sX = 0;
-    int sY = 0;
+    int tO = 0;
+    int lX = 0;
+    int lY = 0;
     int nSTLines = (w*h)/subTileWidth;  // numSubTileLines
     int cSTL = 0;                       // curSubTileLine
     while (cSTL < nSTLines) {
-        int sO = sY*srcLineSize + sX*bytesPerPixel;
+        int lO = lY*linLineSize + lX*bytesPerPixel;
 #ifdef DEBUG_FBTILE
-        av_log(NULL, AV_LOG_DEBUG, "fbtile:genericsimp: sX%d sY%d; sO%d, dO%d; %d/%d\n", sX, sY, sO, dO, cSTL, nSTLines);
+        av_log(NULL, AV_LOG_DEBUG, "fbtile:genericsimp: lX%d lY%d; lO%d, tO%d; %d/%d\n", lX, lY, lO, tO, cSTL, nSTLines);
 #endif
 
         for (int k = 0; k < subTileHeight; k++) {
-            memcpy(dst+dO+k*subTileWidthBytes, src+sO+k*srcLineSize, subTileWidthBytes);
+            memcpy(tld+tO+k*subTileWidthBytes, lin+lO+k*linLineSize, subTileWidthBytes);
         }
-        dO = dO + subTileHeight*subTileWidthBytes;
+        tO = tO + subTileHeight*subTileWidthBytes;
 
         cSTL += subTileHeight;
         for (int i=numDirChanges-1; i>=0; i--) {
             if ((cSTL%dirChanges[i].posOffset) == 0) {
-                sX += dirChanges[i].xDelta;
-                sY += dirChanges[i].yDelta;
+                lX += dirChanges[i].xDelta;
+                lY += dirChanges[i].yDelta;
                 break;
             }
         }
-        if (sX >= w) {
-            sX = 0;
-            sY += tileHeight;
+        if (lX >= w) {
+            lX = 0;
+            lY += tileHeight;
         }
     }
     return FBT_OK;
