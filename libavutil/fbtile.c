@@ -69,15 +69,15 @@ const enum AVPixelFormat fbtilePixFormats[] = {AV_PIX_FMT_RGB0, AV_PIX_FMT_0RGB,
 
 int fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVPixelFormat dstPixFormat)
 {
-    int okSrc = 0;
-    int okDst = 0;
+    int errSrc = 1;
+    int errDst = 1;
     for (int i = 0; fbtilePixFormats[i] != AV_PIX_FMT_NONE; i++) {
         if (fbtilePixFormats[i] == srcPixFormat)
-            okSrc = 1;
+            errSrc = 0;
         if (fbtilePixFormats[i] == dstPixFormat)
-            okDst = 1;
+            errDst = 0;
     }
-    return (okSrc && okDst);
+    return (errSrc | errDst);
 }
 
 

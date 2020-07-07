@@ -77,6 +77,8 @@ extern const enum AVPixelFormat fbtilePixFormats[];
  *
  * @param srcPixFormat pixel format of source image
  * @param dstPixFormat pixel format of destination image
+ *
+ * @return 0 if supported, 1 if not
  */
 int fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVPixelFormat dstPixFormat);
 
