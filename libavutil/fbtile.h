@@ -22,8 +22,9 @@
 #ifndef AVUTIL_FBTILE_H
 #define AVUTIL_FBTILE_H
 
-#include <stdio.h>
 #include <stdint.h>
+#include "libavutil/pixfmt.h"
+#include "libavutil/frame.h"
 
 /**
  * @file
@@ -154,7 +155,7 @@ int detile_generic_simple(const int w, const int h,
 
 
 /**
- * Generic detile optimised version, minimum subtile supported 4x4.
+ * Generic detile optimised version.
  */
 int _detile_generic_opti(const int w, const int h,
                          uint8_t *dst, const int dstLineSize,

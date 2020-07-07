@@ -319,4 +319,21 @@ int detile_this(int mode, uint64_t arg1,
 }
 
 
+int detile_frame(AVFrame *dst, FBTileMode dstTileMode, AVFrame *src, FBTileMode srcTileMode)
+{
+    if (dstTileMode == TILE_NONE) {         // i.e DeTile
+        err = fbtile_checkpixformats(src->format, dst->format);
+        if (!err) {
+            err = detile_this(srcTileMode, 0, dst->width, dst->height,
+                              dst->data[0], dst->linesize[0],
+                              src->data[0], src->linesize[0], 4);
+            if (!err) {
+                return 0;
+            }
+        }
+    }
+    return av_frame_copy(dst, src);
+}
+
+
 // vim: set expandtab sts=4: //
