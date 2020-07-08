@@ -42,12 +42,20 @@
 #define FBT_OK 0
 #define FBT_ERR 1
 
+/**
+ * The FBTile related operations
+ */
+enum FBTileOps {
+    FBTILEOPS_TILE,
+    FBTILEOPS_DETILE,
+};
+
 
 /**
- * The FBTile related modes
+ * The FBTile related Layouts
  * This identifies the supported tile layouts
  */
-enum FBTileMode {
+enum FBTileLayout {
     TILE_NONE,
     TILE_INTELX,
     TILE_INTELY,
@@ -63,7 +71,7 @@ enum FBTileMode {
  * @return the fbtile's equivalent internal mode
  */
 #undef DEBUG_FBTILE_FORMATMODIFIER_MAPPING
-enum FBTileMode fbtilemode_from_drmformatmodifier(uint64_t formatModifier);
+enum FBTileLayout fbtilemode_from_drmformatmodifier(uint64_t formatModifier);
 
 
 /**
@@ -191,20 +199,20 @@ int detile_generic_opti(const int w, const int h,
  *
  * @return 0 if detiled, 1 if not
  */
-int fbtiler_this(enum FBTileMode mode, uint64_t arg1,
+int fbtiler_this(enum FBTileLayout mode, uint64_t arg1,
                 int w, int h,
                 uint8_t *dst, int dstLineSize,
                 uint8_t *src, int srcLineSize,
                 int bytesPerPixel, int op);
-int detile_this(enum FBTileMode mode, uint64_t arg1,
+int detile_this(enum FBTileLayout mode, uint64_t arg1,
                 int w, int h,
                 uint8_t *dst, int dstLineSize,
                 uint8_t *src, int srcLineSize,
                 int bytesPerPixel, int op);
 
 
-int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileMode dstTileMode,
-                              AVFrame *src, enum FBTileMode srcTileMode);
+int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileMode,
+                              AVFrame *src, enum FBTileLayout srcTileMode);
 
 
 /**
