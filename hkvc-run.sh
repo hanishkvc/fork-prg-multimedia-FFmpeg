@@ -61,6 +61,15 @@ function time_fbtiler_detile() {
 	_time_ffmpeg "-vf fbtiler=op=2:type=3"
 }
 
+function time_fbtiler_tile() {
+	_time_ffmpeg "-vf fbtiler=op=1:type=1"
+	_time_ffmpeg
+	_time_ffmpeg "-vf fbtiler=op=1:type=0"
+	_time_ffmpeg "-vf fbtiler=op=1:type=1"
+	_time_ffmpeg "-vf fbtiler=op=1:type=2"
+	_time_ffmpeg "-vf fbtiler=op=1:type=3"
+}
+
 function test_fbtiler_detile() {
 	hkvc/hkvc-tile-image.py
 	for i in 0 1 2 3 4; do
