@@ -224,19 +224,19 @@ int _detile_generic_opti(const int w, const int h,
     const int subTileWidthBytes = subTileWidth*bytesPerPixel;
     int parallel = 1;
 
-    if (w*bytesPerPixel != srcLineSize) {
-        av_log(NULL, AV_LOG_ERROR, "fbdetile:genericopti: w%dxh%d, dL%d, sL%d\n", w, h, dstLineSize, srcLineSize);
-        av_log(NULL, AV_LOG_ERROR, "fbdetile:genericopti: dont support srcLineSize | Pitch going beyond width\n");
+    if (w*bytesPerPixel != tldLineSize) {
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:genericopti: w%dxh%d, dL%d, sL%d\n", w, h, linLineSize, tldLineSize);
+        av_log(NULL, AV_LOG_ERROR, "fbdetile:genericopti: dont support tldLineSize | Pitch going beyond width\n");
         return FBT_ERR;
     }
     if (w%tileWidth != 0) {
         av_log(NULL, AV_LOG_ERROR, "fbdetile:genericopti:NotSupported:Width being non-mult Of TileWidth: width%d, tileWidth%d\n", w, tileWidth);
         return FBT_ERR;
     }
-    int sO = 0;
-    int sOPrev = 0;
-    int dX = 0;
-    int dY = 0;
+    int tO = 0;
+    int tOPrev = 0;
+    int lX = 0;
+    int lY = 0;
     int nTilesInARow = w/tileWidth;
     for (parallel=8; parallel>0; parallel--) {
         if (nTilesInARow%parallel == 0)
@@ -246,9 +246,9 @@ int _detile_generic_opti(const int w, const int h,
     int cSTL = 0;                       // curSubTileLine
     int curTileInRow = 0;
     while (cSTL < nSTLines) {
-        int dO = dY*dstLineSize + dX*bytesPerPixel;
+        int lO = lY*linLineSize + lX*bytesPerPixel;
 #ifdef DEBUG_FBTILE
-        av_log(NULL, AV_LOG_DEBUG, "fbdetile:genericopti: dX%d dY%d; sO%d, dO%d; %d/%d\n", dX, dY, sO, dO, cSTL, nSTLines);
+        av_log(NULL, AV_LOG_DEBUG, "fbdetile:genericopti: lX%d lY%d; tO%d, lO%d; %d/%d\n", lX, lY, tO, lO, cSTL, nSTLines);
 #endif
 
         // As most tiling layouts have a minimum subtile of 4x4, if I remember correctly,
@@ -260,39 +260,39 @@ int _detile_generic_opti(const int w, const int h,
         // inturn temporaly small at one level.
         for (int k = 0; k < subTileHeight; k+=1) {
             for (int p = 0; p < parallel; p++) {
-                int pSrcOffset = p*tileWidth*tileHeight*bytesPerPixel;
-                int pDstOffset = p*tileWidth*bytesPerPixel;
-                memcpy(dst+dO+(k+0)*dstLineSize+pDstOffset, src+sO+(k+0)*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
+                int pTldOffset = p*tileWidth*tileHeight*bytesPerPixel;
+                int pLinOffset = p*tileWidth*bytesPerPixel;
+                memcpy(lin+lO+(k+0)*linLineSize+pLinOffset, tld+tO+(k+0)*subTileWidthBytes+pTldOffset, subTileWidthBytes);
                 /*
-                memcpy(dst+dO+(k+1)*dstLineSize+pDstOffset, src+sO+(k+1)*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
-                memcpy(dst+dO+(k+2)*dstLineSize+pDstOffset, src+sO+(k+2)*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
-                memcpy(dst+dO+(k+3)*dstLineSize+pDstOffset, src+sO+(k+3)*subTileWidthBytes+pSrcOffset, subTileWidthBytes);
+                memcpy(lin+lO+(k+1)*linLineSize+pLinOffset, tld+tO+(k+1)*subTileWidthBytes+pTldOffset, subTileWidthBytes);
+                memcpy(lin+lO+(k+2)*linLineSize+pLinOffset, tld+tO+(k+2)*subTileWidthBytes+pTldOffset, subTileWidthBytes);
+                memcpy(lin+lO+(k+3)*linLineSize+pLinOffset, tld+tO+(k+3)*subTileWidthBytes+pTldOffset, subTileWidthBytes);
                 */
             }
         }
 
-        sO = sO + subTileHeight*subTileWidthBytes;
+        tO = tO + subTileHeight*subTileWidthBytes;
         cSTL += subTileHeight;
 
         for (int i=numDirChanges-1; i>=0; i--) {
             if ((cSTL%dirChanges[i].posOffset) == 0) {
                 if (i == numDirChanges-1) {
                     curTileInRow += parallel;
-                    dX = curTileInRow*tileWidth;
-                    sO = sOPrev + tileWidth*tileHeight*bytesPerPixel*(parallel);
-                    sOPrev = sO;
+                    lX = curTileInRow*tileWidth;
+                    tO = tOPrev + tileWidth*tileHeight*bytesPerPixel*(parallel);
+                    tOPrev = tO;
                 } else {
-                    dX += dirChanges[i].xDelta;
+                    lX += dirChanges[i].xDelta;
                 }
-                dY += dirChanges[i].yDelta;
+                lY += dirChanges[i].yDelta;
 		break;
             }
         }
-        if (dX >= w) {
-            dX = 0;
+        if (lX >= w) {
+            lX = 0;
             curTileInRow = 0;
-            dY += tileHeight;
-            if (dY >= h) {
+            lY += tileHeight;
+            if (lY >= h) {
                 break;
             }
         }
