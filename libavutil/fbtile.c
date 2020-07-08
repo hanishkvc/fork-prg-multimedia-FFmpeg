@@ -273,29 +273,37 @@ int _fbtiler_generic_opti(const int w, const int h,
         // any cache set-associativity and or limited cache based thrashing. Keep it spatially and
         // inturn temporaly small at one level.
         if (op == FBTILEOPS_DETILE) {
+#ifdef FBTILER_OPTI_UNROLL
+            for (int k = 0; k < subTileHeight; k+=4) {
+#else
             for (int k = 0; k < subTileHeight; k+=1) {
+#endif
                 for (int p = 0; p < parallel; p++) {
                     int pTldOffset = p*tileWidth*tileHeight*bytesPerPixel;
                     int pLinOffset = p*tileWidth*bytesPerPixel;
                     memcpy(lin+lO+(k+0)*linLineSize+pLinOffset, tld+tO+(k+0)*subTileWidthBytes+pTldOffset, subTileWidthBytes);
-                    /*
+#ifdef FBTILER_OPTI_UNROLL
                     memcpy(lin+lO+(k+1)*linLineSize+pLinOffset, tld+tO+(k+1)*subTileWidthBytes+pTldOffset, subTileWidthBytes);
                     memcpy(lin+lO+(k+2)*linLineSize+pLinOffset, tld+tO+(k+2)*subTileWidthBytes+pTldOffset, subTileWidthBytes);
                     memcpy(lin+lO+(k+3)*linLineSize+pLinOffset, tld+tO+(k+3)*subTileWidthBytes+pTldOffset, subTileWidthBytes);
-                    */
+#endif
                 }
             }
         } else {
+#ifdef FBTILER_OPTI_UNROLL
+            for (int k = 0; k < subTileHeight; k+=4) {
+#else
             for (int k = 0; k < subTileHeight; k+=1) {
+#endif
                 for (int p = 0; p < parallel; p++) {
                     int pTldOffset = p*tileWidth*tileHeight*bytesPerPixel;
                     int pLinOffset = p*tileWidth*bytesPerPixel;
                     memcpy(tld+tO+(k+0)*subTileWidthBytes+pTldOffset, lin+lO+(k+0)*linLineSize+pLinOffset, subTileWidthBytes);
-                    /*
+#ifdef FBTILER_OPTI_UNROLL
                     memcpy(tld+tO+(k+1)*subTileWidthBytes+pTldOffset, lin+lO+(k+1)*linLineSize+pLinOffset, subTileWidthBytes);
                     memcpy(tld+tO+(k+2)*subTileWidthBytes+pTldOffset, lin+lO+(k+2)*linLineSize+pLinOffset, subTileWidthBytes);
                     memcpy(tld+tO+(k+3)*subTileWidthBytes+pTldOffset, lin+lO+(k+3)*linLineSize+pLinOffset, subTileWidthBytes);
-                    */
+#endif
                 }
             }
         }
