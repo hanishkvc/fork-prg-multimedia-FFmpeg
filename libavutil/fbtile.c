@@ -273,16 +273,31 @@ int _detile_generic_opti(const int w, const int h,
         // Detile parallely to a limited extent. Gain some speed by reusing calcs, but still avoid
         // any cache set-associativity and or limited cache based thrashing. Keep it spatially and
         // inturn temporaly small at one level.
-        for (int k = 0; k < subTileHeight; k+=1) {
-            for (int p = 0; p < parallel; p++) {
-                int pTldOffset = p*tileWidth*tileHeight*bytesPerPixel;
-                int pLinOffset = p*tileWidth*bytesPerPixel;
-                memcpy(lin+lO+(k+0)*linLineSize+pLinOffset, tld+tO+(k+0)*subTileWidthBytes+pTldOffset, subTileWidthBytes);
-                /*
-                memcpy(lin+lO+(k+1)*linLineSize+pLinOffset, tld+tO+(k+1)*subTileWidthBytes+pTldOffset, subTileWidthBytes);
-                memcpy(lin+lO+(k+2)*linLineSize+pLinOffset, tld+tO+(k+2)*subTileWidthBytes+pTldOffset, subTileWidthBytes);
-                memcpy(lin+lO+(k+3)*linLineSize+pLinOffset, tld+tO+(k+3)*subTileWidthBytes+pTldOffset, subTileWidthBytes);
-                */
+        if (op == OP_DETILE) {
+            for (int k = 0; k < subTileHeight; k+=1) {
+                for (int p = 0; p < parallel; p++) {
+                    int pTldOffset = p*tileWidth*tileHeight*bytesPerPixel;
+                    int pLinOffset = p*tileWidth*bytesPerPixel;
+                    memcpy(lin+lO+(k+0)*linLineSize+pLinOffset, tld+tO+(k+0)*subTileWidthBytes+pTldOffset, subTileWidthBytes);
+                    /*
+                    memcpy(lin+lO+(k+1)*linLineSize+pLinOffset, tld+tO+(k+1)*subTileWidthBytes+pTldOffset, subTileWidthBytes);
+                    memcpy(lin+lO+(k+2)*linLineSize+pLinOffset, tld+tO+(k+2)*subTileWidthBytes+pTldOffset, subTileWidthBytes);
+                    memcpy(lin+lO+(k+3)*linLineSize+pLinOffset, tld+tO+(k+3)*subTileWidthBytes+pTldOffset, subTileWidthBytes);
+                    */
+                }
+            }
+        } else {
+            for (int k = 0; k < subTileHeight; k+=1) {
+                for (int p = 0; p < parallel; p++) {
+                    int pTldOffset = p*tileWidth*tileHeight*bytesPerPixel;
+                    int pLinOffset = p*tileWidth*bytesPerPixel;
+                    memcpy(tld+tO+(k+0)*subTileWidthBytes+pTldOffset, lin+lO+(k+0)*linLineSize+pLinOffset, subTileWidthBytes);
+                    /*
+                    memcpy(tld+tO+(k+1)*subTileWidthBytes+pTldOffset, lin+lO+(k+1)*linLineSize+pLinOffset, subTileWidthBytes);
+                    memcpy(tld+tO+(k+2)*subTileWidthBytes+pTldOffset, lin+lO+(k+2)*linLineSize+pLinOffset, subTileWidthBytes);
+                    memcpy(tld+tO+(k+3)*subTileWidthBytes+pTldOffset, lin+lO+(k+3)*linLineSize+pLinOffset, subTileWidthBytes);
+                    */
+                }
             }
         }
 
