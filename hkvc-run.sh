@@ -53,21 +53,21 @@ function _time_ffmpeg() {
 }
 
 function time_fbtiler_detile() {
-	_time_ffmpeg "-vf fbtiler=op=2:type=1"
+	_time_ffmpeg "-vf fbtiler=op=2:layout=1"
 	_time_ffmpeg
-	_time_ffmpeg "-vf fbtiler=op=2:type=0"
-	_time_ffmpeg "-vf fbtiler=op=2:type=1"
-	_time_ffmpeg "-vf fbtiler=op=2:type=2"
-	_time_ffmpeg "-vf fbtiler=op=2:type=3"
+	_time_ffmpeg "-vf fbtiler=op=2:layout=0"
+	_time_ffmpeg "-vf fbtiler=op=2:layout=1"
+	_time_ffmpeg "-vf fbtiler=op=2:layout=2"
+	_time_ffmpeg "-vf fbtiler=op=2:layout=3"
 }
 
 function time_fbtiler_tile() {
-	_time_ffmpeg "-vf fbtiler=op=1:type=1"
+	_time_ffmpeg "-vf fbtiler=op=1:layout=1"
 	_time_ffmpeg
-	_time_ffmpeg "-vf fbtiler=op=1:type=0"
-	_time_ffmpeg "-vf fbtiler=op=1:type=1"
-	_time_ffmpeg "-vf fbtiler=op=1:type=2"
-	_time_ffmpeg "-vf fbtiler=op=1:type=3"
+	_time_ffmpeg "-vf fbtiler=op=1:layout=0"
+	_time_ffmpeg "-vf fbtiler=op=1:layout=1"
+	_time_ffmpeg "-vf fbtiler=op=1:layout=2"
+	_time_ffmpeg "-vf fbtiler=op=1:layout=3"
 }
 
 function test_fbtiler_detile() {
@@ -89,15 +89,15 @@ function _test_fbtiler() {
 
 function test_fbtiler() {
 	hkvc/hkvc-tile-image.py
-	_test_fbtiler "-vf fbtiler=op=0:type=0" ssti.png t.png
-	_test_fbtiler "-vf fbtiler=op=1:type=0" ssti.png t.png
-	_test_fbtiler "-vf fbtiler=op=2:type=0" ssti.png t.png
-	_test_fbtiler "-vf fbtiler=op=1:type=1" ssti.png t_tx.png
-	_test_fbtiler "-vf fbtiler=op=2:type=1" t_tx.png t_dx.png
-	_test_fbtiler "-vf fbtiler=op=1:type=2" ssti.png t_ty.png
-	_test_fbtiler "-vf fbtiler=op=2:type=2" t_ty.png t_dy.png
-	_test_fbtiler "-vf fbtiler=op=1:type=3" ssti.png t_tyf.png
-	_test_fbtiler "-vf fbtiler=op=2:type=3" t_tyf.png t_dyf.png
+	_test_fbtiler "-vf fbtiler=op=0:layout=0" ssti.png t.png
+	_test_fbtiler "-vf fbtiler=op=1:layout=0" ssti.png t.png
+	_test_fbtiler "-vf fbtiler=op=2:layout=0" ssti.png t.png
+	_test_fbtiler "-vf fbtiler=op=1:layout=1" ssti.png t_tx.png
+	_test_fbtiler "-vf fbtiler=op=2:layout=1" t_tx.png t_dx.png
+	_test_fbtiler "-vf fbtiler=op=1:layout=2" ssti.png t_ty.png
+	_test_fbtiler "-vf fbtiler=op=2:layout=2" t_ty.png t_dy.png
+	_test_fbtiler "-vf fbtiler=op=1:layout=3" ssti.png t_tyf.png
+	_test_fbtiler "-vf fbtiler=op=2:layout=3" t_tyf.png t_dyf.png
 }
 
 $@
