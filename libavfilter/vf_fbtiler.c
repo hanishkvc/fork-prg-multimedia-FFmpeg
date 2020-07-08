@@ -87,13 +87,6 @@ uint64_t perfTime = 0;
 int perfCnt = 0;
 #endif
 
-enum FBTileOp {
-    FB_TILEOP_NONE,
-    FB_TILEOP_TILE,
-    FB_TILEOP_DETILE,
-    FB_TILEOP_UNKNOWN
-};
-
 typedef struct FBTilerContext {
     const AVClass *class;
     int width, height;
@@ -109,10 +102,10 @@ static const AVOption fbtiler_options[] = {
         { "intelx", "Intel Tile-X layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELX}, INT_MIN, INT_MAX, FLAGS, "type" },
         { "intely", "Intel Tile-Y layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELY}, INT_MIN, INT_MAX, FLAGS, "type" },
         { "intelyf", "Intel Tile-Yf layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELYF}, INT_MIN, INT_MAX, FLAGS, "type" },
-    { "op", "select framebuffer tiling operations i.e tile or detile", OFFSET(op), AV_OPT_TYPE_INT, {.i64=FB_TILEOP_NONE}, 0, FB_TILEOP_UNKNOWN-1, FLAGS, "op" },
-        { "None", "Nop", 0, AV_OPT_TYPE_CONST, {.i64=FB_TILEOP_NONE}, INT_MIN, INT_MAX, FLAGS, "op" },
-        { "tile", "Apply tiling operation", 0, AV_OPT_TYPE_CONST, {.i64=FB_TILEOP_TILE}, INT_MIN, INT_MAX, FLAGS, "op" },
-        { "detile", "Apply detiling operation", 0, AV_OPT_TYPE_CONST, {.i64=FB_TILEOP_DETILE}, INT_MIN, INT_MAX, FLAGS, "op" },
+    { "op", "select framebuffer tiling operations i.e tile or detile", OFFSET(op), AV_OPT_TYPE_INT, {.i64=FBTILEOPS_NONE}, 0, FBTILEOPS_UNKNOWN-1, FLAGS, "op" },
+        { "None", "Nop", 0, AV_OPT_TYPE_CONST, {.i64=FBTILEOPS_NONE}, INT_MIN, INT_MAX, FLAGS, "op" },
+        { "tile", "Apply tiling operation", 0, AV_OPT_TYPE_CONST, {.i64=FBTILEOPS_TILE}, INT_MIN, INT_MAX, FLAGS, "op" },
+        { "detile", "Apply detiling operation", 0, AV_OPT_TYPE_CONST, {.i64=FBTILEOPS_DETILE}, INT_MIN, INT_MAX, FLAGS, "op" },
     { NULL }
 };
 
@@ -122,11 +115,11 @@ static av_cold int init(AVFilterContext *ctx)
 {
     FBTilerContext *fbtiler = ctx->priv;
 
-    if (fbtiler->op == FB_TILEOP_NONE) {
+    if (fbtiler->op == FBTILEOPS_NONE) {
         av_log(ctx, AV_LOG_INFO, "init:Op: None, Pass through\n");
-    } else if (fbtiler->op == FB_TILEOP_TILE) {
+    } else if (fbtiler->op == FBTILEOPS_TILE) {
         av_log(ctx, AV_LOG_INFO, "init:Op: Apply tiling\n");
-    } else if (fbtiler->op == FB_TILEOP_DETILE) {
+    } else if (fbtiler->op == FBTILEOPS_DETILE) {
         av_log(ctx, AV_LOG_INFO, "init:Op: Apply detiling\n");
     } else {
         av_log(ctx, AV_LOG_ERROR, "init:Op: Unknown, shouldnt reach here\n");
@@ -178,7 +171,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     AVFilterLink *outlink = ctx->outputs[0];
     AVFrame *out;
 
-    if ((fbtiler->op == FB_TILEOP_NONE) || (fbtiler->type == TILE_NONE))
+    if ((fbtiler->op == FBTILEOPS_NONE) || (fbtiler->type == TILE_NONE))
         return ff_filter_frame(outlink, in);
 
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
@@ -193,19 +186,19 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     uint64_t perfStart = __rdtscp(&tscArg);
 #endif
 
-    if (fbtiler->op == FB_TILEOP_TILE) {
+    if (fbtiler->op == FBTILEOPS_TILE) {
         fbtiler_this(fbtiler->type, 0, fbtiler->width, fbtiler->height,
                         out->data[0], out->linesize[0],
-                        in->data[0], in->linesize[0], 4, 1);
+                        in->data[0], in->linesize[0], 4, FBTILEOPS_TILE);
     } else {
         /*
         fbtiler_this(fbtiler->type, 0, fbtiler->width, fbtiler->height,
                         out->data[0], out->linesize[0],
-                        in->data[0], in->linesize[0], 4, 0);
+                        in->data[0], in->linesize[0], 4, FBTILEOPS_DETILE);
         */
         detile_this(fbtiler->type, 0, fbtiler->width, fbtiler->height,
                         out->data[0], out->linesize[0],
-                        in->data[0], in->linesize[0], 4, 0);
+                        in->data[0], in->linesize[0], 4, FBTILEOPS_DETILE);
     }
 
 #ifdef DEBUG_PERF

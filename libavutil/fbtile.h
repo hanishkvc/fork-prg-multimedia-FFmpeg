@@ -46,8 +46,10 @@
  * The FBTile related operations
  */
 enum FBTileOps {
+    FBTILEOPS_NONE,
     FBTILEOPS_TILE,
     FBTILEOPS_DETILE,
+    FBTILEOPS_UNKNOWN
 };
 
 

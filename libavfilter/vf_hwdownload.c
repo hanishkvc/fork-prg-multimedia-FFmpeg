@@ -211,7 +211,7 @@ static int hwdownload_filter_frame(AVFilterLink *link, AVFrame *input)
     output2->height = outlink->h;
     detile_this(ctx->fbdetile, 0, output2->width, output2->height,
                 output2->data[0], output2->linesize[0],
-                output->data[0], output->linesize[0], 4, 0);
+                output->data[0], output->linesize[0], 4, FBTILEOPS_DETILE);
 
     err = av_frame_copy_props(output2, input);
     if (err < 0)

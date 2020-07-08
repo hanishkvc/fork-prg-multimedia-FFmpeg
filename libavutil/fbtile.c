@@ -130,7 +130,6 @@ struct TileWalk tyTileWalk = {
 /**
  * _fbtiler_generic_simple to tile/detile layout
  */
-#define OP_TILE 1
 int _fbtiler_generic_simple(const int w, const int h,
                          uint8_t *dst, const int dstLineSize,
                          uint8_t *src, const int srcLineSize,
@@ -144,7 +143,7 @@ int _fbtiler_generic_simple(const int w, const int h,
     int tldLineSize, linLineSize;
     const int subTileWidthBytes = subTileWidth*bytesPerPixel;
 
-    if (op == OP_TILE) {
+    if (op == FBTILEOPS_TILE) {
         lin = src;
         linLineSize = srcLineSize;
         tld = dst;
@@ -175,7 +174,7 @@ int _fbtiler_generic_simple(const int w, const int h,
 #endif
 
         for (int k = 0; k < subTileHeight; k++) {
-            if (op == OP_TILE) {
+            if (op == FBTILEOPS_TILE) {
                 memcpy(tld+tO+k*subTileWidthBytes, lin+lO+k*linLineSize, subTileWidthBytes);
             } else {
                 memcpy(lin+lO+k*linLineSize, tld+tO+k*subTileWidthBytes, subTileWidthBytes);
@@ -227,7 +226,7 @@ int _detile_generic_opti(const int w, const int h,
     const int subTileWidthBytes = subTileWidth*bytesPerPixel;
     int parallel = 1;
 
-    if (op == OP_TILE) {
+    if (op == FBTILEOPS_TILE) {
         lin = src;
         linLineSize = srcLineSize;
         tld = dst;
@@ -273,7 +272,7 @@ int _detile_generic_opti(const int w, const int h,
         // Detile parallely to a limited extent. Gain some speed by reusing calcs, but still avoid
         // any cache set-associativity and or limited cache based thrashing. Keep it spatially and
         // inturn temporaly small at one level.
-        if (op == OP_DETILE) {
+        if (op == FBTILEOPS_DETILE) {
             for (int k = 0; k < subTileHeight; k+=1) {
                 for (int p = 0; p < parallel; p++) {
                     int pTldOffset = p*tileWidth*tileHeight*bytesPerPixel;
@@ -403,7 +402,7 @@ int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileMode, AVFra
         if (!err) {
             err = detile_this(srcTileMode, 0, dst->width, dst->height,
                               dst->data[0], dst->linesize[0],
-                              src->data[0], src->linesize[0], 4, 0);
+                              src->data[0], src->linesize[0], 4, FBTILEOPS_DETILE);
             if (!err) {
                 return FBT_OK;
             }
@@ -413,7 +412,7 @@ int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileMode, AVFra
         if (!err) {
             err = fbtiler_this(dstTileMode, 0, src->width, src->height,
                               dst->data[0], dst->linesize[0],
-                              src->data[0], src->linesize[0], 4, 1);
+                              src->data[0], src->linesize[0], 4, FBTILEOPS_TILE);
             if (!err) {
                 return FBT_OK;
             }
