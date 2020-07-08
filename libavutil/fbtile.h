@@ -139,7 +139,7 @@ extern struct TileWalk tyTileWalk;
 
 
 /**
- * Generic tile simple version.
+ * Generic tile/detile simple version.
  */
 int _fbtiler_generic_simple(const int w, const int h,
                            uint8_t *dst, const int dstLineSize,

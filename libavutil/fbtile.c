@@ -128,7 +128,7 @@ struct TileWalk tyTileWalk = {
 
 
 /**
- * _fbtiler_generic_simple to tile a linear layout
+ * _fbtiler_generic_simple to tile/detile layout
  */
 #define OP_TILE 1
 int _fbtiler_generic_simple(const int w, const int h,
@@ -159,8 +159,8 @@ int _fbtiler_generic_simple(const int w, const int h,
     // To keep things sane and simple tile layout is assumed to be tightly packed,
     // so below check is a indirect logical assumption, even thou tldLineSize is not directly mappable at one level
     if (w*bytesPerPixel != tldLineSize) {
-        av_log(NULL, AV_LOG_ERROR, "fbtile:genericsimp: w%dxh%d, dL%d, sL%d\n", w, h, tldLineSize, linLineSize);
-        av_log(NULL, AV_LOG_ERROR, "fbtile:genericsimp: dont support tldLineSize | Pitch going beyond width\n");
+        av_log(NULL, AV_LOG_ERROR, "fbtiler:genericsimp: w%dxh%d, dL%d, sL%d\n", w, h, tldLineSize, linLineSize);
+        av_log(NULL, AV_LOG_ERROR, "fbtiler:genericsimp: dont support tldLineSize | Pitch going beyond width\n");
         return FBT_ERR;
     }
     int tO = 0;
@@ -171,7 +171,7 @@ int _fbtiler_generic_simple(const int w, const int h,
     while (cSTL < nSTLines) {
         int lO = lY*linLineSize + lX*bytesPerPixel;
 #ifdef DEBUG_FBTILE
-        av_log(NULL, AV_LOG_DEBUG, "fbtile:genericsimp: lX%d lY%d; lO%d, tO%d; %d/%d\n", lX, lY, lO, tO, cSTL, nSTLines);
+        av_log(NULL, AV_LOG_DEBUG, "fbtiler:genericsimp: lX%d lY%d; lO%d, tO%d; %d/%d\n", lX, lY, lO, tO, cSTL, nSTLines);
 #endif
 
         for (int k = 0; k < subTileHeight; k++) {
