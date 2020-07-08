@@ -212,7 +212,7 @@ int fbtiler_generic_simple(const int w, const int h,
 }
 
 
-int _detile_generic_opti(const int w, const int h,
+int _fbtiler_generic_opti(const int w, const int h,
                          uint8_t *dst, const int dstLineSize,
                          uint8_t *src, const int srcLineSize,
                          const int bytesPerPixel,
@@ -268,7 +268,7 @@ int _detile_generic_opti(const int w, const int h,
         // As most tiling layouts have a minimum subtile of 4x4, if I remember correctly,
         // so this loop can be unrolled to be multiples of 4, and speed up a bit.
         // However tiling involving 3x3 or 2x2 wont be handlable. In which one will have to use
-        // detile_generic_simple for such tile layouts. So not unrolling for now.
+        // fbtiler_generic_simple for such tile layouts. So not unrolling for now.
         // Detile parallely to a limited extent. Gain some speed by reusing calcs, but still avoid
         // any cache set-associativity and or limited cache based thrashing. Keep it spatially and
         // inturn temporaly small at one level.
@@ -330,12 +330,12 @@ int _detile_generic_opti(const int w, const int h,
 }
 
 
-int detile_generic_opti(const int w, const int h,
+int fbtiler_generic_opti(const int w, const int h,
                         uint8_t *dst, const int dstLineSize,
                         const uint8_t *src, const int srcLineSize,
                         const struct TileWalk *tw, int op)
 {
-    return _detile_generic_opti(w, h, dst, dstLineSize, src, srcLineSize,
+    return _fbtiler_generic_opti(w, h, dst, dstLineSize, src, srcLineSize,
                                 tw->bytesPerPixel,
                                 tw->subTileWidth, tw->subTileHeight,
                                 tw->tileWidth, tw->tileHeight,
@@ -368,31 +368,6 @@ int fbtiler_this(enum FBTileLayout mode, uint64_t arg1,
 }
 
 
-int detile_this(enum FBTileLayout mode, uint64_t arg1,
-                        int w, int h,
-                        uint8_t *dst, int dstLineSize,
-                        uint8_t *src, int srcLineSize,
-                        int bytesPerPixel, int op)
-{
-    if (mode == TILE_NONE) {
-        av_log(NULL, AV_LOG_WARNING, "fbtile:detile_this:TILE_NONE: not detiling\n");
-        return FBT_ERR;
-    }
-
-    if (mode == TILE_INTELX) {
-        return detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk, op);
-    } else if (mode == TILE_INTELY) {
-        return detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk, op);
-    } else if (mode == TILE_INTELYF) {
-        return detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk, op);
-    } else {
-        av_log(NULL, AV_LOG_WARNING, "fbtile:detile_this:%d: unknown mode specified, not detiling\n", mode);
-        return FBT_ERR;
-    }
-    return FBT_ERR;
-}
-
-
 int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileMode, AVFrame *src, enum FBTileLayout srcTileMode)
 {
     int err;
@@ -400,7 +375,7 @@ int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileMode, AVFra
     if (dstTileMode == TILE_NONE) {         // i.e DeTile
         err = fbtile_checkpixformats(src->format, dst->format);
         if (!err) {
-            err = detile_this(srcTileMode, 0, dst->width, dst->height,
+            err = fbtiler_this(srcTileMode, 0, dst->width, dst->height,
                               dst->data[0], dst->linesize[0],
                               src->data[0], src->linesize[0], 4, FBTILEOPS_DETILE);
             if (!err) {

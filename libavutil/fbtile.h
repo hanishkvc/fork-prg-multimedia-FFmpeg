@@ -125,7 +125,7 @@ extern struct TileWalk tyTileWalk;
 
 
 /**
- * Generic Logic to Detile into linear layout.
+ * Generic Logic to Tile/Detile between tiled and linear layout.
  *
  * @param w width of the image
  * @param h height of the image
@@ -143,6 +143,7 @@ extern struct TileWalk tyTileWalk;
  *     @param dirChanges the array of dir changes for the tile walk required
  * the compact func additional options
  *     @param tw the structure which contains the tile walk parameters
+ * @param op whether to tile or detile
  *
  * @return 0 if detiled, 1 if not
  */
@@ -166,9 +167,9 @@ int fbtiler_generic_simple(const int w, const int h,
 
 
 /**
- * Generic detile optimised version.
+ * Generic tile/detile minimal optimised version.
  */
-int _detile_generic_opti(const int w, const int h,
+int _fbtiler_generic_opti(const int w, const int h,
                          uint8_t *dst, const int dstLineSize,
                          uint8_t *src, const int srcLineSize,
                          const int bytesPerPixel,
@@ -176,18 +177,22 @@ int _detile_generic_opti(const int w, const int h,
                          const int tileWidth, const int tileHeight,
                          const int numDirChanges, const struct dirChange *dirChanges,
                          int op);
-int detile_generic_opti(const int w, const int h,
+int fbtiler_generic_opti(const int w, const int h,
                         uint8_t *dst, const int dstLineSize,
                         const uint8_t *src, const int srcLineSize,
                         const struct TileWalk *tw, int op);
 
 
-#define detile_generic detile_generic_opti
+#define FBTILER_GENERIC_OPTI 1
+#ifdef FBTILER_GENERIC_OPTI
+#define fbtiler_generic fbtiler_generic_opti
+#else
 #define fbtiler_generic fbtiler_generic_simple
+#endif
 
 
 /**
- * tile/detile demuxers.
+ * tile/detile demuxer.
  *
  * @param mode the fbtile mode based detiling to call
  * @param arg1 the format_modifier, in case mode is TILE_AUTO
@@ -202,11 +207,6 @@ int detile_generic_opti(const int w, const int h,
  * @return 0 if detiled, 1 if not
  */
 int fbtiler_this(enum FBTileLayout mode, uint64_t arg1,
-                int w, int h,
-                uint8_t *dst, int dstLineSize,
-                uint8_t *src, int srcLineSize,
-                int bytesPerPixel, int op);
-int detile_this(enum FBTileLayout mode, uint64_t arg1,
                 int w, int h,
                 uint8_t *dst, int dstLineSize,
                 uint8_t *src, int srcLineSize,
