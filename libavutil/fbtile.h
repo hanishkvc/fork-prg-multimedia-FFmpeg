@@ -143,7 +143,7 @@ extern struct TileWalk tyTileWalk;
  */
 int _fbtiler_generic_simple(const int w, const int h,
                            uint8_t *dst, const int dstLineSize,
-                           const uint8_t *src, const int srcLineSize,
+                           uint8_t *src, const int srcLineSize,
                            const int bytesPerPixel,
                            const int subTileWidth, const int subTileHeight,
                            const int tileWidth, const int tileHeight,
@@ -160,15 +160,16 @@ int fbtiler_generic_simple(const int w, const int h,
  */
 int _detile_generic_opti(const int w, const int h,
                          uint8_t *dst, const int dstLineSize,
-                         const uint8_t *src, const int srcLineSize,
+                         uint8_t *src, const int srcLineSize,
                          const int bytesPerPixel,
                          const int subTileWidth, const int subTileHeight,
                          const int tileWidth, const int tileHeight,
-                         const int numDirChanges, const struct dirChange *dirChanges);
+                         const int numDirChanges, const struct dirChange *dirChanges,
+                         int op);
 int detile_generic_opti(const int w, const int h,
                         uint8_t *dst, const int dstLineSize,
                         const uint8_t *src, const int srcLineSize,
-                        const struct TileWalk *tw);
+                        const struct TileWalk *tw, int op);
 
 
 #define detile_generic detile_generic_opti
@@ -199,7 +200,7 @@ int detile_this(enum FBTileMode mode, uint64_t arg1,
                 int w, int h,
                 uint8_t *dst, int dstLineSize,
                 uint8_t *src, int srcLineSize,
-                int bytesPerPixel);
+                int bytesPerPixel, int op);
 
 
 int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileMode dstTileMode,

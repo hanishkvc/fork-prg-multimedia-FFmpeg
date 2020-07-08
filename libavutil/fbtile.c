@@ -82,7 +82,7 @@ int fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVP
 
 
 /*
- * Generic detile logic
+ * Generic tile/detile logic
  * The tile layout data is assumed to be tightly packed, with no gaps inbetween.
  * However the logic does try to accomodate a destination linear layout memory,
  * where there is possibly some additional bytes beyond the width in each line
@@ -133,7 +133,7 @@ struct TileWalk tyTileWalk = {
 #define OP_TILE 1
 int _fbtiler_generic_simple(const int w, const int h,
                          uint8_t *dst, const int dstLineSize,
-                         const uint8_t *src, const int srcLineSize,
+                         uint8_t *src, const int srcLineSize,
                          const int bytesPerPixel,
                          const int subTileWidth, const int subTileHeight,
                          const int tileWidth, const int tileHeight,
@@ -215,14 +215,29 @@ int fbtiler_generic_simple(const int w, const int h,
 
 int _detile_generic_opti(const int w, const int h,
                          uint8_t *dst, const int dstLineSize,
-                         const uint8_t *src, const int srcLineSize,
+                         uint8_t *src, const int srcLineSize,
                          const int bytesPerPixel,
                          const int subTileWidth, const int subTileHeight,
                          const int tileWidth, const int tileHeight,
-                         const int numDirChanges, const struct dirChange *dirChanges)
+                         const int numDirChanges, const struct dirChange *dirChanges,
+                         int op)
 {
+    uint8_t *tld, *lin;
+    int tldLineSize, linLineSize;
     const int subTileWidthBytes = subTileWidth*bytesPerPixel;
     int parallel = 1;
+
+    if (op == OP_TILE) {
+        lin = src;
+        linLineSize = srcLineSize;
+        tld = dst;
+        tldLineSize = dstLineSize;
+    } else {
+        tld = src;
+        tldLineSize = srcLineSize;
+        lin = dst;
+        linLineSize = dstLineSize;
+    }
 
     if (w*bytesPerPixel != tldLineSize) {
         av_log(NULL, AV_LOG_ERROR, "fbdetile:genericopti: w%dxh%d, dL%d, sL%d\n", w, h, linLineSize, tldLineSize);
@@ -304,13 +319,13 @@ int _detile_generic_opti(const int w, const int h,
 int detile_generic_opti(const int w, const int h,
                         uint8_t *dst, const int dstLineSize,
                         const uint8_t *src, const int srcLineSize,
-                        const struct TileWalk *tw)
+                        const struct TileWalk *tw, int op)
 {
     return _detile_generic_opti(w, h, dst, dstLineSize, src, srcLineSize,
                                 tw->bytesPerPixel,
                                 tw->subTileWidth, tw->subTileHeight,
                                 tw->tileWidth, tw->tileHeight,
-                                tw->numDirChanges, tw->dirChanges);
+                                tw->numDirChanges, tw->dirChanges, op);
 }
 
 
@@ -343,7 +358,7 @@ int detile_this(enum FBTileMode mode, uint64_t arg1,
                         int w, int h,
                         uint8_t *dst, int dstLineSize,
                         uint8_t *src, int srcLineSize,
-                        int bytesPerPixel)
+                        int bytesPerPixel, int op)
 {
     if (mode == TILE_NONE) {
         av_log(NULL, AV_LOG_WARNING, "fbtile:detile_this:TILE_NONE: not detiling\n");
@@ -351,11 +366,11 @@ int detile_this(enum FBTileMode mode, uint64_t arg1,
     }
 
     if (mode == TILE_INTELX) {
-        return detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk);
+        return detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk, op);
     } else if (mode == TILE_INTELY) {
-        return detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk);
+        return detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk, op);
     } else if (mode == TILE_INTELYF) {
-        return detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
+        return detile_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk, op);
     } else {
         av_log(NULL, AV_LOG_WARNING, "fbtile:detile_this:%d: unknown mode specified, not detiling\n", mode);
         return FBT_ERR;
@@ -373,7 +388,7 @@ int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileMode dstTileMode, AVFrame
         if (!err) {
             err = detile_this(srcTileMode, 0, dst->width, dst->height,
                               dst->data[0], dst->linesize[0],
-                              src->data[0], src->linesize[0], 4);
+                              src->data[0], src->linesize[0], 4, 0);
             if (!err) {
                 return FBT_OK;
             }

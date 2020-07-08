@@ -206,7 +206,7 @@ static int drm_transfer_with_detile(const AVFrame *hwAVFrame, AVFrame *dst, cons
             if ((fbtileMode != TILE_NONE) && (fbtileMode != TILE_UNKNOWN)) {
                 err = detile_this(fbtileMode, 0, dst->width, dst->height,
                                   dst->data[0], dst->linesize[0],
-                                  src->data[0], src->linesize[0], 4);
+                                  src->data[0], src->linesize[0], 4, 0);
                 if (!err) {
 #if HWCTXDRM_SYNCRELATED_FORMATMODIFIER
                     drmFrame->objects[0].format_modifier = DRM_FORMAT_MOD_LINEAR;
