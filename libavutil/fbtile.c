@@ -30,24 +30,24 @@
 
 enum FBTileLayout fbtilemode_from_drmformatmodifier(uint64_t formatModifier)
 {
-    enum FBTileLayout mode = TILE_UNKNOWN;
+    enum FBTileLayout mode = FBTILE_UNKNOWN;
 
 #if CONFIG_LIBDRM
     switch(formatModifier) {
         case DRM_FORMAT_MOD_LINEAR:
-            mode = TILE_NONE;
+            mode = FBTILE_NONE;
             break;
         case I915_FORMAT_MOD_X_TILED:
-            mode = TILE_INTELX;
+            mode = FBTILE_INTEL_XGEN9;
             break;
         case I915_FORMAT_MOD_Y_TILED:
-            mode = TILE_INTELY;
+            mode = FBTILE_INTEL_YGEN9;
             break;
         case I915_FORMAT_MOD_Yf_TILED:
-            mode = TILE_INTELYF;
+            mode = FBTILE_INTEL_YF;
             break;
         default:
-            mode = TILE_UNKNOWN;
+            mode = FBTILE_UNKNOWN;
             break;
     }
 #endif
@@ -357,16 +357,16 @@ int fbtiler_this(enum FBTileLayout mode, uint64_t arg1,
                         uint8_t *src, int srcLineSize,
                         int bytesPerPixel, int op)
 {
-    if (mode == TILE_NONE) {
-        av_log(NULL, AV_LOG_WARNING, "fbtiler:tile_this:TILE_NONE: not tiling\n");
+    if (mode == FBTILE_NONE) {
+        av_log(NULL, AV_LOG_WARNING, "fbtiler:tile_this:FBTILE_NONE: not tiling\n");
         return FBT_ERR;
     }
 
-    if (mode == TILE_INTELX) {
+    if (mode == FBTILE_INTEL_XGEN9) {
         return fbtiler_generic(w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk, op);
-    } else if (mode == TILE_INTELY) {
+    } else if (mode == FBTILE_INTEL_YGEN9) {
         return fbtiler_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk, op);
-    } else if (mode == TILE_INTELYF) {
+    } else if (mode == FBTILE_INTEL_YF) {
         return fbtiler_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk, op);
     } else {
         av_log(NULL, AV_LOG_WARNING, "fbtiler:tile_this:%d: unknown mode specified, not tiling\n", mode);
@@ -380,7 +380,7 @@ int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileMode, AVFra
 {
     int err;
 
-    if (dstTileMode == TILE_NONE) {         // i.e DeTile
+    if (dstTileMode == FBTILE_NONE) {         // i.e DeTile
         err = fbtile_checkpixformats(src->format, dst->format);
         if (!err) {
             err = fbtiler_this(srcTileMode, 0, dst->width, dst->height,
@@ -390,7 +390,7 @@ int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileMode, AVFra
                 return FBT_OK;
             }
         }
-    } else if (srcTileMode == TILE_NONE) {  // i.e Tile
+    } else if (srcTileMode == FBTILE_NONE) {  // i.e Tile
         err = fbtile_checkpixformats(src->format, dst->format);
         if (!err) {
             err = fbtiler_this(dstTileMode, 0, src->width, src->height,

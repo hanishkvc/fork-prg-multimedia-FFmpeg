@@ -97,11 +97,11 @@ typedef struct FBTilerContext {
 #define OFFSET(x) offsetof(FBTilerContext, x)
 #define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM
 static const AVOption fbtiler_options[] = {
-    { "type", "set framebuffer tile|format_modifier conversion type", OFFSET(type), AV_OPT_TYPE_INT, {.i64=TILE_INTELX}, 0, TILE_UNKNOWN-1, FLAGS, "type" },
-        { "None", "Linear layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_NONE}, INT_MIN, INT_MAX, FLAGS, "type" },
-        { "intelx", "Intel Tile-X layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELX}, INT_MIN, INT_MAX, FLAGS, "type" },
-        { "intely", "Intel Tile-Y layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELY}, INT_MIN, INT_MAX, FLAGS, "type" },
-        { "intelyf", "Intel Tile-Yf layout", 0, AV_OPT_TYPE_CONST, {.i64=TILE_INTELYF}, INT_MIN, INT_MAX, FLAGS, "type" },
+    { "type", "set framebuffer tile|format_modifier conversion type", OFFSET(type), AV_OPT_TYPE_INT, {.i64=FBTILE_INTEL_XGEN9}, 0, FBTILE_UNKNOWN-1, FLAGS, "type" },
+        { "None", "Linear layout", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_NONE}, INT_MIN, INT_MAX, FLAGS, "type" },
+        { "intelx", "Intel Tile-X layout", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_INTEL_XGEN9}, INT_MIN, INT_MAX, FLAGS, "type" },
+        { "intely", "Intel Tile-Y layout", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_INTEL_YGEN9}, INT_MIN, INT_MAX, FLAGS, "type" },
+        { "intelyf", "Intel Tile-Yf layout", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_INTEL_YF}, INT_MIN, INT_MAX, FLAGS, "type" },
     { "op", "select framebuffer tiling operations i.e tile or detile", OFFSET(op), AV_OPT_TYPE_INT, {.i64=FBTILEOPS_NONE}, 0, FBTILEOPS_UNKNOWN-1, FLAGS, "op" },
         { "None", "Nop", 0, AV_OPT_TYPE_CONST, {.i64=FBTILEOPS_NONE}, INT_MIN, INT_MAX, FLAGS, "op" },
         { "tile", "Apply tiling operation", 0, AV_OPT_TYPE_CONST, {.i64=FBTILEOPS_TILE}, INT_MIN, INT_MAX, FLAGS, "op" },
@@ -125,13 +125,13 @@ static av_cold int init(AVFilterContext *ctx)
         av_log(ctx, AV_LOG_ERROR, "init:Op: Unknown, shouldnt reach here\n");
     }
 
-    if (fbtiler->type == TILE_NONE) {
+    if (fbtiler->type == FBTILE_NONE) {
         av_log(ctx, AV_LOG_INFO, "init:Type: pass through\n");
-    } else if (fbtiler->type == TILE_INTELX) {
+    } else if (fbtiler->type == FBTILE_INTEL_XGEN9) {
         av_log(ctx, AV_LOG_INFO, "init:Type: Intel tile-x\n");
-    } else if (fbtiler->type == TILE_INTELY) {
+    } else if (fbtiler->type == FBTILE_INTEL_YGEN9) {
         av_log(ctx, AV_LOG_INFO, "init:Type: Intel tile-y\n");
-    } else if (fbtiler->type == TILE_INTELYF) {
+    } else if (fbtiler->type == FBTILE_INTEL_YF) {
         av_log(ctx, AV_LOG_INFO, "init:Type: Intel tile-yf\n");
     } else {
         av_log(ctx, AV_LOG_ERROR, "init: Unknown Tile format specified, shouldnt reach here\n");
@@ -171,7 +171,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     AVFilterLink *outlink = ctx->outputs[0];
     AVFrame *out;
 
-    if ((fbtiler->op == FBTILEOPS_NONE) || (fbtiler->type == TILE_NONE))
+    if ((fbtiler->op == FBTILEOPS_NONE) || (fbtiler->type == FBTILE_NONE))
         return ff_filter_frame(outlink, in);
 
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);

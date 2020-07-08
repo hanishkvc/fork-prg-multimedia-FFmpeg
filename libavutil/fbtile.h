@@ -58,11 +58,11 @@ enum FBTileOps {
  * This identifies the supported tile layouts
  */
 enum FBTileLayout {
-    TILE_NONE,
-    TILE_INTELX,
-    TILE_INTELY,
-    TILE_INTELYF,
-    TILE_UNKNOWN,
+    FBTILE_NONE,
+    FBTILE_INTEL_XGEN9,
+    FBTILE_INTEL_YGEN9,
+    FBTILE_INTEL_YF,
+    FBTILE_UNKNOWN,
 };
 
 
