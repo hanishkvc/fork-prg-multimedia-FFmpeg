@@ -174,12 +174,10 @@ int _fbtiler_generic_simple(const int w, const int h,
         av_log(NULL, AV_LOG_DEBUG, "fbtile:genericsimp: lX%d lY%d; lO%d, tO%d; %d/%d\n", lX, lY, lO, tO, cSTL, nSTLines);
 #endif
 
-        if (op == OP_TILE) {
-            for (int k = 0; k < subTileHeight; k++) {
+        for (int k = 0; k < subTileHeight; k++) {
+            if (op == OP_TILE) {
                 memcpy(tld+tO+k*subTileWidthBytes, lin+lO+k*linLineSize, subTileWidthBytes);
-            }
-        } else {
-            for (int k = 0; k < subTileHeight; k++) {
+            } else {
                 memcpy(lin+lO+k*linLineSize, tld+tO+k*subTileWidthBytes, subTileWidthBytes);
             }
         }
