@@ -194,8 +194,8 @@ int fbtiler_generic_opti(const int w, const int h,
 /**
  * tile/detile demuxer.
  *
- * @param mode the fbtile mode based detiling to call
- * @param arg1 the format_modifier, in case mode is TILE_AUTO
+ * @param layout the fbtilelayout based detiling to call
+ * @param arg1 for future
  * @param w width of the image
  * @param h height of the image
  * @param dst the destination image buffer
@@ -206,15 +206,15 @@ int fbtiler_generic_opti(const int w, const int h,
  *
  * @return 0 if detiled, 1 if not
  */
-int fbtiler_this(enum FBTileLayout mode, uint64_t arg1,
+int fbtiler_this(enum FBTileLayout layout, uint64_t arg1,
                 int w, int h,
                 uint8_t *dst, int dstLineSize,
                 uint8_t *src, int srcLineSize,
                 int bytesPerPixel, int op);
 
 
-int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileMode,
-                              AVFrame *src, enum FBTileLayout srcTileMode);
+int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileLayout,
+                              AVFrame *src, enum FBTileLayout srcTileLayout);
 
 
 /**

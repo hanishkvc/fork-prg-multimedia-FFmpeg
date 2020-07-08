@@ -30,31 +30,31 @@
 
 enum FBTileLayout fbtilelayout_from_drmformatmodifier(uint64_t formatModifier)
 {
-    enum FBTileLayout mode = FBTILE_UNKNOWN;
+    enum FBTileLayout layout = FBTILE_UNKNOWN;
 
 #if CONFIG_LIBDRM
     switch(formatModifier) {
         case DRM_FORMAT_MOD_LINEAR:
-            mode = FBTILE_NONE;
+            layout = FBTILE_NONE;
             break;
         case I915_FORMAT_MOD_X_TILED:
-            mode = FBTILE_INTEL_XGEN9;
+            layout = FBTILE_INTEL_XGEN9;
             break;
         case I915_FORMAT_MOD_Y_TILED:
-            mode = FBTILE_INTEL_YGEN9;
+            layout = FBTILE_INTEL_YGEN9;
             break;
         case I915_FORMAT_MOD_Yf_TILED:
-            mode = FBTILE_INTEL_YF;
+            layout = FBTILE_INTEL_YF;
             break;
         default:
-            mode = FBTILE_UNKNOWN;
+            layout = FBTILE_UNKNOWN;
             break;
     }
 #endif
 #ifdef DEBUG_FBTILE_FORMATMODIFIER_MAPPING
-    av_log(NULL, AV_LOG_DEBUG, "fbtile:drmformatmodifier[%lx] mapped to mode[%d]\n", formatModifier, mode);
+    av_log(NULL, AV_LOG_DEBUG, "fbtile:drmformatmodifier[%lx] mapped to layout[%d]\n", formatModifier, layout);
 #endif
-    return mode;
+    return layout;
 }
 
 
@@ -351,49 +351,49 @@ int fbtiler_generic_opti(const int w, const int h,
 }
 
 
-int fbtiler_this(enum FBTileLayout mode, uint64_t arg1,
+int fbtiler_this(enum FBTileLayout layout, uint64_t arg1,
                         int w, int h,
                         uint8_t *dst, int dstLineSize,
                         uint8_t *src, int srcLineSize,
                         int bytesPerPixel, int op)
 {
-    if (mode == FBTILE_NONE) {
+    if (layout == FBTILE_NONE) {
         av_log(NULL, AV_LOG_WARNING, "fbtiler:tile_this:FBTILE_NONE: not tiling\n");
         return FBT_ERR;
     }
 
-    if (mode == FBTILE_INTEL_XGEN9) {
+    if (layout == FBTILE_INTEL_XGEN9) {
         return fbtiler_generic(w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk, op);
-    } else if (mode == FBTILE_INTEL_YGEN9) {
+    } else if (layout == FBTILE_INTEL_YGEN9) {
         return fbtiler_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk, op);
-    } else if (mode == FBTILE_INTEL_YF) {
+    } else if (layout == FBTILE_INTEL_YF) {
         return fbtiler_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk, op);
     } else {
-        av_log(NULL, AV_LOG_WARNING, "fbtiler:tile_this:%d: unknown mode specified, not tiling\n", mode);
+        av_log(NULL, AV_LOG_WARNING, "fbtiler:tile_this:%d: unknown layout specified, not tiling\n", layout);
         return FBT_ERR;
     }
     return FBT_ERR;
 }
 
 
-int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileMode, AVFrame *src, enum FBTileLayout srcTileMode)
+int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileLayout, AVFrame *src, enum FBTileLayout srcTileLayout)
 {
     int err;
 
-    if (dstTileMode == FBTILE_NONE) {         // i.e DeTile
+    if (dstTileLayout == FBTILE_NONE) {         // i.e DeTile
         err = fbtile_checkpixformats(src->format, dst->format);
         if (!err) {
-            err = fbtiler_this(srcTileMode, 0, dst->width, dst->height,
+            err = fbtiler_this(srcTileLayout, 0, dst->width, dst->height,
                               dst->data[0], dst->linesize[0],
                               src->data[0], src->linesize[0], 4, FBTILEOPS_DETILE);
             if (!err) {
                 return FBT_OK;
             }
         }
-    } else if (srcTileMode == FBTILE_NONE) {  // i.e Tile
+    } else if (srcTileLayout == FBTILE_NONE) {  // i.e Tile
         err = fbtile_checkpixformats(src->format, dst->format);
         if (!err) {
-            err = fbtiler_this(dstTileMode, 0, src->width, src->height,
+            err = fbtiler_this(dstTileLayout, 0, src->width, src->height,
                               dst->data[0], dst->linesize[0],
                               src->data[0], src->linesize[0], 4, FBTILEOPS_TILE);
             if (!err) {
