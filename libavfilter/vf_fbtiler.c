@@ -52,7 +52,7 @@
 /*
  * Performance check results on i7-7500u
  *
- * Run Type      : Type   : Seconds Min, Max : TSCCnt Min, Max
+ * Run Type      : Layout : Seconds Min, Max : TSCCnt Min, Max
  * Non filter run:        :  10.04s, 09.97s  :  00.00M, 00.00M
  * fbdetile=0 run: PasThro:  12.70s, 13.20s  :  00.00M, 00.00M
  * fbdetile=1 run: TileX  :  13.34s, 13.52s  :  06.13M, 06.20M  ; Opti generic
@@ -90,18 +90,18 @@ int perfCnt = 0;
 typedef struct FBTilerContext {
     const AVClass *class;
     int width, height;
-    int type;
+    int layout;
     int op;
 } FBTilerContext;
 
 #define OFFSET(x) offsetof(FBTilerContext, x)
 #define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM
 static const AVOption fbtiler_options[] = {
-    { "type", "set framebuffer tile|format_modifier conversion type", OFFSET(type), AV_OPT_TYPE_INT, {.i64=FBTILE_INTEL_XGEN9}, 0, FBTILE_UNKNOWN-1, FLAGS, "type" },
-        { "None", "Linear layout", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_NONE}, INT_MIN, INT_MAX, FLAGS, "type" },
-        { "intelx", "Intel Tile-X layout", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_INTEL_XGEN9}, INT_MIN, INT_MAX, FLAGS, "type" },
-        { "intely", "Intel Tile-Y layout", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_INTEL_YGEN9}, INT_MIN, INT_MAX, FLAGS, "type" },
-        { "intelyf", "Intel Tile-Yf layout", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_INTEL_YF}, INT_MIN, INT_MAX, FLAGS, "type" },
+    { "layout", "set framebuffer tile|format_modifier layout", OFFSET(layout), AV_OPT_TYPE_INT, {.i64=FBTILE_INTEL_XGEN9}, 0, FBTILE_UNKNOWN-1, FLAGS, "layout" },
+        { "None", "Linear layout", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_NONE}, INT_MIN, INT_MAX, FLAGS, "layout" },
+        { "intelx", "Intel Tile-X layout", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_INTEL_XGEN9}, INT_MIN, INT_MAX, FLAGS, "layout" },
+        { "intely", "Intel Tile-Y layout", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_INTEL_YGEN9}, INT_MIN, INT_MAX, FLAGS, "layout" },
+        { "intelyf", "Intel Tile-Yf layout", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_INTEL_YF}, INT_MIN, INT_MAX, FLAGS, "layout" },
     { "op", "select framebuffer tiling operations i.e tile or detile", OFFSET(op), AV_OPT_TYPE_INT, {.i64=FBTILEOPS_NONE}, 0, FBTILEOPS_UNKNOWN-1, FLAGS, "op" },
         { "None", "Nop", 0, AV_OPT_TYPE_CONST, {.i64=FBTILEOPS_NONE}, INT_MIN, INT_MAX, FLAGS, "op" },
         { "tile", "Apply tiling operation", 0, AV_OPT_TYPE_CONST, {.i64=FBTILEOPS_TILE}, INT_MIN, INT_MAX, FLAGS, "op" },
@@ -125,14 +125,14 @@ static av_cold int init(AVFilterContext *ctx)
         av_log(ctx, AV_LOG_ERROR, "init:Op: Unknown, shouldnt reach here\n");
     }
 
-    if (fbtiler->type == FBTILE_NONE) {
-        av_log(ctx, AV_LOG_INFO, "init:Type: pass through\n");
-    } else if (fbtiler->type == FBTILE_INTEL_XGEN9) {
-        av_log(ctx, AV_LOG_INFO, "init:Type: Intel tile-x\n");
-    } else if (fbtiler->type == FBTILE_INTEL_YGEN9) {
-        av_log(ctx, AV_LOG_INFO, "init:Type: Intel tile-y\n");
-    } else if (fbtiler->type == FBTILE_INTEL_YF) {
-        av_log(ctx, AV_LOG_INFO, "init:Type: Intel tile-yf\n");
+    if (fbtiler->layout == FBTILE_NONE) {
+        av_log(ctx, AV_LOG_INFO, "init:Layout: pass through\n");
+    } else if (fbtiler->layout == FBTILE_INTEL_XGEN9) {
+        av_log(ctx, AV_LOG_INFO, "init:Layout: Intel tile-x\n");
+    } else if (fbtiler->layout == FBTILE_INTEL_YGEN9) {
+        av_log(ctx, AV_LOG_INFO, "init:Layout: Intel tile-y\n");
+    } else if (fbtiler->layout == FBTILE_INTEL_YF) {
+        av_log(ctx, AV_LOG_INFO, "init:Layout: Intel tile-yf\n");
     } else {
         av_log(ctx, AV_LOG_ERROR, "init: Unknown Tile format specified, shouldnt reach here\n");
     }
@@ -171,7 +171,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     AVFilterLink *outlink = ctx->outputs[0];
     AVFrame *out;
 
-    if ((fbtiler->op == FBTILEOPS_NONE) || (fbtiler->type == FBTILE_NONE))
+    if ((fbtiler->op == FBTILEOPS_NONE) || (fbtiler->layout == FBTILE_NONE))
         return ff_filter_frame(outlink, in);
 
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
@@ -187,11 +187,11 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 #endif
 
     if (fbtiler->op == FBTILEOPS_TILE) {
-        fbtiler_this(fbtiler->type, 0, fbtiler->width, fbtiler->height,
+        fbtiler_this(fbtiler->layout, 0, fbtiler->width, fbtiler->height,
                         out->data[0], out->linesize[0],
                         in->data[0], in->linesize[0], 4, FBTILEOPS_TILE);
     } else {
-        fbtiler_this(fbtiler->type, 0, fbtiler->width, fbtiler->height,
+        fbtiler_this(fbtiler->layout, 0, fbtiler->width, fbtiler->height,
                         out->data[0], out->linesize[0],
                         in->data[0], in->linesize[0], 4, FBTILEOPS_DETILE);
     }
