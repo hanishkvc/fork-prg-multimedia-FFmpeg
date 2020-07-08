@@ -28,7 +28,7 @@
 #endif
 
 
-enum FBTileLayout fbtilemode_from_drmformatmodifier(uint64_t formatModifier)
+enum FBTileLayout fbtilelayout_from_drmformatmodifier(uint64_t formatModifier)
 {
     enum FBTileLayout mode = FBTILE_UNKNOWN;
 
