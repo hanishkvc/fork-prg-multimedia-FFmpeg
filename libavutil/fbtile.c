@@ -1,5 +1,5 @@
 /*
- * CPU based Framebuffer Tile DeTile logic
+ * CPU based Framebuffer Generic Tile DeTile logic
  * Copyright (c) 2020 C Hanish Menon <HanishKVC>
  *
  * This file is part of FFmpeg.
@@ -84,7 +84,7 @@ int fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVP
 /*
  * Generic tile/detile logic
  * The tile layout data is assumed to be tightly packed, with no gaps inbetween.
- * However the logic does try to accomodate a destination linear layout memory,
+ * However the logic does try to accomodate a src/dst linear layout memory,
  * where there is possibly some additional bytes beyond the width in each line
  * of pixel data.
  */
@@ -128,16 +128,16 @@ struct TileWalk tyTileWalk = {
 
 
 /**
- * _fbtiler_generic_simple to tile/detile layout
+ * _fbtiler_generic_simple tile/detile layout
  */
-int _fbtiler_generic_simple(const int w, const int h,
-                         uint8_t *dst, const int dstLineSize,
-                         uint8_t *src, const int srcLineSize,
-                         const int bytesPerPixel,
-                         const int subTileWidth, const int subTileHeight,
-                         const int tileWidth, const int tileHeight,
-                         const int numDirChanges, const struct dirChange *dirChanges,
-                         int op)
+int _fbtiler_generic_simple(enum FBTileOps op,
+                            const int w, const int h,
+                            uint8_t *dst, const int dstLineSize,
+                            uint8_t *src, const int srcLineSize,
+                            const int bytesPerPixel,
+                            const int subTileWidth, const int subTileHeight,
+                            const int tileWidth, const int tileHeight,
+                            const int numDirChanges, const struct dirChange *dirChanges)
 {
     uint8_t *tld, *lin;
     int tldLineSize, linLineSize;
@@ -199,27 +199,29 @@ int _fbtiler_generic_simple(const int w, const int h,
 }
 
 
-int fbtiler_generic_simple(const int w, const int h,
-                          uint8_t *dst, const int dstLineSize,
-                          const uint8_t *src, const int srcLineSize,
-                          const struct TileWalk *tw, int op)
+int fbtiler_generic_simple(enum FBTileOps op,
+                           const int w, const int h,
+                           uint8_t *dst, const int dstLineSize,
+                           const uint8_t *src, const int srcLineSize,
+                           const struct TileWalk *tw)
 {
-    return _fbtiler_generic_simple(w, h, dst, dstLineSize, src, srcLineSize,
-                                  tw->bytesPerPixel,
-                                  tw->subTileWidth, tw->subTileHeight,
-                                  tw->tileWidth, tw->tileHeight,
-                                  tw->numDirChanges, tw->dirChanges, op);
+    return _fbtiler_generic_simple(op, w, h,
+                                   dst, dstLineSize, src, srcLineSize,
+                                   tw->bytesPerPixel,
+                                   tw->subTileWidth, tw->subTileHeight,
+                                   tw->tileWidth, tw->tileHeight,
+                                   tw->numDirChanges, tw->dirChanges);
 }
 
 
-int _fbtiler_generic_opti(const int w, const int h,
-                         uint8_t *dst, const int dstLineSize,
-                         uint8_t *src, const int srcLineSize,
-                         const int bytesPerPixel,
-                         const int subTileWidth, const int subTileHeight,
-                         const int tileWidth, const int tileHeight,
-                         const int numDirChanges, const struct dirChange *dirChanges,
-                         int op)
+int _fbtiler_generic_opti(enum FBTileOps op,
+                          const int w, const int h,
+                          uint8_t *dst, const int dstLineSize,
+                          uint8_t *src, const int srcLineSize,
+                          const int bytesPerPixel,
+                          const int subTileWidth, const int subTileHeight,
+                          const int tileWidth, const int tileHeight,
+                          const int numDirChanges, const struct dirChange *dirChanges)
 {
     uint8_t *tld, *lin;
     int tldLineSize, linLineSize;
@@ -239,12 +241,12 @@ int _fbtiler_generic_opti(const int w, const int h,
     }
 
     if (w*bytesPerPixel != tldLineSize) {
-        av_log(NULL, AV_LOG_ERROR, "fbdetile:genericopti: w%dxh%d, dL%d, sL%d\n", w, h, linLineSize, tldLineSize);
-        av_log(NULL, AV_LOG_ERROR, "fbdetile:genericopti: dont support tldLineSize | Pitch going beyond width\n");
+        av_log(NULL, AV_LOG_ERROR, "fbtiler:genericopti: w%dxh%d, dL%d, sL%d\n", w, h, linLineSize, tldLineSize);
+        av_log(NULL, AV_LOG_ERROR, "fbtiler:genericopti: dont support tldLineSize | Pitch going beyond width\n");
         return FBT_ERR;
     }
     if (w%tileWidth != 0) {
-        av_log(NULL, AV_LOG_ERROR, "fbdetile:genericopti:NotSupported:Width being non-mult Of TileWidth: width%d, tileWidth%d\n", w, tileWidth);
+        av_log(NULL, AV_LOG_ERROR, "fbtiler:genericopti:NotSupported:Width being non-mult Of TileWidth: width%d, tileWidth%d\n", w, tileWidth);
         return FBT_ERR;
     }
     int tO = 0;
@@ -262,16 +264,16 @@ int _fbtiler_generic_opti(const int w, const int h,
     while (cSTL < nSTLines) {
         int lO = lY*linLineSize + lX*bytesPerPixel;
 #ifdef DEBUG_FBTILE
-        av_log(NULL, AV_LOG_DEBUG, "fbdetile:genericopti: lX%d lY%d; tO%d, lO%d; %d/%d\n", lX, lY, tO, lO, cSTL, nSTLines);
+        av_log(NULL, AV_LOG_DEBUG, "fbtiler:genericopti: lX%d lY%d; tO%d, lO%d; %d/%d\n", lX, lY, tO, lO, cSTL, nSTLines);
 #endif
 
         // As most tiling layouts have a minimum subtile of 4x4, if I remember correctly,
         // so this loop can be unrolled to be multiples of 4, and speed up a bit.
         // However tiling involving 3x3 or 2x2 wont be handlable. In which one will have to use
-        // fbtiler_generic_simple for such tile layouts. So not unrolling for now.
-        // Detile parallely to a limited extent. Gain some speed by reusing calcs, but still avoid
-        // any cache set-associativity and or limited cache based thrashing. Keep it spatially and
-        // inturn temporaly small at one level.
+        // NON UnRolled version or fbtiler_generic_simple for such tile layouts.
+        // (De)tile parallely to a limited extent. Gain some speed by allowing reuse of calcs and parallelism,
+        // but still avoid any cache set-associativity and or limited cache based thrashing. Keep it spatially
+        // and inturn temporaly small at one level.
         if (op == FBTILEOPS_DETILE) {
 #ifdef FBTILER_OPTI_UNROLL
             for (int k = 0; k < subTileHeight; k+=4) {
@@ -338,16 +340,18 @@ int _fbtiler_generic_opti(const int w, const int h,
 }
 
 
-int fbtiler_generic_opti(const int w, const int h,
-                        uint8_t *dst, const int dstLineSize,
-                        const uint8_t *src, const int srcLineSize,
-                        const struct TileWalk *tw, int op)
+int fbtiler_generic_opti(enum FBTileOps op,
+                         const int w, const int h,
+                         uint8_t *dst, const int dstLineSize,
+                         const uint8_t *src, const int srcLineSize,
+                         const struct TileWalk *tw)
 {
-    return _fbtiler_generic_opti(w, h, dst, dstLineSize, src, srcLineSize,
-                                tw->bytesPerPixel,
-                                tw->subTileWidth, tw->subTileHeight,
-                                tw->tileWidth, tw->tileHeight,
-                                tw->numDirChanges, tw->dirChanges, op);
+    return _fbtiler_generic_opti(op, w, h,
+                                 dst, dstLineSize, src, srcLineSize,
+                                 tw->bytesPerPixel,
+                                 tw->subTileWidth, tw->subTileHeight,
+                                 tw->tileWidth, tw->tileHeight,
+                                 tw->numDirChanges, tw->dirChanges);
 }
 
 
@@ -358,18 +362,18 @@ int fbtiler_this(enum FBTileLayout layout, uint64_t arg1,
                         int bytesPerPixel, int op)
 {
     if (layout == FBTILE_NONE) {
-        av_log(NULL, AV_LOG_WARNING, "fbtiler:tile_this:FBTILE_NONE: not tiling\n");
+        av_log(NULL, AV_LOG_WARNING, "fbtiler_this:FBTILE_NONE: not tiling\n");
         return FBT_ERR;
     }
 
     if (layout == FBTILE_INTEL_XGEN9) {
-        return fbtiler_generic(w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk, op);
+        return fbtiler_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk);
     } else if (layout == FBTILE_INTEL_YGEN9) {
-        return fbtiler_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk, op);
+        return fbtiler_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk);
     } else if (layout == FBTILE_INTEL_YF) {
-        return fbtiler_generic(w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk, op);
+        return fbtiler_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
     } else {
-        av_log(NULL, AV_LOG_WARNING, "fbtiler:tile_this:%d: unknown layout specified, not tiling\n", layout);
+        av_log(NULL, AV_LOG_WARNING, "fbtiler_this:%d: unknown layout specified, not (de)tiling\n", layout);
         return FBT_ERR;
     }
     return FBT_ERR;

@@ -152,35 +152,37 @@ extern struct TileWalk tyTileWalk;
 /**
  * Generic tile/detile simple version.
  */
-int _fbtiler_generic_simple(const int w, const int h,
+int _fbtiler_generic_simple(enum FBTileOps op,
+                            const int w, const int h,
+                            uint8_t *dst, const int dstLineSize,
+                            uint8_t *src, const int srcLineSize,
+                            const int bytesPerPixel,
+                            const int subTileWidth, const int subTileHeight,
+                            const int tileWidth, const int tileHeight,
+                            const int numDirChanges, const struct dirChange *dirChanges);
+int fbtiler_generic_simple(enum FBTileOps op,
+                           const int w, const int h,
                            uint8_t *dst, const int dstLineSize,
-                           uint8_t *src, const int srcLineSize,
-                           const int bytesPerPixel,
-                           const int subTileWidth, const int subTileHeight,
-                           const int tileWidth, const int tileHeight,
-                           const int numDirChanges, const struct dirChange *dirChanges,
-                           int op);
-int fbtiler_generic_simple(const int w, const int h,
-                          uint8_t *dst, const int dstLineSize,
-                          const uint8_t *src, const int srcLineSize,
-                          const struct TileWalk *tw, int op);
+                           const uint8_t *src, const int srcLineSize,
+                           const struct TileWalk *tw);
 
 
 /**
  * Generic tile/detile minimal optimised version.
  */
-int _fbtiler_generic_opti(const int w, const int h,
+int _fbtiler_generic_opti(enum FBTileOps op,
+                          const int w, const int h,
+                          uint8_t *dst, const int dstLineSize,
+                          uint8_t *src, const int srcLineSize,
+                          const int bytesPerPixel,
+                          const int subTileWidth, const int subTileHeight,
+                          const int tileWidth, const int tileHeight,
+                          const int numDirChanges, const struct dirChange *dirChanges);
+int fbtiler_generic_opti(enum FBTileOps op,
+                         const int w, const int h,
                          uint8_t *dst, const int dstLineSize,
-                         uint8_t *src, const int srcLineSize,
-                         const int bytesPerPixel,
-                         const int subTileWidth, const int subTileHeight,
-                         const int tileWidth, const int tileHeight,
-                         const int numDirChanges, const struct dirChange *dirChanges,
-                         int op);
-int fbtiler_generic_opti(const int w, const int h,
-                        uint8_t *dst, const int dstLineSize,
-                        const uint8_t *src, const int srcLineSize,
-                        const struct TileWalk *tw, int op);
+                         const uint8_t *src, const int srcLineSize,
+                         const struct TileWalk *tw);
 
 
 #define FBTILER_GENERIC_OPTI 1
