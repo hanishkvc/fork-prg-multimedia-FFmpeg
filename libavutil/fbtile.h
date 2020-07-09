@@ -58,7 +58,7 @@ enum FBTileOps {
  * This identifies the supported tile layouts
  */
 enum FBTileLayout {
-    FBTILE_NONE,
+    FBTILE_NONE,            // This also corresponds to linear layout
     FBTILE_INTEL_XGEN9,
     FBTILE_INTEL_YGEN9,
     FBTILE_INTEL_YF,
@@ -152,14 +152,6 @@ extern struct TileWalk tyTileWalk;
 /**
  * Generic tile/detile simple version.
  */
-int _fbtiler_generic_simple(enum FBTileOps op,
-                            const int w, const int h,
-                            uint8_t *dst, const int dstLineSize,
-                            uint8_t *src, const int srcLineSize,
-                            const int bytesPerPixel,
-                            const int subTileWidth, const int subTileHeight,
-                            const int tileWidth, const int tileHeight,
-                            const int numDirChanges, const struct dirChange *dirChanges);
 int fbtiler_generic_simple(enum FBTileOps op,
                            const int w, const int h,
                            uint8_t *dst, const int dstLineSize,
@@ -170,14 +162,6 @@ int fbtiler_generic_simple(enum FBTileOps op,
 /**
  * Generic tile/detile minimal optimised version.
  */
-int _fbtiler_generic_opti(enum FBTileOps op,
-                          const int w, const int h,
-                          uint8_t *dst, const int dstLineSize,
-                          uint8_t *src, const int srcLineSize,
-                          const int bytesPerPixel,
-                          const int subTileWidth, const int subTileHeight,
-                          const int tileWidth, const int tileHeight,
-                          const int numDirChanges, const struct dirChange *dirChanges);
 int fbtiler_generic_opti(enum FBTileOps op,
                          const int w, const int h,
                          uint8_t *dst, const int dstLineSize,

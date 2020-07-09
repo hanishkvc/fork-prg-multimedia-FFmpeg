@@ -130,14 +130,14 @@ struct TileWalk tyTileWalk = {
 /**
  * _fbtiler_generic_simple tile/detile layout
  */
-int _fbtiler_generic_simple(enum FBTileOps op,
-                            const int w, const int h,
-                            uint8_t *dst, const int dstLineSize,
-                            uint8_t *src, const int srcLineSize,
-                            const int bytesPerPixel,
-                            const int subTileWidth, const int subTileHeight,
-                            const int tileWidth, const int tileHeight,
-                            const int numDirChanges, const struct dirChange *dirChanges)
+static int _fbtiler_generic_simple(enum FBTileOps op,
+                                   const int w, const int h,
+                                   uint8_t *dst, const int dstLineSize,
+                                   uint8_t *src, const int srcLineSize,
+                                   const int bytesPerPixel,
+                                   const int subTileWidth, const int subTileHeight,
+                                   const int tileWidth, const int tileHeight,
+                                   const int numDirChanges, const struct dirChange *dirChanges)
 {
     uint8_t *tld, *lin;
     int tldLineSize, linLineSize;
@@ -214,14 +214,14 @@ int fbtiler_generic_simple(enum FBTileOps op,
 }
 
 
-int _fbtiler_generic_opti(enum FBTileOps op,
-                          const int w, const int h,
-                          uint8_t *dst, const int dstLineSize,
-                          uint8_t *src, const int srcLineSize,
-                          const int bytesPerPixel,
-                          const int subTileWidth, const int subTileHeight,
-                          const int tileWidth, const int tileHeight,
-                          const int numDirChanges, const struct dirChange *dirChanges)
+static int _fbtiler_generic_opti(enum FBTileOps op,
+                                 const int w, const int h,
+                                 uint8_t *dst, const int dstLineSize,
+                                 uint8_t *src, const int srcLineSize,
+                                 const int bytesPerPixel,
+                                 const int subTileWidth, const int subTileHeight,
+                                 const int tileWidth, const int tileHeight,
+                                 const int numDirChanges, const struct dirChange *dirChanges)
 {
     uint8_t *tld, *lin;
     int tldLineSize, linLineSize;
