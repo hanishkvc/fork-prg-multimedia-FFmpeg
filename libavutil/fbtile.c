@@ -139,6 +139,9 @@ static int _fbtiler_generic_simple(enum FBTileOps op,
                                    const int tileWidth, const int tileHeight,
                                    const int numDirChanges, const struct dirChange *dirChanges)
 {
+    int tO, lO;
+    int lX, lY;
+    int cSTL, nSTLines;
     uint8_t *tld, *lin;
     int tldLineSize, linLineSize;
     const int subTileWidthBytes = subTileWidth*bytesPerPixel;
@@ -162,13 +165,13 @@ static int _fbtiler_generic_simple(enum FBTileOps op,
         av_log(NULL, AV_LOG_ERROR, "fbtiler:genericsimp: dont support tldLineSize | Pitch going beyond width\n");
         return FBT_ERR;
     }
-    int tO = 0;
-    int lX = 0;
-    int lY = 0;
-    int nSTLines = (w*h)/subTileWidth;  // numSubTileLines
-    int cSTL = 0;                       // curSubTileLine
+    tO = 0;
+    lX = 0;
+    lY = 0;
+    nSTLines = (w*h)/subTileWidth;  // numSubTileLines
+    cSTL = 0;                       // curSubTileLine
     while (cSTL < nSTLines) {
-        int lO = lY*linLineSize + lX*bytesPerPixel;
+        lO = lY*linLineSize + lX*bytesPerPixel;
 #ifdef DEBUG_FBTILE
         av_log(NULL, AV_LOG_DEBUG, "fbtiler:genericsimp: lX%d lY%d; lO%d, tO%d; %d/%d\n", lX, lY, lO, tO, cSTL, nSTLines);
 #endif
@@ -223,6 +226,10 @@ static int _fbtiler_generic_opti(enum FBTileOps op,
                                  const int tileWidth, const int tileHeight,
                                  const int numDirChanges, const struct dirChange *dirChanges)
 {
+    int tO, lO, tOPrev;
+    int lX, lY;
+    int cSTL, nSTLines;
+    int curTileInRow, nTilesInARow;
     uint8_t *tld, *lin;
     int tldLineSize, linLineSize;
     const int subTileWidthBytes = subTileWidth*bytesPerPixel;
@@ -249,20 +256,20 @@ static int _fbtiler_generic_opti(enum FBTileOps op,
         av_log(NULL, AV_LOG_ERROR, "fbtiler:genericopti:NotSupported:Width being non-mult Of TileWidth: width%d, tileWidth%d\n", w, tileWidth);
         return FBT_ERR;
     }
-    int tO = 0;
-    int tOPrev = 0;
-    int lX = 0;
-    int lY = 0;
-    int nTilesInARow = w/tileWidth;
+    tO = 0;
+    tOPrev = 0;
+    lX = 0;
+    lY = 0;
+    nTilesInARow = w/tileWidth;
     for (parallel=8; parallel>0; parallel--) {
         if (nTilesInARow%parallel == 0)
             break;
     }
-    int nSTLines = (w*h)/subTileWidth;  // numSubTileLines
-    int cSTL = 0;                       // curSubTileLine
-    int curTileInRow = 0;
+    nSTLines = (w*h)/subTileWidth;  // numSubTileLines
+    cSTL = 0;                       // curSubTileLine
+    curTileInRow = 0;
     while (cSTL < nSTLines) {
-        int lO = lY*linLineSize + lX*bytesPerPixel;
+        lO = lY*linLineSize + lX*bytesPerPixel;
 #ifdef DEBUG_FBTILE
         av_log(NULL, AV_LOG_DEBUG, "fbtiler:genericopti: lX%d lY%d; tO%d, lO%d; %d/%d\n", lX, lY, tO, lO, cSTL, nSTLines);
 #endif
