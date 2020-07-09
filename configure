@@ -6654,7 +6654,6 @@ if enabled vaapi; then
     check_type "va/va.h va/va_enc_vp9.h"  "VAEncPictureParameterBufferVP9"
 fi
 
-#enabled libdrm            && require_pkg_config libdrm libdrm xf86drmMode.h drmModeGetFB2 && enable drm_getfb2
 if enabled libdrm; then
     require_pkg_config libdrm libdrm xf86drmMode.h drmModeGetFB2 &&
         enable drm_getfb2

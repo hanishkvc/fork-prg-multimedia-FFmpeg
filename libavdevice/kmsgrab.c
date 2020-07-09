@@ -239,7 +239,9 @@ static av_cold int kmsgrab_read_header(AVFormatContext *avctx)
     drmModePlaneRes *plane_res = NULL;
     drmModePlane *plane = NULL;
     drmModeFB *fb = NULL;
+#ifdef HAVE_DRM_GETFB2
     drmModeFB2 *fb2 = NULL;
+#endif
     AVStream *stream;
     int err, i;
 
@@ -365,6 +367,7 @@ static av_cold int kmsgrab_read_header(AVFormatContext *avctx)
         goto fail;
     }
 
+#ifdef HAVE_DRM_GETFB2
     fb2 = drmModeGetFB2(ctx->hwctx->fd, plane->fb_id);
     if (!fb2) {
         err = errno;
@@ -381,6 +384,10 @@ static av_cold int kmsgrab_read_header(AVFormatContext *avctx)
 
     if (ctx->drm_format_modifier == DRM_FORMAT_MOD_INVALID)
         ctx->drm_format_modifier  = fb2->modifier;
+#else
+    if (ctx->drm_format_modifier == DRM_FORMAT_MOD_INVALID)
+        ctx->drm_format_modifier  = DRM_FORMAT_MOD_NONE;
+#endif
 
     stream = avformat_new_stream(avctx, NULL);
     if (!stream) {
@@ -426,8 +433,10 @@ fail:
         drmModeFreePlane(plane);
     if (fb)
         drmModeFreeFB(fb);
+#ifdef HAVE_DRM_GETFB2
     if (fb2)
         drmModeFreeFB2(fb2);
+#endif
 
     return err;
 }
