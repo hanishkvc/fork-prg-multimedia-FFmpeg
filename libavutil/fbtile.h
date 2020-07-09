@@ -198,6 +198,18 @@ int fbtiler_conv(enum FBTileOps op, enum FBTileLayout layout,
                  int bytesPerPixel);
 
 
+/**
+ * Copy one AVFrame into the other, tiling or detiling as required, if possible.
+ * NOTE: Either the Source or the Destination AVFrame (i.e one of them) should be linear.
+ * NOTE: If the tiling layout is not understood, it will do a simple copy.
+ *
+ * @param dst the destination avframe
+ * @param dstTileLayout the framebuffer tiling layout expected for the destination avframe
+ * @param src the source avframe
+ * @param srcTileLayout the framebuffer tiling layout of the source avframe
+ *
+ * @return 0 if copied.
+ */
 int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileLayout,
                               AVFrame *src, enum FBTileLayout srcTileLayout);
 
