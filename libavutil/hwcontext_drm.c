@@ -21,6 +21,7 @@
 #include <unistd.h>
 
 #include <drm.h>
+#include <drm_fourcc.h>
 #include <xf86drm.h>
 
 #include "avassert.h"
@@ -28,6 +29,7 @@
 #include "hwcontext_drm.h"
 #include "hwcontext_internal.h"
 #include "imgutils.h"
+#include "fbtile.h"
 
 
 static void drm_device_free(AVHWDeviceContext *hwdev)
@@ -185,6 +187,39 @@ static int drm_transfer_get_formats(AVHWFramesContext *ctx,
     return 0;
 }
 
+// Can be overridden during compiling, if required.
+#ifndef HWCTXDRM_SYNCRELATED_FORMATMODIFIER
+#define HWCTXDRM_SYNCRELATED_FORMATMODIFIER 1
+#endif
+static int drm_transfer_with_detile(const AVFrame *hwAVFrame, AVFrame *dst, const AVFrame *src)
+{
+    int err;
+    uint64_t formatModifier;
+    int fbtileLayout;
+
+    if (hwAVFrame->format  == AV_PIX_FMT_DRM_PRIME) {
+        err = fbtile_checkpixformats(src->format, dst->format);
+        if (!err) {
+            AVDRMFrameDescriptor *drmFrame = (AVDRMFrameDescriptor*)hwAVFrame->data[0];
+            formatModifier = drmFrame->objects[0].format_modifier;
+            fbtileLayout = fbtilelayout_from_drmformatmodifier(formatModifier);
+            if ((fbtileLayout != FBTILE_NONE) && (fbtileLayout != FBTILE_UNKNOWN)) {
+                err = fbtiler_conv(FBTILEOPS_DETILE, fbtileLayout,
+                                   dst->width, dst->height,
+                                   dst->data[0], dst->linesize[0],
+                                   src->data[0], src->linesize[0], 4);
+                if (!err) {
+#if HWCTXDRM_SYNCRELATED_FORMATMODIFIER
+                    drmFrame->objects[0].format_modifier = DRM_FORMAT_MOD_LINEAR;
+#endif
+                    return 0;
+                }
+            }
+        }
+    }
+    return av_frame_copy(dst, src);
+}
+
 static int drm_transfer_data_from(AVHWFramesContext *hwfc,
                                   AVFrame *dst, const AVFrame *src)
 {
@@ -206,7 +241,7 @@ static int drm_transfer_data_from(AVHWFramesContext *hwfc,
     map->width  = dst->width;
     map->height = dst->height;
 
-    err = av_frame_copy(dst, map);
+    err = drm_transfer_with_detile(src, dst, map);
     if (err)
         goto fail;
 
@@ -238,7 +273,7 @@ static int drm_transfer_data_to(AVHWFramesContext *hwfc,
     map->width  = src->width;
     map->height = src->height;
 
-    err = av_frame_copy(map, src);
+    err = drm_transfer_with_detile(dst, map, src);
     if (err)
         goto fail;
 
