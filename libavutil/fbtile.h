@@ -107,6 +107,14 @@ struct dirChange {
 
 /*
  * TileWalk, Contains info required for a given tile walking.
+ *
+ * @field bytesPerPixel the bytes per pixel for the image
+ * @field subTileWidth the width of subtile within the tile, in pixels
+ * @field subTileHeight the height of subtile within the tile, in pixels
+ * @field tileWidth the width of the tile, in pixels
+ * @field tileHeight the height of the tile, in pixels
+ * @field numDirChanges the number of dir changes involved in tile walk
+ * @field dirChanges the array of dir changes for the tile walk required
  */
 struct TileWalk {
     int bytesPerPixel;
@@ -127,23 +135,14 @@ extern struct TileWalk tyTileWalk;
 /**
  * Generic Logic to Tile/Detile between tiled and linear layout.
  *
+ * @param op whether to tile or detile
  * @param w width of the image
  * @param h height of the image
  * @param dst the destination image buffer
  * @param dstLineSize the size of each row in dst image, in bytes
  * @param src the source image buffer
  * @param srcLineSize the size of each row in src image, in bytes
- * the wide _func additional explicit options
- *     @param bytesPerPixel the bytes per pixel for the image
- *     @param subTileWidth the width of subtile within the tile, in pixels
- *     @param subTileHeight the height of subtile within the tile, in pixels
- *     @param tileWidth the width of the tile, in pixels
- *     @param tileHeight the height of the tile, in pixels
- *     @param numDirChanges the number of dir changes involved in tile walk
- *     @param dirChanges the array of dir changes for the tile walk required
- * the compact func additional options
- *     @param tw the structure which contains the tile walk parameters
- * @param op whether to tile or detile
+ * @param tw the structure which contains the tile walk parameters
  *
  * @return 0 if detiled, 1 if not
  */
@@ -155,7 +154,7 @@ extern struct TileWalk tyTileWalk;
 int fbtiler_generic_simple(enum FBTileOps op,
                            const int w, const int h,
                            uint8_t *dst, const int dstLineSize,
-                           const uint8_t *src, const int srcLineSize,
+                           uint8_t *src, const int srcLineSize,
                            const struct TileWalk *tw);
 
 
@@ -165,7 +164,7 @@ int fbtiler_generic_simple(enum FBTileOps op,
 int fbtiler_generic_opti(enum FBTileOps op,
                          const int w, const int h,
                          uint8_t *dst, const int dstLineSize,
-                         const uint8_t *src, const int srcLineSize,
+                         uint8_t *src, const int srcLineSize,
                          const struct TileWalk *tw);
 
 

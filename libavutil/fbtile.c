@@ -205,7 +205,7 @@ static int _fbtiler_generic_simple(enum FBTileOps op,
 int fbtiler_generic_simple(enum FBTileOps op,
                            const int w, const int h,
                            uint8_t *dst, const int dstLineSize,
-                           const uint8_t *src, const int srcLineSize,
+                           uint8_t *src, const int srcLineSize,
                            const struct TileWalk *tw)
 {
     return _fbtiler_generic_simple(op, w, h,
@@ -350,7 +350,7 @@ static int _fbtiler_generic_opti(enum FBTileOps op,
 int fbtiler_generic_opti(enum FBTileOps op,
                          const int w, const int h,
                          uint8_t *dst, const int dstLineSize,
-                         const uint8_t *src, const int srcLineSize,
+                         uint8_t *src, const int srcLineSize,
                          const struct TileWalk *tw)
 {
     return _fbtiler_generic_opti(op, w, h,
