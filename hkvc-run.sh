@@ -100,5 +100,29 @@ function test_fbtiler() {
 	_test_fbtiler "-vf fbtiler=op=2:layout=3" t_tyf.png t_dyf.png
 }
 
+function test_fbtiler_hw() {
+
+	sudo rm /tmp/t.mp4; sudo ./ffmpeg -f kmsgrab -i - -vf hwdownload,format=bgr0 /tmp/t.mp4
+	read -p "Capture with hwcontext_drm conv, this should play proper"
+	./ffplay -i /tmp/t.mp4
+
+	sudo rm /tmp/t.mp4; sudo ./ffmpeg -f kmsgrab -format_modifier 2 -i - -vf hwdownload,format=bgr0 /tmp/t.mp4
+	read -p "Capture with hwcontext_drm conv wrong format_modifier, this should not play proper"
+	./ffplay -i /tmp/t.mp4
+	read -p "this should play proper"
+	./ffplay -i /tmp/t.mp4 -vf fbtiler=op=2:layout=1
+
+	sudo rm /tmp/t.mp4; sudo ./ffmpeg -f kmsgrab -format_modifier 2 -i - -vf hwdownload=0,format=bgr0 /tmp/t.mp4
+	read -p "Capture with hwcontext_drm conv wrong format_modifier, hwdownload passthrough, this should not play proper"
+	./ffplay -i /tmp/t.mp4
+	read -p "this should play proper"
+	./ffplay -i /tmp/t.mp4 -vf fbtiler=op=2:layout=1
+
+	sudo rm /tmp/t.mp4; sudo ./ffmpeg -f kmsgrab -format_modifier 2 -i - -vf hwdownload=1,format=bgr0 /tmp/t.mp4
+	read -p "Capture with hwcontext_drm conv wrong format_modifier, hwdownload conv, this should play proper"
+	./ffplay -i /tmp/t.mp4
+
+}
+
 $@
 
