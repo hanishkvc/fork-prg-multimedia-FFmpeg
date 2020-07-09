@@ -180,8 +180,8 @@ int fbtiler_generic_opti(enum FBTileOps op,
 /**
  * tile/detile demuxer.
  *
- * @param layout the fbtilelayout based detiling to call
- * @param arg1 for future
+ * @param op todo tiling or todo detiling
+ * @param layout specify the tile layout of dst/src framebuffer involved
  * @param w width of the image
  * @param h height of the image
  * @param dst the destination image buffer
@@ -192,11 +192,11 @@ int fbtiler_generic_opti(enum FBTileOps op,
  *
  * @return 0 if detiled, 1 if not
  */
-int fbtiler_this(enum FBTileLayout layout, uint64_t arg1,
+int fbtiler_this(enum FBTileOps op, enum FBTileLayout layout,
                 int w, int h,
                 uint8_t *dst, int dstLineSize,
                 uint8_t *src, int srcLineSize,
-                int bytesPerPixel, int op);
+                int bytesPerPixel);
 
 
 int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileLayout,

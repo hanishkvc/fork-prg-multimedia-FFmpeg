@@ -362,11 +362,11 @@ int fbtiler_generic_opti(enum FBTileOps op,
 }
 
 
-int fbtiler_this(enum FBTileLayout layout, uint64_t arg1,
+int fbtiler_this(enum FBTileOps op, enum FBTileLayout layout,
                         int w, int h,
                         uint8_t *dst, int dstLineSize,
                         uint8_t *src, int srcLineSize,
-                        int bytesPerPixel, int op)
+                        int bytesPerPixel)
 {
     if (layout == FBTILE_NONE) {
         av_log(NULL, AV_LOG_WARNING, "fbtiler_this:FBTILE_NONE: not tiling\n");
@@ -394,9 +394,10 @@ int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileLayout, AVF
     if (dstTileLayout == FBTILE_NONE) {         // i.e DeTile
         err = fbtile_checkpixformats(src->format, dst->format);
         if (!err) {
-            err = fbtiler_this(srcTileLayout, 0, dst->width, dst->height,
-                              dst->data[0], dst->linesize[0],
-                              src->data[0], src->linesize[0], 4, FBTILEOPS_DETILE);
+            err = fbtiler_this(FBTILEOPS_DETILE, srcTileLayout,
+                                dst->width, dst->height,
+                                dst->data[0], dst->linesize[0],
+                                src->data[0], src->linesize[0], 4);
             if (!err) {
                 return FBT_OK;
             }
@@ -404,9 +405,10 @@ int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileLayout, AVF
     } else if (srcTileLayout == FBTILE_NONE) {  // i.e Tile
         err = fbtile_checkpixformats(src->format, dst->format);
         if (!err) {
-            err = fbtiler_this(dstTileLayout, 0, src->width, src->height,
-                              dst->data[0], dst->linesize[0],
-                              src->data[0], src->linesize[0], 4, FBTILEOPS_TILE);
+            err = fbtiler_this(FBTILEOPS_TILE, dstTileLayout,
+                                src->width, src->height,
+                                dst->data[0], dst->linesize[0],
+                                src->data[0], src->linesize[0], 4);
             if (!err) {
                 return FBT_OK;
             }
