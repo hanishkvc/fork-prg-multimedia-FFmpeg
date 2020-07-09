@@ -1,5 +1,5 @@
 /*
- * CPU based Framebuffer Tile DeTile logic
+ * CPU based Framebuffer Generic Tile DeTile logic
  * Copyright (c) 2020 C Hanish Menon <HanishKVC>
  *
  * This file is part of FFmpeg.
@@ -191,11 +191,11 @@ int fbtiler_generic_opti(enum FBTileOps op,
  *
  * @return 0 if detiled, 1 if not
  */
-int fbtiler_this(enum FBTileOps op, enum FBTileLayout layout,
-                int w, int h,
-                uint8_t *dst, int dstLineSize,
-                uint8_t *src, int srcLineSize,
-                int bytesPerPixel);
+int fbtiler_conv(enum FBTileOps op, enum FBTileLayout layout,
+                 int w, int h,
+                 uint8_t *dst, int dstLineSize,
+                 uint8_t *src, int srcLineSize,
+                 int bytesPerPixel);
 
 
 int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileLayout,

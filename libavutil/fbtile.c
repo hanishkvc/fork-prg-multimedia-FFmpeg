@@ -362,14 +362,14 @@ int fbtiler_generic_opti(enum FBTileOps op,
 }
 
 
-int fbtiler_this(enum FBTileOps op, enum FBTileLayout layout,
-                        int w, int h,
-                        uint8_t *dst, int dstLineSize,
-                        uint8_t *src, int srcLineSize,
-                        int bytesPerPixel)
+int fbtiler_conv(enum FBTileOps op, enum FBTileLayout layout,
+                 int w, int h,
+                 uint8_t *dst, int dstLineSize,
+                 uint8_t *src, int srcLineSize,
+                 int bytesPerPixel)
 {
     if (layout == FBTILE_NONE) {
-        av_log(NULL, AV_LOG_WARNING, "fbtiler_this:FBTILE_NONE: not tiling\n");
+        av_log(NULL, AV_LOG_WARNING, "fbtiler_conv:FBTILE_NONE: not tiling\n");
         return FBT_ERR;
     }
 
@@ -380,7 +380,7 @@ int fbtiler_this(enum FBTileOps op, enum FBTileLayout layout,
     } else if (layout == FBTILE_INTEL_YF) {
         return fbtiler_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
     } else {
-        av_log(NULL, AV_LOG_WARNING, "fbtiler_this:%d: unknown layout specified, not (de)tiling\n", layout);
+        av_log(NULL, AV_LOG_WARNING, "fbtiler_conv:%d: unknown layout specified, not (de)tiling\n", layout);
         return FBT_ERR;
     }
     return FBT_ERR;
@@ -394,7 +394,7 @@ int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileLayout, AVF
     if (dstTileLayout == FBTILE_NONE) {         // i.e DeTile
         err = fbtile_checkpixformats(src->format, dst->format);
         if (!err) {
-            err = fbtiler_this(FBTILEOPS_DETILE, srcTileLayout,
+            err = fbtiler_conv(FBTILEOPS_DETILE, srcTileLayout,
                                 dst->width, dst->height,
                                 dst->data[0], dst->linesize[0],
                                 src->data[0], src->linesize[0], 4);
@@ -405,7 +405,7 @@ int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileLayout, AVF
     } else if (srcTileLayout == FBTILE_NONE) {  // i.e Tile
         err = fbtile_checkpixformats(src->format, dst->format);
         if (!err) {
-            err = fbtiler_this(FBTILEOPS_TILE, dstTileLayout,
+            err = fbtiler_conv(FBTILEOPS_TILE, dstTileLayout,
                                 src->width, src->height,
                                 dst->data[0], dst->linesize[0],
                                 src->data[0], src->linesize[0], 4);
