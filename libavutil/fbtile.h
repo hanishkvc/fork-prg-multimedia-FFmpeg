@@ -37,11 +37,22 @@
 /**
  * Set the scope of the public api, make it non-public
  */
-//#define SCOPE_LIMITED 1
-#ifdef SCOPE_LIMITED
+#define FBTILE_SCOPE_LIMITED 1
+#ifdef FBTILE_SCOPE_LIMITED
 #define SCOPEIN static
 #else
 #define SCOPEIN
+#endif
+
+
+/**
+ * Set fbtiler_generic to either simple or minimal optimised logic
+ */
+#define FBTILER_GENERIC_OPTI 1
+#ifdef FBTILER_GENERIC_OPTI
+#define fbtiler_generic fbtiler_generic_opti
+#else
+#define fbtiler_generic fbtiler_generic_simple
 #endif
 
 
@@ -77,7 +88,38 @@ enum FBTileLayout {
 };
 
 
-#ifndef SCOPE_LIMITED
+/*
+ * Direction Change Entry
+ * Used to specify the tile walking of subtiles within a tile.
+ */
+struct dirChange {
+    int posOffset;
+    int xDelta;
+    int yDelta;
+};
+
+
+/*
+ * TileWalk, Contains info required for a given tile walking.
+ *
+ * @field bytesPerPixel the bytes per pixel for the image
+ * @field subTileWidth the width of subtile within the tile, in pixels
+ * @field subTileHeight the height of subtile within the tile, in pixels
+ * @field tileWidth the width of the tile, in pixels
+ * @field tileHeight the height of the tile, in pixels
+ * @field numDirChanges the number of dir changes involved in tile walk
+ * @field dirChanges the array of dir changes for the tile walk required
+ */
+struct TileWalk {
+    int bytesPerPixel;
+    int subTileWidth, subTileHeight;
+    int tileWidth, tileHeight;
+    int numDirChanges;
+    struct dirChange dirChanges[];
+};
+
+
+#ifndef FBTILE_SCOPE_LIMITED
 
 
 /**
@@ -109,34 +151,6 @@ int fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVP
  * Generic Logic.
  */
 
-/*
- * Direction Change Entry
- * Used to specify the tile walking of subtiles within a tile.
- */
-struct dirChange {
-    int posOffset;
-    int xDelta;
-    int yDelta;
-};
-
-/*
- * TileWalk, Contains info required for a given tile walking.
- *
- * @field bytesPerPixel the bytes per pixel for the image
- * @field subTileWidth the width of subtile within the tile, in pixels
- * @field subTileHeight the height of subtile within the tile, in pixels
- * @field tileWidth the width of the tile, in pixels
- * @field tileHeight the height of the tile, in pixels
- * @field numDirChanges the number of dir changes involved in tile walk
- * @field dirChanges the array of dir changes for the tile walk required
- */
-struct TileWalk {
-    int bytesPerPixel;
-    int subTileWidth, subTileHeight;
-    int tileWidth, tileHeight;
-    int numDirChanges;
-    struct dirChange dirChanges[];
-};
 
 /**
  * Tile Walk parameters for Tile-X, Tile-Y, Tile-Yf
@@ -182,14 +196,6 @@ int fbtiler_generic_opti(enum FBTileOps op,
                          const struct TileWalk *tw);
 
 
-#define FBTILER_GENERIC_OPTI 1
-#ifdef FBTILER_GENERIC_OPTI
-#define fbtiler_generic fbtiler_generic_opti
-#else
-#define fbtiler_generic fbtiler_generic_simple
-#endif
-
-
 /**
  * tile/detile demuxer.
  *
@@ -228,7 +234,7 @@ int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileLayout,
                               AVFrame *src, enum FBTileLayout srcTileLayout);
 
 
-#endif // SCOPE_LIMITED
+#endif // FBTILE_SCOPE_LIMITED
 
 
 /**

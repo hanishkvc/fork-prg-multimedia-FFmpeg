@@ -94,6 +94,7 @@ static int hwdownload_config_input(AVFilterLink *inlink)
         return AVERROR(ENOMEM);
 
     ctx->hwframes = (AVHWFramesContext*)ctx->hwframes_ref->data;
+#ifndef FBTILE_SCOPE_LIMITED
 
     if (ctx->fbdetile != 0) {
         err = fbtile_checkpixformats(ctx->hwframes->sw_format, fbtilePixFormats[0]);
@@ -103,6 +104,7 @@ static int hwdownload_config_input(AVFilterLink *inlink)
             return AVERROR(EINVAL);
         }
     }
+#endif
 
     return 0;
 }
@@ -139,6 +141,7 @@ static int hwdownload_config_output(AVFilterLink *outlink)
         return AVERROR(EINVAL);
     }
 
+#ifndef FBTILE_SCOPE_LIMITED
     if (ctx->fbdetile != 0) {
         err = fbtile_checkpixformats(outlink->format, fbtilePixFormats[0]);
         if (err) {
@@ -147,6 +150,7 @@ static int hwdownload_config_output(AVFilterLink *outlink)
             return AVERROR(EINVAL);
         }
     }
+#endif
 
     outlink->w = inlink->w;
     outlink->h = inlink->h;
@@ -200,6 +204,7 @@ static int hwdownload_filter_frame(AVFilterLink *link, AVFrame *input)
         return ff_filter_frame(avctx->outputs[0], output);
     }
 
+#ifndef FBTILE_SCOPE_LIMITED
     output2 = ff_get_video_buffer(outlink, ctx->hwframes->width,
                                   ctx->hwframes->height);
     if (!output2) {
@@ -222,6 +227,7 @@ static int hwdownload_filter_frame(AVFilterLink *link, AVFrame *input)
     av_frame_free(&output);
 
     return ff_filter_frame(avctx->outputs[0], output2);
+#endif
 
 fail:
     av_frame_free(&input);
