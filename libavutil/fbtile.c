@@ -63,9 +63,10 @@ SCOPEIN enum FBTileLayout fbtilelayoutid_from_drmformatmodifier(uint64_t formatM
  * Currently only RGB based 32bit formats are specified
  * TODO: Technically the logic is transparent to 16bit RGB formats also to a great extent
  */
-const enum AVPixelFormat fbtilePixFormats[] = {AV_PIX_FMT_RGB0, AV_PIX_FMT_0RGB, AV_PIX_FMT_BGR0, AV_PIX_FMT_0BGR,
-                                               AV_PIX_FMT_RGBA, AV_PIX_FMT_ARGB, AV_PIX_FMT_BGRA, AV_PIX_FMT_ABGR,
-                                               AV_PIX_FMT_NONE};
+SCOPEIN const enum AVPixelFormat fbtilePixFormats[] = {
+                                        AV_PIX_FMT_RGB0, AV_PIX_FMT_0RGB, AV_PIX_FMT_BGR0, AV_PIX_FMT_0BGR,
+                                        AV_PIX_FMT_RGBA, AV_PIX_FMT_ARGB, AV_PIX_FMT_BGRA, AV_PIX_FMT_ABGR,
+                                        AV_PIX_FMT_NONE};
 
 SCOPEIN int fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVPixelFormat dstPixFormat)
 {
