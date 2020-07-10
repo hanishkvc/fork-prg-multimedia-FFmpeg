@@ -27,11 +27,6 @@
 #include <drm_fourcc.h>
 #endif
 
-#ifdef SCOPE_LIMITED
-#define SCOPEIN static
-#else
-#define SCOPEIN
-#endif
 
 SCOPEIN enum FBTileLayout fbtilelayoutid_from_drmformatmodifier(uint64_t formatModifier)
 {

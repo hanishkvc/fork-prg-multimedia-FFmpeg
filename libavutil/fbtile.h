@@ -34,6 +34,17 @@
  */
 
 
+/**
+ * Set the scope of the public api, make it non-public
+ */
+//#define SCOPE_LIMITED 1
+#ifdef SCOPE_LIMITED
+#define SCOPEIN static
+#else
+#define SCOPEIN
+#endif
+
+
 // Enable printing of the tile walk
 //#define DEBUG_FBTILE 1
 
@@ -64,6 +75,9 @@ enum FBTileLayout {
     FBTILE_INTEL_YF,
     FBTILE_UNKNOWN,
 };
+
+
+#ifndef SCOPE_LIMITED
 
 
 /**
@@ -212,6 +226,9 @@ int fbtiler_conv(enum FBTileOps op, enum FBTileLayout layout,
  */
 int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileLayout,
                               AVFrame *src, enum FBTileLayout srcTileLayout);
+
+
+#endif // SCOPE_LIMITED
 
 
 /**
