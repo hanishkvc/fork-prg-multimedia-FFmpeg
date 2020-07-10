@@ -68,6 +68,9 @@
 #include "libavutil/imgutils.h"
 #include "libavutil/opt.h"
 #include "libavutil/fbtile.h"
+#ifdef FBTILE_SCOPE_LIMITED
+#include "libavutil/fbtile.c"
+#endif
 #include "avfilter.h"
 #include "formats.h"
 #include "internal.h"
@@ -144,9 +147,6 @@ static av_cold int init(AVFilterContext *ctx)
 static int query_formats(AVFilterContext *ctx)
 {
     AVFilterFormats *fmts_list;
-#ifdef FBTILE_SCOPE_LIMITED
-    enum AVPixelFormat fbtilePixFormats[] = { AV_PIX_FMT_NONE };
-#endif
 
     fmts_list = ff_make_format_list(fbtilePixFormats);
     if (!fmts_list)
@@ -189,12 +189,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     uint64_t perfStart = __rdtscp(&tscArg);
 #endif
 
-#ifndef FBTILE_SCOPE_LIMITED
     fbtiler_conv(fbtiler->op, fbtiler->layout,
                  fbtiler->width, fbtiler->height,
                  out->data[0], out->linesize[0],
                  in->data[0], in->linesize[0], 4);
-#endif
 
 #ifdef DEBUG_PERF
     uint64_t perfEnd = __rdtscp(&tscArg);
