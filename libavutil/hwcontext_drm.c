@@ -30,6 +30,9 @@
 #include "hwcontext_internal.h"
 #include "imgutils.h"
 #include "fbtile.h"
+#ifdef FBTILE_SCOPE_LIMITED
+#include "libavutil/fbtile.c"
+#endif
 
 
 static void drm_device_free(AVHWDeviceContext *hwdev)
