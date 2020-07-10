@@ -276,7 +276,7 @@ static int drm_transfer_data_to(AVHWFramesContext *hwfc,
     map->width  = src->width;
     map->height = src->height;
 
-    err = drm_transfer_with_detile(dst, map, src);
+    err = av_frame_copy(map, src);
     if (err)
         goto fail;
 
