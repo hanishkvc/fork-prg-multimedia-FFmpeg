@@ -5,16 +5,20 @@ FFmpeg README
 
 ## Branch: hkvcFBTilePlusLean
 
-Contains libavutil/fbtile.c|h, which allows tiling transform wrt framebuffer.
-i.e tiling and detiling.
+Contains libavutil/fbtile.c|h, which allows tiling and detiling transform wrt
+framebuffer, using the cpu. It contains a generic tile walking logic, which
+can be easily configured to support new tile layouts.
 
-Contains hwcontext_drm detile support.
+Contains hwcontext_drm detile support. Tile layout is determined from the
+format_modifier of the framebuffer.
 
 Contains hwdownload with fbdetile option, which allows detiling while capturing
 live, if requested by user.
 
-Contains fbdetile video filter which allows detiling on already captured content,
-as a seperate pass. It also allows tiling of a already captured content.
+Contains fbtiler video filter which allows tiling or detiling of the avframes
+passed to it. It can be used for detiling an already captured content, as a
+seperate pass. It could also be used to tile existing contents for experimentation
+or easy simple and stupid scrambling or ....
 
 KMSGrab GetFB2 for format_modifier
 
