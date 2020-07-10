@@ -27,8 +27,13 @@
 #include <drm_fourcc.h>
 #endif
 
+#ifdef SCOPE_LIMITED
+#define SCOPEIN static
+#else
+#define SCOPEIN
+#endif
 
-enum FBTileLayout fbtilelayout_from_drmformatmodifier(uint64_t formatModifier)
+SCOPEIN enum FBTileLayout fbtilelayout_from_drmformatmodifier(uint64_t formatModifier)
 {
     enum FBTileLayout layout = FBTILE_UNKNOWN;
 
@@ -67,7 +72,7 @@ const enum AVPixelFormat fbtilePixFormats[] = {AV_PIX_FMT_RGB0, AV_PIX_FMT_0RGB,
                                                AV_PIX_FMT_RGBA, AV_PIX_FMT_ARGB, AV_PIX_FMT_BGRA, AV_PIX_FMT_ABGR,
                                                AV_PIX_FMT_NONE};
 
-int fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVPixelFormat dstPixFormat)
+SCOPEIN int fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVPixelFormat dstPixFormat)
 {
     int errSrc = 1;
     int errDst = 1;
@@ -93,7 +98,7 @@ int fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVP
  * Settings for Intel Tile-Yf framebuffer layout.
  * May need to swap the 4 pixel wide subtile, have to check doc bit more
  */
-struct TileWalk tyfTileWalk = {
+SCOPEIN struct TileWalk tyfTileWalk = {
                     .bytesPerPixel = 4,
                     .subTileWidth = 4, .subTileHeight = 8,
                     .tileWidth = 32, .tileHeight = 32,
@@ -104,7 +109,7 @@ struct TileWalk tyfTileWalk = {
 /**
  * Setting for Intel Tile-X framebuffer layout
  */
-struct TileWalk txTileWalk = {
+SCOPEIN struct TileWalk txTileWalk = {
                     .bytesPerPixel = 4,
                     .subTileWidth = 128, .subTileHeight = 8,
                     .tileWidth = 128, .tileHeight = 8,
@@ -118,7 +123,7 @@ struct TileWalk txTileWalk = {
  * dummy 256 posOffset entry. The pseudo parallel detiling based
  * opti logic requires to know about the Tile boundry.
  */
-struct TileWalk tyTileWalk = {
+SCOPEIN struct TileWalk tyTileWalk = {
                     .bytesPerPixel = 4,
                     .subTileWidth = 4, .subTileHeight = 32,
                     .tileWidth = 32, .tileHeight = 32,
@@ -202,7 +207,7 @@ static int _fbtiler_generic_simple(enum FBTileOps op,
 }
 
 
-int fbtiler_generic_simple(enum FBTileOps op,
+SCOPEIN int fbtiler_generic_simple(enum FBTileOps op,
                            const int w, const int h,
                            uint8_t *dst, const int dstLineSize,
                            uint8_t *src, const int srcLineSize,
@@ -347,7 +352,7 @@ static int _fbtiler_generic_opti(enum FBTileOps op,
 }
 
 
-int fbtiler_generic_opti(enum FBTileOps op,
+SCOPEIN int fbtiler_generic_opti(enum FBTileOps op,
                          const int w, const int h,
                          uint8_t *dst, const int dstLineSize,
                          uint8_t *src, const int srcLineSize,
@@ -362,7 +367,7 @@ int fbtiler_generic_opti(enum FBTileOps op,
 }
 
 
-int fbtiler_conv(enum FBTileOps op, enum FBTileLayout layout,
+SCOPEIN int fbtiler_conv(enum FBTileOps op, enum FBTileLayout layout,
                  int w, int h,
                  uint8_t *dst, int dstLineSize,
                  uint8_t *src, int srcLineSize,
@@ -392,7 +397,7 @@ int fbtiler_conv(enum FBTileOps op, enum FBTileLayout layout,
  * NOTE: Either the Source or the Destination AVFrame (i.e one of them) should be linear.
  * NOTE: If the tiling layout is not understood, it will do a simple copy.
  */
-int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileLayout, AVFrame *src, enum FBTileLayout srcTileLayout)
+SCOPEIN int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileLayout, AVFrame *src, enum FBTileLayout srcTileLayout)
 {
     int err;
 
