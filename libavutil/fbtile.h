@@ -110,7 +110,7 @@ struct FBTWDirChange {
  * @field numDirChanges the number of dir changes involved in tile walk
  * @field dirChanges the array of dir changes for the tile walk required
  */
-struct TileWalk {
+struct FBTileWalk {
     int bytesPerPixel;
     int subTileWidth, subTileHeight;
     int tileWidth, tileHeight;
@@ -155,9 +155,9 @@ int fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVP
 /**
  * Tile Walk parameters for Tile-X, Tile-Y, Tile-Yf
  */
-extern struct TileWalk tyfTileWalk;
-extern struct TileWalk txTileWalk;
-extern struct TileWalk tyTileWalk;
+extern struct FBTileWalk tyfTileWalk;
+extern struct FBTileWalk txTileWalk;
+extern struct FBTileWalk tyTileWalk;
 
 
 /**
@@ -183,7 +183,7 @@ int fbtiler_generic_simple(enum FBTileOps op,
                            const int w, const int h,
                            uint8_t *dst, const int dstLineSize,
                            uint8_t *src, const int srcLineSize,
-                           const struct TileWalk *tw);
+                           const struct FBTileWalk *tw);
 
 
 /**
@@ -193,7 +193,7 @@ int fbtiler_generic_opti(enum FBTileOps op,
                          const int w, const int h,
                          uint8_t *dst, const int dstLineSize,
                          uint8_t *src, const int srcLineSize,
-                         const struct TileWalk *tw);
+                         const struct FBTileWalk *tw);
 
 
 /**

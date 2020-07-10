@@ -94,7 +94,7 @@ SCOPEIN int fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const 
  * Settings for Intel Tile-Yf framebuffer layout.
  * May need to swap the 4 pixel wide subtile, have to check doc bit more
  */
-SCOPEIN struct TileWalk tyfTileWalk = {
+SCOPEIN struct FBTileWalk tyfTileWalk = {
                     .bytesPerPixel = 4,
                     .subTileWidth = 4, .subTileHeight = 8,
                     .tileWidth = 32, .tileHeight = 32,
@@ -105,7 +105,7 @@ SCOPEIN struct TileWalk tyfTileWalk = {
 /**
  * Setting for Intel Tile-X framebuffer layout
  */
-SCOPEIN struct TileWalk txTileWalk = {
+SCOPEIN struct FBTileWalk txTileWalk = {
                     .bytesPerPixel = 4,
                     .subTileWidth = 128, .subTileHeight = 8,
                     .tileWidth = 128, .tileHeight = 8,
@@ -119,7 +119,7 @@ SCOPEIN struct TileWalk txTileWalk = {
  * dummy 256 posOffset entry. The pseudo parallel detiling based
  * opti logic requires to know about the Tile boundry.
  */
-SCOPEIN struct TileWalk tyTileWalk = {
+SCOPEIN struct FBTileWalk tyTileWalk = {
                     .bytesPerPixel = 4,
                     .subTileWidth = 4, .subTileHeight = 32,
                     .tileWidth = 32, .tileHeight = 32,
@@ -207,7 +207,7 @@ SCOPEIN int fbtiler_generic_simple(enum FBTileOps op,
                            const int w, const int h,
                            uint8_t *dst, const int dstLineSize,
                            uint8_t *src, const int srcLineSize,
-                           const struct TileWalk *tw)
+                           const struct FBTileWalk *tw)
 {
     return _fbtiler_generic_simple(op, w, h,
                                    dst, dstLineSize, src, srcLineSize,
@@ -352,7 +352,7 @@ SCOPEIN int fbtiler_generic_opti(enum FBTileOps op,
                          const int w, const int h,
                          uint8_t *dst, const int dstLineSize,
                          uint8_t *src, const int srcLineSize,
-                         const struct TileWalk *tw)
+                         const struct FBTileWalk *tw)
 {
     return _fbtiler_generic_opti(op, w, h,
                                  dst, dstLineSize, src, srcLineSize,
