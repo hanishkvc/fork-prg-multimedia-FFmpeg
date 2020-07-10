@@ -138,7 +138,7 @@ static int _fbtiler_generic_simple(enum FBTileOps op,
                                    const int bytesPerPixel,
                                    const int subTileWidth, const int subTileHeight,
                                    const int tileWidth, const int tileHeight,
-                                   const int numDirChanges, const struct dirChange *dirChanges)
+                                   const int numDirChanges, const struct FBTWDirChange *dirChanges)
 {
     int tO, lO;
     int lX, lY;
@@ -225,7 +225,7 @@ static int _fbtiler_generic_opti(enum FBTileOps op,
                                  const int bytesPerPixel,
                                  const int subTileWidth, const int subTileHeight,
                                  const int tileWidth, const int tileHeight,
-                                 const int numDirChanges, const struct dirChange *dirChanges)
+                                 const int numDirChanges, const struct FBTWDirChange *dirChanges)
 {
     int tO, lO, tOPrev;
     int lX, lY;

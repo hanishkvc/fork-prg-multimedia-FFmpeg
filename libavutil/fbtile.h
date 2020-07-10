@@ -89,10 +89,10 @@ enum FBTileLayout {
 
 
 /*
- * Direction Change Entry
+ * TileWalk Direction Change Entry
  * Used to specify the tile walking of subtiles within a tile.
  */
-struct dirChange {
+struct FBTWDirChange {
     int posOffset;
     int xDelta;
     int yDelta;
@@ -115,7 +115,7 @@ struct TileWalk {
     int subTileWidth, subTileHeight;
     int tileWidth, tileHeight;
     int numDirChanges;
-    struct dirChange dirChanges[];
+    struct FBTWDirChange dirChanges[];
 };
 
 
