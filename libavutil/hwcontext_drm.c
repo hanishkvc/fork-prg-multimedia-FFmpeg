@@ -202,7 +202,7 @@ static int drm_transfer_with_detile(const AVFrame *hwAVFrame, AVFrame *dst, cons
         if (!err) {
             AVDRMFrameDescriptor *drmFrame = (AVDRMFrameDescriptor*)hwAVFrame->data[0];
             formatModifier = drmFrame->objects[0].format_modifier;
-            fbtileLayout = fbtilelayout_from_drmformatmodifier(formatModifier);
+            fbtileLayout = fbtilelayoutid_from_drmformatmodifier(formatModifier);
             if ((fbtileLayout != FBTILE_NONE) && (fbtileLayout != FBTILE_UNKNOWN)) {
                 err = fbtiler_conv(FBTILEOPS_DETILE, fbtileLayout,
                                    dst->width, dst->height,

@@ -73,7 +73,7 @@ enum FBTileLayout {
  * @return the fbtile's equivalent internal mode
  */
 #undef DEBUG_FBTILE_FORMATMODIFIER_MAPPING
-enum FBTileLayout fbtilelayout_from_drmformatmodifier(uint64_t formatModifier);
+enum FBTileLayout fbtilelayoutid_from_drmformatmodifier(uint64_t formatModifier);
 
 
 /**

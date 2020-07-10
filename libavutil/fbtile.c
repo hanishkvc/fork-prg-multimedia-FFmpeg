@@ -33,7 +33,7 @@
 #define SCOPEIN
 #endif
 
-SCOPEIN enum FBTileLayout fbtilelayout_from_drmformatmodifier(uint64_t formatModifier)
+SCOPEIN enum FBTileLayout fbtilelayoutid_from_drmformatmodifier(uint64_t formatModifier)
 {
     enum FBTileLayout layout = FBTILE_UNKNOWN;
 
