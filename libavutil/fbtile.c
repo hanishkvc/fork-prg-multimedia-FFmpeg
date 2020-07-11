@@ -393,7 +393,8 @@ SCOPEIN int fbtiler_conv(enum FBTileOps op, enum FBTileLayout layout,
  * NOTE: Either the Source or the Destination AVFrame (i.e one of them) should be linear.
  * NOTE: If the tiling layout is not understood, it will do a simple copy.
  */
-SCOPEIN int fbtile_frame_copy(AVFrame *dst, enum FBTileLayout dstTileLayout, AVFrame *src, enum FBTileLayout srcTileLayout)
+SCOPEIN int fbtile_frame_copy(AVFrame *dst, enum FBTileLayout dstTileLayout, AVFrame *src, enum FBTileLayout srcTileLayout,
+                              enum FBTileFrameCopyStatus *status)
 {
     int err;
 
@@ -405,6 +406,7 @@ SCOPEIN int fbtile_frame_copy(AVFrame *dst, enum FBTileLayout dstTileLayout, AVF
                                 dst->data[0], dst->linesize[0],
                                 src->data[0], src->linesize[0], 4);
             if (!err) {
+                *status = FBTILE_FRAMECOPY_TILECOPY;
                 return FBT_OK;
             }
         }
@@ -416,10 +418,14 @@ SCOPEIN int fbtile_frame_copy(AVFrame *dst, enum FBTileLayout dstTileLayout, AVF
                                 dst->data[0], dst->linesize[0],
                                 src->data[0], src->linesize[0], 4);
             if (!err) {
+                *status = FBTILE_FRAMECOPY_TILECOPY;
                 return FBT_OK;
             }
         }
+    } else {
+        av_log(NULL, AV_LOG_WARNING, "fbtileframecopy: both src [%d] and dst [%d] layouts cant be tiled\n", srcTileLayout, dstTileLayout);
     }
+    *status = FBTILE_FRAMECOPY_COPYONLY;
     return av_frame_copy(dst, src);
 }
 

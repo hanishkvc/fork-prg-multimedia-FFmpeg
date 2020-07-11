@@ -88,7 +88,7 @@ enum FBTileLayout {
 };
 
 
-/*
+/**
  * TileWalk Direction Change Entry
  * Used to specify the tile walking of subtiles within a tile.
  */
@@ -99,7 +99,7 @@ struct FBTWDirChange {
 };
 
 
-/*
+/**
  * TileWalk, Contains info required for a given tile walking.
  *
  * @field bytesPerPixel the bytes per pixel for the image
@@ -116,6 +116,15 @@ struct FBTileWalk {
     int tileWidth, tileHeight;
     int numDirChanges;
     struct FBTWDirChange dirChanges[];
+};
+
+
+/**
+ * FBTile FrameCopy additional status
+ */
+enum FBTileFrameCopyStatus {
+    FBTILE_FRAMECOPY_TILECOPY,
+    FBTILE_FRAMECOPY_COPYONLY
 };
 
 
@@ -231,7 +240,8 @@ int fbtiler_conv(enum FBTileOps op, enum FBTileLayout layout,
  * @return 0 if copied.
  */
 int fbtile_frame_copy(AVFrame *dst, enum FBTileLayout dstTileLayout,
-                      AVFrame *src, enum FBTileLayout srcTileLayout);
+                      AVFrame *src, enum FBTileLayout srcTileLayout,
+                      enum FBTileFrameCopyStatus *status);
 
 
 #endif // FBTILE_SCOPE_LIMITED
