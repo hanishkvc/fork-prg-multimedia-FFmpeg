@@ -198,29 +198,25 @@ static int drm_transfer_with_detile(const AVFrame *hwAVFrame, AVFrame *dst, cons
 {
     int err;
     uint64_t formatModifier;
-    int fbtileLayout;
+    enum FBTileLayout srcFBTileLayout, dstFBTileLayout;
+    enum FBTileFrameCopyStatus status;
+    AVDRMFrameDescriptor *drmFrame = NULL;
 
+    srcFBTileLayout = FBTILE_NONE;
+    dstFBTileLayout = FBTILE_NONE;
     if (hwAVFrame->format  == AV_PIX_FMT_DRM_PRIME) {
-        err = fbtile_checkpixformats(src->format, dst->format);
-        if (!err) {
-            AVDRMFrameDescriptor *drmFrame = (AVDRMFrameDescriptor*)hwAVFrame->data[0];
-            formatModifier = drmFrame->objects[0].format_modifier;
-            fbtileLayout = fbtilelayoutid_from_drmformatmodifier(formatModifier);
-            if ((fbtileLayout != FBTILE_NONE) && (fbtileLayout != FBTILE_UNKNOWN)) {
-                err = fbtiler_conv(FBTILEOPS_DETILE, fbtileLayout,
-                                   dst->width, dst->height,
-                                   dst->data[0], dst->linesize[0],
-                                   src->data[0], src->linesize[0], 4);
-                if (!err) {
-#if HWCTXDRM_SYNCRELATED_FORMATMODIFIER
-                    drmFrame->objects[0].format_modifier = DRM_FORMAT_MOD_LINEAR;
-#endif
-                    return 0;
-                }
-            }
-        }
+        drmFrame = (AVDRMFrameDescriptor*)hwAVFrame->data[0];
+        formatModifier = drmFrame->objects[0].format_modifier;
+        srcFBTileLayout = fbtilelayoutid_from_drmformatmodifier(formatModifier);
     }
-    return av_frame_copy(dst, src);
+    err = fbtile_frame_copy(dst, dstFBTileLayout, src, srcFBTileLayout, &status);
+#if HWCTXDRM_SYNCRELATED_FORMATMODIFIER
+    if (!err && (status == FBTILE_FRAMECOPY_TILECOPY)) {
+        if (drmFrame != NULL)
+            drmFrame->objects[0].format_modifier = DRM_FORMAT_MOD_LINEAR;
+    }
+#endif
+    return err;
 }
 
 static int drm_transfer_data_from(AVHWFramesContext *hwfc,
