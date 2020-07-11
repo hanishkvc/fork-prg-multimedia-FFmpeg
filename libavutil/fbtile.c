@@ -372,22 +372,20 @@ SCOPEIN int fbtile_conv(enum FBTileOps op, enum FBTileLayout layout,
     static int logStateNone = 0;
     static int logStateUnknown = 0;
 
-    if (layout == FBTILE_NONE) {
-        av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateNone, "fbtile:conv:FBTILE_NONE: not (de)tiling\n");
-        return FBT_ERR;
+    switch(layout) {
+        case FBTILE_NONE:
+            av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateNone, "fbtile:conv:FBTILE_NONE: not (de)tiling\n");
+            return FBT_ERR;
+        case FBTILE_INTEL_XGEN9:
+            return fbtile_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk);
+        case FBTILE_INTEL_YGEN9:
+            return fbtile_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk);
+        case FBTILE_INTEL_YF:
+            return fbtile_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
+        default:
+            av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateUnknown, "fbtile:conv: unknown layout [%d] specified, not (de)tiling\n", layout);
+            return FBT_ERR;
     }
-
-    if (layout == FBTILE_INTEL_XGEN9) {
-        return fbtile_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk);
-    } else if (layout == FBTILE_INTEL_YGEN9) {
-        return fbtile_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk);
-    } else if (layout == FBTILE_INTEL_YF) {
-        return fbtile_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
-    } else {
-        av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateUnknown, "fbtile:conv: unknown layout [%d] specified, not (de)tiling\n", layout);
-        return FBT_ERR;
-    }
-    return FBT_ERR;
 }
 
 
