@@ -2325,6 +2325,7 @@ HAVE_LIST="
     $TYPES_LIST
     makeinfo
     makeinfo_html
+    drm_getfb2
     opencl_d3d11
     opencl_drm_arm
     opencl_drm_beignet
@@ -6651,6 +6652,10 @@ if enabled vaapi; then
     check_type "va/va.h va/va_enc_jpeg.h" "VAEncPictureParameterBufferJPEG"
     check_type "va/va.h va/va_enc_vp8.h"  "VAEncPictureParameterBufferVP8"
     check_type "va/va.h va/va_enc_vp9.h"  "VAEncPictureParameterBufferVP9"
+fi
+
+if enabled libdrm; then
+    check_pkg_config drm_getfb2 libdrm "xf86drm.h xf86drmMode.h" drmModeGetFB2
 fi
 
 if enabled_all opencl libdrm ; then
