@@ -212,7 +212,7 @@ static int hwdownload_filter_frame(AVFilterLink *link, AVFrame *input)
 
     output2->width  = outlink->w;
     output2->height = outlink->h;
-    fbtiler_conv(FBTILEOPS_DETILE, ctx->fbdetile,
+    fbtile_conv(FBTILEOPS_DETILE, ctx->fbdetile,
                  output2->width, output2->height,
                  output2->data[0], output2->linesize[0],
                  output->data[0], output->linesize[0], 4);

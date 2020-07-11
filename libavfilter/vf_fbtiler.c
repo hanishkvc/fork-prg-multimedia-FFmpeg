@@ -189,7 +189,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     uint64_t perfStart = __rdtscp(&tscArg);
 #endif
 
-    fbtiler_conv(fbtiler->op, fbtiler->layout,
+    fbtile_conv(fbtiler->op, fbtiler->layout,
                  fbtiler->width, fbtiler->height,
                  out->data[0], out->linesize[0],
                  in->data[0], in->linesize[0], 4);

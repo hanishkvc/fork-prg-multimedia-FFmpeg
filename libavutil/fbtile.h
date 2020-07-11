@@ -46,13 +46,13 @@
 
 
 /**
- * Set fbtiler_generic to either simple or minimal optimised logic
+ * Set fbtile_generic to either simple or minimal optimised logic
  */
 #define FBTILER_GENERIC_OPTI 1
 #ifdef FBTILER_GENERIC_OPTI
-#define fbtiler_generic fbtiler_generic_opti
+#define fbtile_generic fbtile_generic_opti
 #else
-#define fbtiler_generic fbtiler_generic_simple
+#define fbtile_generic fbtile_generic_simple
 #endif
 
 
@@ -188,7 +188,7 @@ extern struct FBTileWalk tyTileWalk;
 /**
  * Generic tile/detile simple version.
  */
-int fbtiler_generic_simple(enum FBTileOps op,
+int fbtile_generic_simple(enum FBTileOps op,
                            const int w, const int h,
                            uint8_t *dst, const int dstLineSize,
                            uint8_t *src, const int srcLineSize,
@@ -198,7 +198,7 @@ int fbtiler_generic_simple(enum FBTileOps op,
 /**
  * Generic tile/detile minimal optimised version.
  */
-int fbtiler_generic_opti(enum FBTileOps op,
+int fbtile_generic_opti(enum FBTileOps op,
                          const int w, const int h,
                          uint8_t *dst, const int dstLineSize,
                          uint8_t *src, const int srcLineSize,
@@ -220,7 +220,7 @@ int fbtiler_generic_opti(enum FBTileOps op,
  *
  * @return 0 if detiled, 1 if not
  */
-int fbtiler_conv(enum FBTileOps op, enum FBTileLayout layout,
+int fbtile_conv(enum FBTileOps op, enum FBTileLayout layout,
                  int w, int h,
                  uint8_t *dst, int dstLineSize,
                  uint8_t *src, int srcLineSize,

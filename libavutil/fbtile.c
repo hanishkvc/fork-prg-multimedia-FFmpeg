@@ -129,9 +129,9 @@ SCOPEIN struct FBTileWalk tyTileWalk = {
 
 
 /**
- * _fbtiler_generic_simple tile/detile layout
+ * _fbtile_generic_simple tile/detile layout
  */
-static int _fbtiler_generic_simple(enum FBTileOps op,
+static int _fbtile_generic_simple(enum FBTileOps op,
                                    const int w, const int h,
                                    uint8_t *dst, const int dstLineSize,
                                    uint8_t *src, const int srcLineSize,
@@ -162,8 +162,8 @@ static int _fbtiler_generic_simple(enum FBTileOps op,
     // To keep things sane and simple tile layout is assumed to be tightly packed,
     // so below check is a indirect logical assumption, even thou tldLineSize is not directly mappable at one level
     if (w*bytesPerPixel != tldLineSize) {
-        av_log(NULL, AV_LOG_ERROR, "fbtiler:genericsimp: w%dxh%d, dL%d, sL%d\n", w, h, tldLineSize, linLineSize);
-        av_log(NULL, AV_LOG_ERROR, "fbtiler:genericsimp: dont support tldLineSize | Pitch going beyond width\n");
+        av_log(NULL, AV_LOG_ERROR, "fbtile:genericsimp: w%dxh%d, dL%d, sL%d\n", w, h, tldLineSize, linLineSize);
+        av_log(NULL, AV_LOG_ERROR, "fbtile:genericsimp: dont support tldLineSize | Pitch going beyond width\n");
         return FBT_ERR;
     }
     tO = 0;
@@ -174,7 +174,7 @@ static int _fbtiler_generic_simple(enum FBTileOps op,
     while (cSTL < nSTLines) {
         lO = lY*linLineSize + lX*bytesPerPixel;
 #ifdef DEBUG_FBTILE
-        av_log(NULL, AV_LOG_DEBUG, "fbtiler:genericsimp: lX%d lY%d; lO%d, tO%d; %d/%d\n", lX, lY, lO, tO, cSTL, nSTLines);
+        av_log(NULL, AV_LOG_DEBUG, "fbtile:genericsimp: lX%d lY%d; lO%d, tO%d; %d/%d\n", lX, lY, lO, tO, cSTL, nSTLines);
 #endif
 
         for (int k = 0; k < subTileHeight; k++) {
@@ -203,13 +203,13 @@ static int _fbtiler_generic_simple(enum FBTileOps op,
 }
 
 
-SCOPEIN int fbtiler_generic_simple(enum FBTileOps op,
+SCOPEIN int fbtile_generic_simple(enum FBTileOps op,
                            const int w, const int h,
                            uint8_t *dst, const int dstLineSize,
                            uint8_t *src, const int srcLineSize,
                            const struct FBTileWalk *tw)
 {
-    return _fbtiler_generic_simple(op, w, h,
+    return _fbtile_generic_simple(op, w, h,
                                    dst, dstLineSize, src, srcLineSize,
                                    tw->bytesPerPixel,
                                    tw->subTileWidth, tw->subTileHeight,
@@ -218,7 +218,7 @@ SCOPEIN int fbtiler_generic_simple(enum FBTileOps op,
 }
 
 
-static int _fbtiler_generic_opti(enum FBTileOps op,
+static int _fbtile_generic_opti(enum FBTileOps op,
                                  const int w, const int h,
                                  uint8_t *dst, const int dstLineSize,
                                  uint8_t *src, const int srcLineSize,
@@ -249,12 +249,12 @@ static int _fbtiler_generic_opti(enum FBTileOps op,
     }
 
     if (w*bytesPerPixel != tldLineSize) {
-        av_log(NULL, AV_LOG_ERROR, "fbtiler:genericopti: w%dxh%d, dL%d, sL%d\n", w, h, linLineSize, tldLineSize);
-        av_log(NULL, AV_LOG_ERROR, "fbtiler:genericopti: dont support tldLineSize | Pitch going beyond width\n");
+        av_log(NULL, AV_LOG_ERROR, "fbtile:genericopti: w%dxh%d, dL%d, sL%d\n", w, h, linLineSize, tldLineSize);
+        av_log(NULL, AV_LOG_ERROR, "fbtile:genericopti: dont support tldLineSize | Pitch going beyond width\n");
         return FBT_ERR;
     }
     if (w%tileWidth != 0) {
-        av_log(NULL, AV_LOG_ERROR, "fbtiler:genericopti:NotSupported:Width being non-mult Of TileWidth: width%d, tileWidth%d\n", w, tileWidth);
+        av_log(NULL, AV_LOG_ERROR, "fbtile:genericopti:NotSupported:Width being non-mult Of TileWidth: width%d, tileWidth%d\n", w, tileWidth);
         return FBT_ERR;
     }
     tO = 0;
@@ -272,13 +272,13 @@ static int _fbtiler_generic_opti(enum FBTileOps op,
     while (cSTL < nSTLines) {
         lO = lY*linLineSize + lX*bytesPerPixel;
 #ifdef DEBUG_FBTILE
-        av_log(NULL, AV_LOG_DEBUG, "fbtiler:genericopti: lX%d lY%d; tO%d, lO%d; %d/%d\n", lX, lY, tO, lO, cSTL, nSTLines);
+        av_log(NULL, AV_LOG_DEBUG, "fbtile:genericopti: lX%d lY%d; tO%d, lO%d; %d/%d\n", lX, lY, tO, lO, cSTL, nSTLines);
 #endif
 
         // As most tiling layouts have a minimum subtile of 4x4, if I remember correctly,
         // so this loop can be unrolled to be multiples of 4, and speed up a bit.
         // However tiling involving 3x3 or 2x2 wont be handlable. In which one will have to use
-        // NON UnRolled version or fbtiler_generic_simple for such tile layouts.
+        // NON UnRolled version or fbtile_generic_simple for such tile layouts.
         // (De)tile parallely to a limited extent. Gain some speed by allowing reuse of calcs and parallelism,
         // but still avoid any cache set-associativity and or limited cache based thrashing. Keep it spatially
         // and inturn temporaly small at one level.
@@ -348,13 +348,13 @@ static int _fbtiler_generic_opti(enum FBTileOps op,
 }
 
 
-SCOPEIN int fbtiler_generic_opti(enum FBTileOps op,
+SCOPEIN int fbtile_generic_opti(enum FBTileOps op,
                          const int w, const int h,
                          uint8_t *dst, const int dstLineSize,
                          uint8_t *src, const int srcLineSize,
                          const struct FBTileWalk *tw)
 {
-    return _fbtiler_generic_opti(op, w, h,
+    return _fbtile_generic_opti(op, w, h,
                                  dst, dstLineSize, src, srcLineSize,
                                  tw->bytesPerPixel,
                                  tw->subTileWidth, tw->subTileHeight,
@@ -363,7 +363,7 @@ SCOPEIN int fbtiler_generic_opti(enum FBTileOps op,
 }
 
 
-SCOPEIN int fbtiler_conv(enum FBTileOps op, enum FBTileLayout layout,
+SCOPEIN int fbtile_conv(enum FBTileOps op, enum FBTileLayout layout,
                  int w, int h,
                  uint8_t *dst, int dstLineSize,
                  uint8_t *src, int srcLineSize,
@@ -373,18 +373,18 @@ SCOPEIN int fbtiler_conv(enum FBTileOps op, enum FBTileLayout layout,
     static int logStateUnknown = 0;
 
     if (layout == FBTILE_NONE) {
-        av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateNone, "fbtiler_conv:FBTILE_NONE: not (de)tiling\n");
+        av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateNone, "fbtile:conv:FBTILE_NONE: not (de)tiling\n");
         return FBT_ERR;
     }
 
     if (layout == FBTILE_INTEL_XGEN9) {
-        return fbtiler_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk);
+        return fbtile_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk);
     } else if (layout == FBTILE_INTEL_YGEN9) {
-        return fbtiler_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk);
+        return fbtile_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk);
     } else if (layout == FBTILE_INTEL_YF) {
-        return fbtiler_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
+        return fbtile_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
     } else {
-        av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateUnknown, "fbtiler_conv: unknown layout [%d] specified, not (de)tiling\n", layout);
+        av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateUnknown, "fbtile:conv: unknown layout [%d] specified, not (de)tiling\n", layout);
         return FBT_ERR;
     }
     return FBT_ERR;
@@ -404,7 +404,7 @@ SCOPEIN int fbtile_frame_copy(AVFrame *dst, enum FBTileLayout dstTileLayout, AVF
     if (dstTileLayout == FBTILE_NONE) {         // i.e DeTile
         err = fbtile_checkpixformats(src->format, dst->format);
         if (!err) {
-            err = fbtiler_conv(FBTILEOPS_DETILE, srcTileLayout,
+            err = fbtile_conv(FBTILEOPS_DETILE, srcTileLayout,
                                 dst->width, dst->height,
                                 dst->data[0], dst->linesize[0],
                                 src->data[0], src->linesize[0], 4);
@@ -416,7 +416,7 @@ SCOPEIN int fbtile_frame_copy(AVFrame *dst, enum FBTileLayout dstTileLayout, AVF
     } else if (srcTileLayout == FBTILE_NONE) {  // i.e Tile
         err = fbtile_checkpixformats(src->format, dst->format);
         if (!err) {
-            err = fbtiler_conv(FBTILEOPS_TILE, dstTileLayout,
+            err = fbtile_conv(FBTILEOPS_TILE, dstTileLayout,
                                 src->width, src->height,
                                 dst->data[0], dst->linesize[0],
                                 src->data[0], src->linesize[0], 4);
@@ -426,7 +426,7 @@ SCOPEIN int fbtile_frame_copy(AVFrame *dst, enum FBTileLayout dstTileLayout, AVF
             }
         }
     } else {
-        av_log(NULL, AV_LOG_WARNING, "fbtileframecopy: both src [%d] and dst [%d] layouts cant be tiled\n", srcTileLayout, dstTileLayout);
+        av_log(NULL, AV_LOG_WARNING, "fbtile:framecopy: both src [%d] and dst [%d] layouts cant be tiled\n", srcTileLayout, dstTileLayout);
     }
     *status = FBTILE_FRAMECOPY_COPYONLY;
     return av_frame_copy(dst, src);
