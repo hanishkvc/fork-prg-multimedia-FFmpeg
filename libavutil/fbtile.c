@@ -369,8 +369,11 @@ SCOPEIN int fbtiler_conv(enum FBTileOps op, enum FBTileLayout layout,
                  uint8_t *src, int srcLineSize,
                  int bytesPerPixel)
 {
+    static int logStateNone = 0;
+    static int logStateUnknown = 0;
+
     if (layout == FBTILE_NONE) {
-        av_log(NULL, AV_LOG_WARNING, "fbtiler_conv:FBTILE_NONE: not tiling\n");
+        av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateNone, "fbtiler_conv:FBTILE_NONE: not (de)tiling\n");
         return FBT_ERR;
     }
 
@@ -381,7 +384,7 @@ SCOPEIN int fbtiler_conv(enum FBTileOps op, enum FBTileLayout layout,
     } else if (layout == FBTILE_INTEL_YF) {
         return fbtiler_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
     } else {
-        av_log(NULL, AV_LOG_WARNING, "fbtiler_conv:%d: unknown layout specified, not (de)tiling\n", layout);
+        av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateUnknown, "fbtiler_conv: unknown layout [%d] specified, not (de)tiling\n", layout);
         return FBT_ERR;
     }
     return FBT_ERR;
