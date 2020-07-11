@@ -37,7 +37,7 @@
 /**
  * Set scope of this api to be either public or internal (non-public)
  */
-#define FBTILE_SCOPE_PUBLIC 1
+// #define FBTILE_SCOPE_PUBLIC 1
 #ifdef FBTILE_SCOPE_PUBLIC
 #define SCOPEIN
 #else
