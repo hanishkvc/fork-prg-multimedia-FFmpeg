@@ -22,6 +22,10 @@
 #include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
+#include "libavutil/fbtile.h"
+#ifndef FBTILE_SCOPE_PUBLIC
+#include "libavutil/fbtile.c"
+#endif
 
 #include "avfilter.h"
 #include "formats.h"
@@ -33,7 +37,19 @@ typedef struct HWDownloadContext {
 
     AVBufferRef       *hwframes_ref;
     AVHWFramesContext *hwframes;
+    int fbdetile;
 } HWDownloadContext;
+
+#define OFFSET(x) offsetof(HWDownloadContext, x)
+#define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM
+static const AVOption hwdownload_options[] = {
+    { "fbdetile", "set framebuffer detile layout info", OFFSET(fbdetile), AV_OPT_TYPE_INT, {.i64=FBTILE_NONE}, 0, FBTILE_UNKNOWN-1, FLAGS, "fbdetile" },
+        { "none", "Pass through", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_NONE}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
+        { "intelx", "Intel Tile-X layout", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_INTEL_XGEN9}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
+        { "intely", "Intel Tile-Y layout", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_INTEL_YGEN9}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
+        { "intelyf", "Intel Tile-Yf layout", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_INTEL_YF}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
+    { NULL }
+};
 
 static int hwdownload_query_formats(AVFilterContext *avctx)
 {
@@ -64,6 +80,7 @@ static int hwdownload_query_formats(AVFilterContext *avctx)
 
 static int hwdownload_config_input(AVFilterLink *inlink)
 {
+    int err;
     AVFilterContext *avctx = inlink->dst;
     HWDownloadContext *ctx = avctx->priv;
 
@@ -80,6 +97,15 @@ static int hwdownload_config_input(AVFilterLink *inlink)
         return AVERROR(ENOMEM);
 
     ctx->hwframes = (AVHWFramesContext*)ctx->hwframes_ref->data;
+
+    if (ctx->fbdetile != 0) {
+        err = fbtile_checkpixformats(ctx->hwframes->sw_format, fbtilePixFormats[0]);
+        if (err) {
+            av_log(ctx, AV_LOG_ERROR, "Invalid input format %s for fbdetile.\n",
+                   av_get_pix_fmt_name(ctx->hwframes->sw_format));
+            return AVERROR(EINVAL);
+        }
+    }
 
     return 0;
 }
@@ -116,6 +142,15 @@ static int hwdownload_config_output(AVFilterLink *outlink)
         return AVERROR(EINVAL);
     }
 
+    if (ctx->fbdetile != 0) {
+        err = fbtile_checkpixformats(outlink->format, fbtilePixFormats[0]);
+        if (err) {
+            av_log(ctx, AV_LOG_ERROR, "Invalid output format %s for fbdetile.\n",
+                   av_get_pix_fmt_name(outlink->format));
+            return AVERROR(EINVAL);
+        }
+    }
+
     outlink->w = inlink->w;
     outlink->h = inlink->h;
 
@@ -128,6 +163,7 @@ static int hwdownload_filter_frame(AVFilterLink *link, AVFrame *input)
     AVFilterLink  *outlink = avctx->outputs[0];
     HWDownloadContext *ctx = avctx->priv;
     AVFrame *output = NULL;
+    AVFrame *output2 = NULL;
     int err;
 
     if (!ctx->hwframes_ref || !input->hw_frames_ctx) {
@@ -162,13 +198,38 @@ static int hwdownload_filter_frame(AVFilterLink *link, AVFrame *input)
     if (err < 0)
         goto fail;
 
-    av_frame_free(&input);
+    if (ctx->fbdetile == 0) {
+        av_frame_free(&input);
+        return ff_filter_frame(avctx->outputs[0], output);
+    }
 
-    return ff_filter_frame(avctx->outputs[0], output);
+    output2 = ff_get_video_buffer(outlink, ctx->hwframes->width,
+                                  ctx->hwframes->height);
+    if (!output2) {
+        err = AVERROR(ENOMEM);
+        goto fail;
+    }
+
+    output2->width  = outlink->w;
+    output2->height = outlink->h;
+    fbtile_conv(FBTILEOPS_DETILE, ctx->fbdetile,
+                 output2->width, output2->height,
+                 output2->data[0], output2->linesize[0],
+                 output->data[0], output->linesize[0], 4);
+
+    err = av_frame_copy_props(output2, input);
+    if (err < 0)
+        goto fail;
+
+    av_frame_free(&input);
+    av_frame_free(&output);
+
+    return ff_filter_frame(avctx->outputs[0], output2);
 
 fail:
     av_frame_free(&input);
     av_frame_free(&output);
+    av_frame_free(&output2);
     return err;
 }
 
@@ -182,7 +243,7 @@ static av_cold void hwdownload_uninit(AVFilterContext *avctx)
 static const AVClass hwdownload_class = {
     .class_name = "hwdownload",
     .item_name  = av_default_item_name,
-    .option     = NULL,
+    .option     = hwdownload_options,
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
