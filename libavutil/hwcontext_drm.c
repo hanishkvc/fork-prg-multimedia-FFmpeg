@@ -21,6 +21,7 @@
 #include <unistd.h>
 
 #include <drm.h>
+#include <drm_fourcc.h>
 #include <xf86drm.h>
 
 #include "avassert.h"
@@ -28,6 +29,10 @@
 #include "hwcontext_drm.h"
 #include "hwcontext_internal.h"
 #include "imgutils.h"
+#include "fbtile.h"
+#ifndef FBTILE_SCOPE_PUBLIC
+#include "libavutil/fbtile.c"
+#endif
 
 
 static void drm_device_free(AVHWDeviceContext *hwdev)
@@ -185,6 +190,35 @@ static int drm_transfer_get_formats(AVHWFramesContext *ctx,
     return 0;
 }
 
+// Can be overridden during compiling, if required.
+#ifndef HWCTXDRM_SYNCRELATED_FORMATMODIFIER
+#define HWCTXDRM_SYNCRELATED_FORMATMODIFIER 1
+#endif
+static int drm_transfer_with_detile(const AVFrame *hwAVFrame, AVFrame *dst, const AVFrame *src)
+{
+    int err;
+    uint64_t formatModifier;
+    enum FBTileLayout srcFBTileLayout, dstFBTileLayout;
+    enum FBTileFrameCopyStatus status;
+    AVDRMFrameDescriptor *drmFrame = NULL;
+
+    srcFBTileLayout = FBTILE_NONE;
+    dstFBTileLayout = FBTILE_NONE;
+    if (hwAVFrame->format  == AV_PIX_FMT_DRM_PRIME) {
+        drmFrame = (AVDRMFrameDescriptor*)hwAVFrame->data[0];
+        formatModifier = drmFrame->objects[0].format_modifier;
+        srcFBTileLayout = fbtilelayoutid_from_drmformatmodifier(formatModifier);
+    }
+    err = fbtile_frame_copy(dst, dstFBTileLayout, src, srcFBTileLayout, &status);
+#if HWCTXDRM_SYNCRELATED_FORMATMODIFIER
+    if (!err && (status == FBTILE_FRAMECOPY_TILECOPY)) {
+        if (drmFrame != NULL)
+            drmFrame->objects[0].format_modifier = DRM_FORMAT_MOD_LINEAR;
+    }
+#endif
+    return err;
+}
+
 static int drm_transfer_data_from(AVHWFramesContext *hwfc,
                                   AVFrame *dst, const AVFrame *src)
 {
@@ -206,7 +240,7 @@ static int drm_transfer_data_from(AVHWFramesContext *hwfc,
     map->width  = dst->width;
     map->height = dst->height;
 
-    err = av_frame_copy(dst, map);
+    err = drm_transfer_with_detile(src, dst, map);
     if (err)
         goto fail;
 
