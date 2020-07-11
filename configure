@@ -6655,8 +6655,7 @@ if enabled vaapi; then
 fi
 
 if enabled libdrm; then
-    require_pkg_config libdrm libdrm xf86drmMode.h drmModeGetFB2 &&
-        enable drm_getfb2
+    check_pkg_config drm_getfb2 libdrm "xf86drm.h xf86drmMode.h" drmModeGetFB2
 fi
 
 if enabled_all opencl libdrm ; then
