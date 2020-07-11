@@ -23,7 +23,7 @@
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/fbtile.h"
-#ifdef FBTILE_SCOPE_LIMITED
+#ifndef FBTILE_SCOPE_PUBLIC
 #include "libavutil/fbtile.c"
 #endif
 

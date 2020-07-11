@@ -30,7 +30,7 @@
 #include "hwcontext_internal.h"
 #include "imgutils.h"
 #include "fbtile.h"
-#ifdef FBTILE_SCOPE_LIMITED
+#ifndef FBTILE_SCOPE_PUBLIC
 #include "libavutil/fbtile.c"
 #endif
 

@@ -35,13 +35,13 @@
 
 
 /**
- * Set scope of this api to be either public or limited (non-public)
+ * Set scope of this api to be either public or internal (non-public)
  */
-#define FBTILE_SCOPE_LIMITED 1
-#ifdef FBTILE_SCOPE_LIMITED
-#define SCOPEIN static
-#else
+#define FBTILE_SCOPE_PUBLIC 1
+#ifdef FBTILE_SCOPE_PUBLIC
 #define SCOPEIN
+#else
+#define SCOPEIN static
 #endif
 
 
@@ -128,7 +128,7 @@ enum FBTileFrameCopyStatus {
 };
 
 
-#ifndef FBTILE_SCOPE_LIMITED
+#ifdef FBTILE_SCOPE_PUBLIC
 
 
 /**
@@ -244,7 +244,7 @@ int fbtile_frame_copy(AVFrame *dst, enum FBTileLayout dstTileLayout,
                       enum FBTileFrameCopyStatus *status);
 
 
-#endif // FBTILE_SCOPE_LIMITED
+#endif // FBTILE_SCOPE_PUBLIC
 
 
 /**

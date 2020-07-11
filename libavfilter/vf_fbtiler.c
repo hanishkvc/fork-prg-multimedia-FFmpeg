@@ -68,7 +68,7 @@
 #include "libavutil/imgutils.h"
 #include "libavutil/opt.h"
 #include "libavutil/fbtile.h"
-#ifdef FBTILE_SCOPE_LIMITED
+#ifndef FBTILE_SCOPE_PUBLIC
 #include "libavutil/fbtile.c"
 #endif
 #include "avfilter.h"
