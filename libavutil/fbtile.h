@@ -230,8 +230,8 @@ int fbtiler_conv(enum FBTileOps op, enum FBTileLayout layout,
  *
  * @return 0 if copied.
  */
-int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileLayout,
-                              AVFrame *src, enum FBTileLayout srcTileLayout);
+int fbtile_frame_copy(AVFrame *dst, enum FBTileLayout dstTileLayout,
+                      AVFrame *src, enum FBTileLayout srcTileLayout);
 
 
 #endif // FBTILE_SCOPE_LIMITED

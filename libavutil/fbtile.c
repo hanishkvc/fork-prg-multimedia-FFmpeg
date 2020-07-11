@@ -393,7 +393,7 @@ SCOPEIN int fbtiler_conv(enum FBTileOps op, enum FBTileLayout layout,
  * NOTE: Either the Source or the Destination AVFrame (i.e one of them) should be linear.
  * NOTE: If the tiling layout is not understood, it will do a simple copy.
  */
-SCOPEIN int av_frame_copy_with_tiling(AVFrame *dst, enum FBTileLayout dstTileLayout, AVFrame *src, enum FBTileLayout srcTileLayout)
+SCOPEIN int fbtile_frame_copy(AVFrame *dst, enum FBTileLayout dstTileLayout, AVFrame *src, enum FBTileLayout srcTileLayout)
 {
     int err;
 
