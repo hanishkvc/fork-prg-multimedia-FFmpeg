@@ -187,11 +187,16 @@ static int drm_transfer_get_formats(AVHWFramesContext *ctx,
     return 0;
 }
 
-// Can be overridden during compiling, if required.
+/**
+ * As AVFrame doesnt support tile layout natively, so if detile is successful
+ * the same is notified to any other users by updating the corresponding
+ * hardware AVFrame's tile layout info.
+ * If this is not needed, #define HWCTXDRM_SYNCRELATED_FORMATMODIFIER 0
+ */
 #ifndef HWCTXDRM_SYNCRELATED_FORMATMODIFIER
 #define HWCTXDRM_SYNCRELATED_FORMATMODIFIER 1
 #endif
-static int drm_transfer_with_detile(const AVFrame *hwAVFrame, AVFrame *dst, const AVFrame *src)
+static int drm_transfer_with_detile(const AVFrame *hwAVFrame, AVFrame *dst, AVFrame *src)
 {
     int err;
     uint64_t formatModifier;
