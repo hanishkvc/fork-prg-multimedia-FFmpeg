@@ -273,45 +273,30 @@ static int _fbtile_generic_opti(enum FBTileOps op,
         av_log(NULL, AV_LOG_DEBUG, "fbtile:genericopti: lX%d lY%d; tO%d, lO%d; %d/%d\n", lX, lY, tO, lO, cSTL, nSTLines);
 #endif
 
-        // As most tiling layouts have a minimum subtile of 4x4, if I remember correctly,
-        // so this loop can be unrolled to be multiples of 4, and speed up a bit.
-        // However tiling involving 3x3 or 2x2 wont be handlable. In which one will have to use
-        // NON UnRolled version or fbtile_generic_simple for such tile layouts.
-        // (De)tile parallely to a limited extent. Gain some speed by allowing reuse of calcs and parallelism,
-        // but still avoid any cache set-associativity and or limited cache based thrashing. Keep it spatially
-        // and inturn temporaly small at one level.
+        // As many tiling layouts have subtile and walk sizes which are multiples of 4,
+        // so this loop has been unrolled to be multiples of 4, and speed up a bit.
+        // If this condition is not satisfied, esp along vert dir, then use fbtile_generic_simple.
+        // (De)tile parallely and gain some speed by allowing reuse of some calcs and parallelism.
         if (op == FBTILEOPS_DETILE) {
-#ifdef FBTILER_OPTI_UNROLL
             for (int k = 0; k < subTileHeight; k+=4) {
-#else
-            for (int k = 0; k < subTileHeight; k+=1) {
-#endif
                 for (int p = 0; p < parallel; p++) {
                     int pTldOffset = p*tileWidth*tileHeight*bytesPerPixel;
                     int pLinOffset = p*tileWidth*bytesPerPixel;
                     memcpy(lin+lO+(k+0)*linLineSize+pLinOffset, tld+tO+(k+0)*subTileWidthBytes+pTldOffset, subTileWidthBytes);
-#ifdef FBTILER_OPTI_UNROLL
                     memcpy(lin+lO+(k+1)*linLineSize+pLinOffset, tld+tO+(k+1)*subTileWidthBytes+pTldOffset, subTileWidthBytes);
                     memcpy(lin+lO+(k+2)*linLineSize+pLinOffset, tld+tO+(k+2)*subTileWidthBytes+pTldOffset, subTileWidthBytes);
                     memcpy(lin+lO+(k+3)*linLineSize+pLinOffset, tld+tO+(k+3)*subTileWidthBytes+pTldOffset, subTileWidthBytes);
-#endif
                 }
             }
         } else {
-#ifdef FBTILER_OPTI_UNROLL
             for (int k = 0; k < subTileHeight; k+=4) {
-#else
-            for (int k = 0; k < subTileHeight; k+=1) {
-#endif
                 for (int p = 0; p < parallel; p++) {
                     int pTldOffset = p*tileWidth*tileHeight*bytesPerPixel;
                     int pLinOffset = p*tileWidth*bytesPerPixel;
                     memcpy(tld+tO+(k+0)*subTileWidthBytes+pTldOffset, lin+lO+(k+0)*linLineSize+pLinOffset, subTileWidthBytes);
-#ifdef FBTILER_OPTI_UNROLL
                     memcpy(tld+tO+(k+1)*subTileWidthBytes+pTldOffset, lin+lO+(k+1)*linLineSize+pLinOffset, subTileWidthBytes);
                     memcpy(tld+tO+(k+2)*subTileWidthBytes+pTldOffset, lin+lO+(k+2)*linLineSize+pLinOffset, subTileWidthBytes);
                     memcpy(tld+tO+(k+3)*subTileWidthBytes+pTldOffset, lin+lO+(k+3)*linLineSize+pLinOffset, subTileWidthBytes);
-#endif
                 }
             }
         }
@@ -375,11 +360,11 @@ SCOPEIN int fbtile_conv(enum FBTileOps op, enum FBTileLayout layout,
         av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateNone, "fbtile:conv:FBTILE_NONE: not (de)tiling\n");
         return FBT_ERR;
     case FBTILE_INTEL_XGEN9:
-        return fbtile_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk);
+        return fbtile_generic_opti(op, w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk);
     case FBTILE_INTEL_YGEN9:
-        return fbtile_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk);
+        return fbtile_generic_opti(op, w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk);
     case FBTILE_INTEL_YF:
-        return fbtile_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
+        return fbtile_generic_opti(op, w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
     default:
         av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateUnknown, "fbtile:conv: unknown layout [%d] specified, not (de)tiling\n", layout);
         return FBT_ERR;

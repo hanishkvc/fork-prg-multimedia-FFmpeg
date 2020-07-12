@@ -44,21 +44,10 @@
 #define SCOPEIN static
 #endif
 
-
 /**
- * Set fbtile_generic to either simple or minimal optimised logic
+ * Enable printing of the tile walk
  */
-#define FBTILER_GENERIC_OPTI 1
-#ifdef FBTILER_GENERIC_OPTI
-#define fbtile_generic fbtile_generic_opti
-#else
-#define fbtile_generic fbtile_generic_simple
-#endif
-
-
-// Enable printing of the tile walk
 //#define DEBUG_FBTILE 1
-
 
 // Common return values
 #define FBT_OK 0
@@ -71,9 +60,8 @@ enum FBTileOps {
     FBTILEOPS_NONE,
     FBTILEOPS_TILE,
     FBTILEOPS_DETILE,
-    FBTILEOPS_UNKNOWN
+    FBTILEOPS_UNKNOWN,
 };
-
 
 /**
  * The FBTile related Layouts
