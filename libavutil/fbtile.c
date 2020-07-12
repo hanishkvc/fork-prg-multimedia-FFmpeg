@@ -135,6 +135,22 @@ static struct FBTileWalk tyTileWalk = {
 
 
 /**
+ * Generic Logic to Tile/Detile between tiled and linear layout.
+ *
+ * @param op whether to tile or detile
+ * @param w width of the image
+ * @param h height of the image
+ * @param dst the destination image buffer
+ * @param dstLineSize the size of each row in dst image, in bytes
+ * @param src the source image buffer
+ * @param srcLineSize the size of each row in src image, in bytes
+ * @param tw the structure which contains the tile walk parameters
+ *
+ * @return 0 if detiled, 1 if not
+ */
+
+
+/**
  * _fbtile_generic_simple tile/detile layout
  */
 static int _fbtile_generic_simple(enum FFFBTileOps op,
@@ -209,7 +225,7 @@ static int _fbtile_generic_simple(enum FFFBTileOps op,
 }
 
 
-int ff_fbtile_generic_simple(enum FFFBTileOps op,
+static int fbtile_generic_simple(enum FFFBTileOps op,
                            const int w, const int h,
                            uint8_t *dst, const int dstLineSize,
                            uint8_t *src, const int srcLineSize,
@@ -224,6 +240,9 @@ int ff_fbtile_generic_simple(enum FFFBTileOps op,
 }
 
 
+/**
+ * Generic tile/detile minimal optimised version.
+ */
 static int _fbtile_generic_opti(enum FFFBTileOps op,
                                  const int w, const int h,
                                  uint8_t *dst, const int dstLineSize,
@@ -339,7 +358,7 @@ static int _fbtile_generic_opti(enum FFFBTileOps op,
 }
 
 
-int ff_fbtile_generic_opti(enum FFFBTileOps op,
+static int fbtile_generic_opti(enum FFFBTileOps op,
                          const int w, const int h,
                          uint8_t *dst, const int dstLineSize,
                          uint8_t *src, const int srcLineSize,
@@ -368,11 +387,11 @@ static int fbtile_conv(enum FFFBTileOps op, enum FFFBTileLayout layout,
         av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateNone, "fbtile:conv:FF_FBTILE_NONE: not (de)tiling\n");
         return FBT_ERR;
     case FF_FBTILE_INTEL_XGEN9:
-        return ff_fbtile_generic_opti(op, w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk);
+        return fbtile_generic_opti(op, w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk);
     case FF_FBTILE_INTEL_YGEN9:
-        return ff_fbtile_generic_opti(op, w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk);
+        return fbtile_generic_opti(op, w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk);
     case FF_FBTILE_INTEL_YF:
-        return ff_fbtile_generic_opti(op, w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
+        return fbtile_generic_opti(op, w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
     default:
         av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateUnknown, "fbtile:conv: unknown layout [%d] specified, not (de)tiling\n", layout);
         return FBT_ERR;

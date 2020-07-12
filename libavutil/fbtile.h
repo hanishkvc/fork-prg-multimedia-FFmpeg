@@ -139,47 +139,6 @@ int ff_fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum 
 
 
 /**
- * Generic Logic.
- */
-
-
-/**
- * Generic Logic to Tile/Detile between tiled and linear layout.
- *
- * @param op whether to tile or detile
- * @param w width of the image
- * @param h height of the image
- * @param dst the destination image buffer
- * @param dstLineSize the size of each row in dst image, in bytes
- * @param src the source image buffer
- * @param srcLineSize the size of each row in src image, in bytes
- * @param tw the structure which contains the tile walk parameters
- *
- * @return 0 if detiled, 1 if not
- */
-
-
-/**
- * Generic tile/detile simple version.
- */
-int ff_fbtile_generic_simple(enum FFFBTileOps op,
-                             const int w, const int h,
-                             uint8_t *dst, const int dstLineSize,
-                             uint8_t *src, const int srcLineSize,
-                             const struct FBTileWalk *tw);
-
-
-/**
- * Generic tile/detile minimal optimised version.
- */
-int ff_fbtile_generic_opti(enum FFFBTileOps op,
-                           const int w, const int h,
-                           uint8_t *dst, const int dstLineSize,
-                           uint8_t *src, const int srcLineSize,
-                           const struct FBTileWalk *tw);
-
-
-/**
  * Copy one AVFrame into the other, tiling or detiling as required, if possible.
  * NOTE: Either the Source or the Destination AVFrame (i.e one of them) should be linear.
  * NOTE: If the tiling layout is not understood, it will do a simple copy.
