@@ -64,11 +64,11 @@ enum FBTileOps {
 };
 
 /**
- * The FBTile families
+ * The FBTile layout families
  */
-enum FBTileFamily {
-    FBTILE_FAMILY_DRM,
-    FBTILE_FAMILY_UNKNOWN,
+enum FFFBTileFamily {
+    FF_FBTILE_FAMILY_DRM,
+    FF_FBTILE_FAMILY_UNKNOWN,
 };
 
 /**
@@ -133,7 +133,7 @@ enum FBTileFrameCopyStatus {
  * @param formatModifier the format_modifier to map
  * @return the fbtile's equivalent internal mode
  */
-enum FBTileLayout fbtile_getlayoutid(enum FBTileFamily family, uint64_t familyTileType);
+enum FBTileLayout ff_fbtile_getlayoutid(enum FFFBTileFamily family, uint64_t familyTileType);
 
 
 /**

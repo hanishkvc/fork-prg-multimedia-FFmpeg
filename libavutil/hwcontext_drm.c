@@ -207,7 +207,7 @@ static int drm_transfer_with_detile(const AVFrame *hwAVFrame, AVFrame *dst, cons
     if (hwAVFrame->format  == AV_PIX_FMT_DRM_PRIME) {
         drmFrame = (AVDRMFrameDescriptor*)hwAVFrame->data[0];
         formatModifier = drmFrame->objects[0].format_modifier;
-        srcFBTileLayout = fbtile_getlayoutid(FBTILE_FAMILY_DRM, formatModifier);
+        srcFBTileLayout = ff_fbtile_getlayoutid(FF_FBTILE_FAMILY_DRM, formatModifier);
     }
     err = fbtile_frame_copy(dst, dstFBTileLayout, src, srcFBTileLayout, &status);
 #if HWCTXDRM_SYNCRELATED_FORMATMODIFIER

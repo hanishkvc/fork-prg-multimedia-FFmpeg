@@ -28,12 +28,12 @@
 #endif
 
 
-SCOPEIN enum FBTileLayout fbtile_getlayoutid(enum FBTileFamily family, uint64_t familyTileType)
+SCOPEIN enum FBTileLayout ff_fbtile_getlayoutid(enum FFFBTileFamily family, uint64_t familyTileType)
 {
     enum FBTileLayout layout = FBTILE_UNKNOWN;
 
     switch(family) {
-    case FBTILE_FAMILY_DRM:
+    case FF_FBTILE_FAMILY_DRM:
 #if CONFIG_LIBDRM
         switch(familyTileType) {
         case DRM_FORMAT_MOD_LINEAR:
