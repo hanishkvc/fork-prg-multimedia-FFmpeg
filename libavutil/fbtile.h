@@ -35,16 +35,6 @@
 
 
 /**
- * Set scope of this api to be either public or internal (non-public)
- */
-#define FBTILE_SCOPE_PUBLIC 1
-#ifdef FBTILE_SCOPE_PUBLIC
-#define SCOPEIN
-#else
-#define SCOPEIN static
-#endif
-
-/**
  * Enable printing of the tile walk
  */
 //#define DEBUG_FBTILE 1
@@ -122,9 +112,6 @@ enum FFFBTileFrameCopyStatus {
     FF_FBTILE_FRAMECOPY_TILECOPY,
     FF_FBTILE_FRAMECOPY_COPYONLY
 };
-
-
-#ifdef FBTILE_SCOPE_PUBLIC
 
 
 /**
@@ -207,9 +194,6 @@ int ff_fbtile_generic_opti(enum FFFBTileOps op,
 int ff_fbtile_frame_copy(AVFrame *dst, enum FFFBTileLayout dstTileLayout,
                          AVFrame *src, enum FFFBTileLayout srcTileLayout,
                          enum FFFBTileFrameCopyStatus *status);
-
-
-#endif // FBTILE_SCOPE_PUBLIC
 
 
 /**

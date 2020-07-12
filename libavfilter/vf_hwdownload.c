@@ -23,9 +23,6 @@
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/fbtile.h"
-#ifndef FBTILE_SCOPE_PUBLIC
-#include "libavutil/fbtile.c"
-#endif
 
 #include "avfilter.h"
 #include "formats.h"

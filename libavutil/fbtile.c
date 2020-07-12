@@ -28,7 +28,7 @@
 #endif
 
 
-SCOPEIN enum FFFBTileLayout ff_fbtile_getlayoutid(enum FFFBTileFamily family, uint64_t familyTileType)
+enum FFFBTileLayout ff_fbtile_getlayoutid(enum FFFBTileFamily family, uint64_t familyTileType)
 {
     enum FFFBTileLayout layout = FF_FBTILE_UNKNOWN;
 
@@ -69,12 +69,12 @@ SCOPEIN enum FFFBTileLayout ff_fbtile_getlayoutid(enum FFFBTileFamily family, ui
  * Currently only RGB based 32bit formats are specified
  * TODO: Technically the logic is transparent to 16bit RGB formats also to a great extent
  */
-SCOPEIN const enum AVPixelFormat fbtilePixFormats[] = {
+const enum AVPixelFormat fbtilePixFormats[] = {
                                         AV_PIX_FMT_RGB0, AV_PIX_FMT_0RGB, AV_PIX_FMT_BGR0, AV_PIX_FMT_0BGR,
                                         AV_PIX_FMT_RGBA, AV_PIX_FMT_ARGB, AV_PIX_FMT_BGRA, AV_PIX_FMT_ABGR,
                                         AV_PIX_FMT_NONE};
 
-SCOPEIN int ff_fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVPixelFormat dstPixFormat)
+int ff_fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVPixelFormat dstPixFormat)
 {
     int errSrc = 1;
     int errDst = 1;
@@ -209,7 +209,7 @@ static int _fbtile_generic_simple(enum FFFBTileOps op,
 }
 
 
-SCOPEIN int ff_fbtile_generic_simple(enum FFFBTileOps op,
+int ff_fbtile_generic_simple(enum FFFBTileOps op,
                            const int w, const int h,
                            uint8_t *dst, const int dstLineSize,
                            uint8_t *src, const int srcLineSize,
@@ -339,7 +339,7 @@ static int _fbtile_generic_opti(enum FFFBTileOps op,
 }
 
 
-SCOPEIN int ff_fbtile_generic_opti(enum FFFBTileOps op,
+int ff_fbtile_generic_opti(enum FFFBTileOps op,
                          const int w, const int h,
                          uint8_t *dst, const int dstLineSize,
                          uint8_t *src, const int srcLineSize,
@@ -385,7 +385,7 @@ static int fbtile_conv(enum FFFBTileOps op, enum FFFBTileLayout layout,
  * NOTE: Either the Source or the Destination AVFrame (i.e one of them) should be linear.
  * NOTE: If the tiling layout is not understood, it will do a simple copy.
  */
-SCOPEIN int ff_fbtile_frame_copy(AVFrame *dst, enum FFFBTileLayout dstTileLayout, AVFrame *src, enum FFFBTileLayout srcTileLayout,
+int ff_fbtile_frame_copy(AVFrame *dst, enum FFFBTileLayout dstTileLayout, AVFrame *src, enum FFFBTileLayout srcTileLayout,
                                  enum FFFBTileFrameCopyStatus *status)
 {
     int err;
