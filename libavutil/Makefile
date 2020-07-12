@@ -84,6 +84,7 @@ HEADERS = adler32.h                                                     \
           xtea.h                                                        \
           tea.h                                                         \
           tx.h                                                          \
+          fbtile.h                                                      \
 
 HEADERS-$(CONFIG_LZO)                   += lzo.h
 
@@ -169,6 +170,7 @@ OBJS = adler32.o                                                        \
        tx_float.o                                                       \
        tx_double.o                                                      \
        tx_int32.o                                                       \
+       fbtile.o                                                         \
        video_enc_params.o                                               \
 
 
