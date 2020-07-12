@@ -439,12 +439,12 @@ static int fbtile_conv(enum FFFBTileOps op, enum FFFBTileLayout layout,
 
 
 /*
- * Copy one AVFrame into the other, tiling or detiling as required, if possible.
+ * Copy one AVFrame into another, in the process tiling or detiling as required, if possible.
  * NOTE: Either the Source or the Destination AVFrame (i.e one of them) should be linear.
- * NOTE: If the tiling layout is not understood, it will do a simple copy.
+ * NOTE: If the tiling layout is not understood, it falls back to av_frame_copy.
  */
 int ff_fbtile_frame_copy(AVFrame *dst, enum FFFBTileLayout dstTileLayout, AVFrame *src, enum FFFBTileLayout srcTileLayout,
-                                 enum FFFBTileFrameCopyStatus *status)
+                         enum FFFBTileFrameCopyStatus *status)
 {
     int err;
 

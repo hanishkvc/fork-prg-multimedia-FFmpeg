@@ -109,9 +109,9 @@ int ff_fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum 
 
 
 /**
- * Copy one AVFrame into the other, tiling or detiling as required, if possible.
+ * Copy one AVFrame into another, in the process tiling or detiling as required, if possible.
  * NOTE: Either the Source or the Destination AVFrame (i.e one of them) should be linear.
- * NOTE: If the tiling layout is not understood, it will do a simple copy.
+ * NOTE: If the tiling layout is not understood, it falls back to av_frame_copy.
  *
  * @param dst the destination avframe
  * @param dstTileLayout the framebuffer tiling layout expected for the destination avframe
