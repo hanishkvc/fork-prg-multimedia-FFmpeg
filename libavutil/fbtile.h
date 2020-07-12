@@ -52,6 +52,8 @@ enum FFFBTileOps {
 
 /**
  * The FBTile layout families
+ * Used to help map from an external subsystem like say drm
+ * to fbtile's internal tile layout id.
  */
 enum FFFBTileFamily {
     FF_FBTILE_FAMILY_DRM,
@@ -70,7 +72,6 @@ enum FFFBTileLayout {
     FF_FBTILE_UNKNOWN,
 };
 
-
 /**
  * FBTile FrameCopy additional status
  */
@@ -81,10 +82,12 @@ enum FFFBTileFrameCopyStatus {
 
 
 /**
- * Map from formatmodifier to fbtile's internal mode.
+ * Identify equivalent fbtile tile layout id given an external subsystem's tile layout id.
  *
- * @param formatModifier the format_modifier to map
- * @return the fbtile's equivalent internal mode
+ * @param family identifies the subsystem
+ * @param familyTileType the tile layout id as defined by the subsystem
+ *
+ * @return the fbtile's equivalent tile layout id
  */
 enum FFFBTileLayout ff_fbtile_getlayoutid(enum FFFBTileFamily family, uint64_t familyTileType);
 
@@ -93,6 +96,7 @@ enum FFFBTileLayout ff_fbtile_getlayoutid(enum FFFBTileFamily family, uint64_t f
  * Supported pixel formats by the fbtile logics
  */
 extern const enum AVPixelFormat fbtilePixFormats[];
+
 /**
  * Check if the given pixel formats are supported by fbtile logic.
  *
@@ -113,6 +117,7 @@ int ff_fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum 
  * @param dstTileLayout the framebuffer tiling layout expected for the destination avframe
  * @param src the source avframe
  * @param srcTileLayout the framebuffer tiling layout of the source avframe
+ * @param status helps identify if only copy was done or (de)tile+copy was done
  *
  * @return 0 if copied.
  */
