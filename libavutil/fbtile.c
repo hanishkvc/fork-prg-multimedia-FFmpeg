@@ -74,7 +74,7 @@ SCOPEIN const enum AVPixelFormat fbtilePixFormats[] = {
                                         AV_PIX_FMT_RGBA, AV_PIX_FMT_ARGB, AV_PIX_FMT_BGRA, AV_PIX_FMT_ABGR,
                                         AV_PIX_FMT_NONE};
 
-SCOPEIN int fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVPixelFormat dstPixFormat)
+SCOPEIN int ff_fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVPixelFormat dstPixFormat)
 {
     int errSrc = 1;
     int errDst = 1;
@@ -391,7 +391,7 @@ SCOPEIN int ff_fbtile_frame_copy(AVFrame *dst, enum FFFBTileLayout dstTileLayout
     int err;
 
     if (dstTileLayout == FF_FBTILE_NONE) {         // i.e DeTile
-        err = fbtile_checkpixformats(src->format, dst->format);
+        err = ff_fbtile_checkpixformats(src->format, dst->format);
         if (!err) {
             err = fbtile_conv(FF_FBTILE_OPS_DETILE, srcTileLayout,
                                 dst->width, dst->height,
@@ -403,7 +403,7 @@ SCOPEIN int ff_fbtile_frame_copy(AVFrame *dst, enum FFFBTileLayout dstTileLayout
             }
         }
     } else if (srcTileLayout == FF_FBTILE_NONE) {  // i.e Tile
-        err = fbtile_checkpixformats(src->format, dst->format);
+        err = ff_fbtile_checkpixformats(src->format, dst->format);
         if (!err) {
             err = fbtile_conv(FF_FBTILE_OPS_TILE, dstTileLayout,
                                 src->width, src->height,

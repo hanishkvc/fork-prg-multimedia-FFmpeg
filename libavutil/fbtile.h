@@ -148,7 +148,7 @@ extern const enum AVPixelFormat fbtilePixFormats[];
  *
  * @return 0 if supported, 1 if not
  */
-int fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVPixelFormat dstPixFormat);
+int ff_fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVPixelFormat dstPixFormat);
 
 
 /**
