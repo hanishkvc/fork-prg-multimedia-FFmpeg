@@ -175,21 +175,21 @@ int fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVP
 /**
  * Generic tile/detile simple version.
  */
-int fbtile_generic_simple(enum FFFBTileOps op,
-                           const int w, const int h,
-                           uint8_t *dst, const int dstLineSize,
-                           uint8_t *src, const int srcLineSize,
-                           const struct FFFBTileWalk *tw);
+int ff_fbtile_generic_simple(enum FFFBTileOps op,
+                             const int w, const int h,
+                             uint8_t *dst, const int dstLineSize,
+                             uint8_t *src, const int srcLineSize,
+                             const struct FFFBTileWalk *tw);
 
 
 /**
  * Generic tile/detile minimal optimised version.
  */
-int fbtile_generic_opti(enum FFFBTileOps op,
-                         const int w, const int h,
-                         uint8_t *dst, const int dstLineSize,
-                         uint8_t *src, const int srcLineSize,
-                         const struct FFFBTileWalk *tw);
+int ff_fbtile_generic_opti(enum FFFBTileOps op,
+                           const int w, const int h,
+                           uint8_t *dst, const int dstLineSize,
+                           uint8_t *src, const int srcLineSize,
+                           const struct FFFBTileWalk *tw);
 
 
 /**
