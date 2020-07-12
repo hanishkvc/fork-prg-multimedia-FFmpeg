@@ -165,7 +165,7 @@ static int hwdownload_filter_frame(AVFilterLink *link, AVFrame *input)
     AVFrame *output = NULL;
     AVFrame *output2 = NULL;
     int err;
-    enum FBTileFrameCopyStatus status;
+    enum FFFBTileFrameCopyStatus status;
 
     if (!ctx->hwframes_ref || !input->hw_frames_ctx) {
         av_log(ctx, AV_LOG_ERROR, "Input frames must have hardware context.\n");

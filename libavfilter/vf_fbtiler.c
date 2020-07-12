@@ -173,7 +173,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     FBTilerContext *fbtiler = ctx->priv;
     AVFilterLink *outlink = ctx->outputs[0];
     AVFrame *out;
-    enum FBTileFrameCopyStatus status;
+    enum FFFBTileFrameCopyStatus status;
 
     if ((fbtiler->op == FF_FBTILE_OPS_NONE) || (fbtiler->layout == FF_FBTILE_NONE))
         return ff_filter_frame(outlink, in);

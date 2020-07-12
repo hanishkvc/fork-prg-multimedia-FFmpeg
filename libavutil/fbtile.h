@@ -118,9 +118,9 @@ struct FBTileWalk {
 /**
  * FBTile FrameCopy additional status
  */
-enum FBTileFrameCopyStatus {
-    FBTILE_FRAMECOPY_TILECOPY,
-    FBTILE_FRAMECOPY_COPYONLY
+enum FFFBTileFrameCopyStatus {
+    FF_FBTILE_FRAMECOPY_TILECOPY,
+    FF_FBTILE_FRAMECOPY_COPYONLY
 };
 
 
@@ -206,7 +206,7 @@ int fbtile_generic_opti(enum FFFBTileOps op,
  */
 int fbtile_frame_copy(AVFrame *dst, enum FFFBTileLayout dstTileLayout,
                       AVFrame *src, enum FFFBTileLayout srcTileLayout,
-                      enum FBTileFrameCopyStatus *status);
+                      enum FFFBTileFrameCopyStatus *status);
 
 
 #endif // FBTILE_SCOPE_PUBLIC

@@ -386,7 +386,7 @@ static int fbtile_conv(enum FFFBTileOps op, enum FFFBTileLayout layout,
  * NOTE: If the tiling layout is not understood, it will do a simple copy.
  */
 SCOPEIN int fbtile_frame_copy(AVFrame *dst, enum FFFBTileLayout dstTileLayout, AVFrame *src, enum FFFBTileLayout srcTileLayout,
-                              enum FBTileFrameCopyStatus *status)
+                              enum FFFBTileFrameCopyStatus *status)
 {
     int err;
 
@@ -398,7 +398,7 @@ SCOPEIN int fbtile_frame_copy(AVFrame *dst, enum FFFBTileLayout dstTileLayout, A
                                 dst->data[0], dst->linesize[0],
                                 src->data[0], src->linesize[0], 4);
             if (!err) {
-                *status = FBTILE_FRAMECOPY_TILECOPY;
+                *status = FF_FBTILE_FRAMECOPY_TILECOPY;
                 return FBT_OK;
             }
         }
@@ -410,14 +410,14 @@ SCOPEIN int fbtile_frame_copy(AVFrame *dst, enum FFFBTileLayout dstTileLayout, A
                                 dst->data[0], dst->linesize[0],
                                 src->data[0], src->linesize[0], 4);
             if (!err) {
-                *status = FBTILE_FRAMECOPY_TILECOPY;
+                *status = FF_FBTILE_FRAMECOPY_TILECOPY;
                 return FBT_OK;
             }
         }
     } else {
         av_log(NULL, AV_LOG_WARNING, "fbtile:framecopy: both src [%d] and dst [%d] layouts cant be tiled\n", srcTileLayout, dstTileLayout);
     }
-    *status = FBTILE_FRAMECOPY_COPYONLY;
+    *status = FF_FBTILE_FRAMECOPY_COPYONLY;
     return av_frame_copy(dst, src);
 }
 

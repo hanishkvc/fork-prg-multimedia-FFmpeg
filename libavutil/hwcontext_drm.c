@@ -199,7 +199,7 @@ static int drm_transfer_with_detile(const AVFrame *hwAVFrame, AVFrame *dst, cons
     int err;
     uint64_t formatModifier;
     enum FFFBTileLayout srcFBTileLayout, dstFBTileLayout;
-    enum FBTileFrameCopyStatus status;
+    enum FFFBTileFrameCopyStatus status;
     AVDRMFrameDescriptor *drmFrame = NULL;
 
     srcFBTileLayout = FF_FBTILE_NONE;
@@ -211,7 +211,7 @@ static int drm_transfer_with_detile(const AVFrame *hwAVFrame, AVFrame *dst, cons
     }
     err = fbtile_frame_copy(dst, dstFBTileLayout, src, srcFBTileLayout, &status);
 #if HWCTXDRM_SYNCRELATED_FORMATMODIFIER
-    if (!err && (status == FBTILE_FRAMECOPY_TILECOPY)) {
+    if (!err && (status == FF_FBTILE_FRAMECOPY_TILECOPY)) {
         if (drmFrame != NULL)
             drmFrame->objects[0].format_modifier = DRM_FORMAT_MOD_LINEAR;
     }
