@@ -213,7 +213,7 @@ static int hwdownload_filter_frame(AVFilterLink *link, AVFrame *input)
 
     output2->width  = outlink->w;
     output2->height = outlink->h;
-    fbtile_frame_copy(output2, FF_FBTILE_NONE, output, ctx->fbdetile, &status);
+    ff_fbtile_frame_copy(output2, FF_FBTILE_NONE, output, ctx->fbdetile, &status);
 
     err = av_frame_copy_props(output2, input);
     if (err < 0)

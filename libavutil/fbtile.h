@@ -204,9 +204,9 @@ int fbtile_generic_opti(enum FFFBTileOps op,
  *
  * @return 0 if copied.
  */
-int fbtile_frame_copy(AVFrame *dst, enum FFFBTileLayout dstTileLayout,
-                      AVFrame *src, enum FFFBTileLayout srcTileLayout,
-                      enum FFFBTileFrameCopyStatus *status);
+int ff_fbtile_frame_copy(AVFrame *dst, enum FFFBTileLayout dstTileLayout,
+                         AVFrame *src, enum FFFBTileLayout srcTileLayout,
+                         enum FFFBTileFrameCopyStatus *status);
 
 
 #endif // FBTILE_SCOPE_PUBLIC

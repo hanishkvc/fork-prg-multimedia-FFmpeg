@@ -191,9 +191,9 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 #endif
 
     if (fbtiler->op == FF_FBTILE_OPS_DETILE)
-        fbtile_frame_copy(out, FF_FBTILE_NONE, in, fbtiler->layout, &status);
+        ff_fbtile_frame_copy(out, FF_FBTILE_NONE, in, fbtiler->layout, &status);
     else
-        fbtile_frame_copy(out, fbtiler->layout, in, FF_FBTILE_NONE, &status);
+        ff_fbtile_frame_copy(out, fbtiler->layout, in, FF_FBTILE_NONE, &status);
 
 #ifdef DEBUG_PERF
     uint64_t perfEnd = __rdtscp(&tscArg);
