@@ -28,30 +28,38 @@
 #endif
 
 
-SCOPEIN enum FBTileLayout fbtilelayoutid_from_drmformatmodifier(uint64_t formatModifier)
+SCOPEIN enum FBTileLayout fbtile_getlayoutid(enum FBTileFamily family, uint64_t familyTileType)
 {
     enum FBTileLayout layout = FBTILE_UNKNOWN;
 
+    switch(family) {
+    case FBTILE_FAMILY_DRM:
 #if CONFIG_LIBDRM
-    switch(formatModifier) {
-    case DRM_FORMAT_MOD_LINEAR:
-        layout = FBTILE_NONE;
-        break;
-    case I915_FORMAT_MOD_X_TILED:
-        layout = FBTILE_INTEL_XGEN9;
-        break;
-    case I915_FORMAT_MOD_Y_TILED:
-        layout = FBTILE_INTEL_YGEN9;
-        break;
-    case I915_FORMAT_MOD_Yf_TILED:
-        layout = FBTILE_INTEL_YF;
+        switch(familyTileType) {
+        case DRM_FORMAT_MOD_LINEAR:
+            layout = FBTILE_NONE;
+            break;
+        case I915_FORMAT_MOD_X_TILED:
+            layout = FBTILE_INTEL_XGEN9;
+            break;
+        case I915_FORMAT_MOD_Y_TILED:
+            layout = FBTILE_INTEL_YGEN9;
+            break;
+        case I915_FORMAT_MOD_Yf_TILED:
+            layout = FBTILE_INTEL_YF;
+            break;
+        default:
+            layout = FBTILE_UNKNOWN;
+            break;
+        }
+#else
+        av_log(NULL, AV_LOG_WARNING, "fbtile:getlayoutid: family[%d] familyTileType[%ld]\n", family, familyTileType);
+#endif
         break;
     default:
-        layout = FBTILE_UNKNOWN;
-        break;
+        av_log(NULL, AV_LOG_WARNING, "fbtile:getlayoutid: unknown family[%d] familyTileType[%ld]\n", family, familyTileType);
     }
-#endif
-    av_log(NULL, AV_LOG_VERBOSE, "fbtile:drmformatmodifier[%lx] mapped to layout[%d]\n", formatModifier, layout);
+    av_log(NULL, AV_LOG_VERBOSE, "fbtile:getlayoutid: family[%d] familyTileType[%ld] maps to layoutid[%d]\n", family, familyTileType, layout);
     return layout;
 }
 

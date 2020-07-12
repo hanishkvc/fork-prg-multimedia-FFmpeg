@@ -37,7 +37,7 @@
 /**
  * Set scope of this api to be either public or internal (non-public)
  */
-// #define FBTILE_SCOPE_PUBLIC 1
+#define FBTILE_SCOPE_PUBLIC 1
 #ifdef FBTILE_SCOPE_PUBLIC
 #define SCOPEIN
 #else
@@ -61,6 +61,14 @@ enum FBTileOps {
     FBTILEOPS_TILE,
     FBTILEOPS_DETILE,
     FBTILEOPS_UNKNOWN,
+};
+
+/**
+ * The FBTile families
+ */
+enum FBTileFamily {
+    FBTILE_FAMILY_DRM,
+    FBTILE_FAMILY_UNKNOWN,
 };
 
 /**
@@ -125,8 +133,7 @@ enum FBTileFrameCopyStatus {
  * @param formatModifier the format_modifier to map
  * @return the fbtile's equivalent internal mode
  */
-#undef DEBUG_FBTILE_FORMATMODIFIER_MAPPING
-enum FBTileLayout fbtilelayoutid_from_drmformatmodifier(uint64_t formatModifier);
+enum FBTileLayout fbtile_getlayoutid(enum FBTileFamily family, uint64_t familyTileType);
 
 
 /**
