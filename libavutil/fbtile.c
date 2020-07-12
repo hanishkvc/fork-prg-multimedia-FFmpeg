@@ -34,26 +34,24 @@ SCOPEIN enum FBTileLayout fbtilelayoutid_from_drmformatmodifier(uint64_t formatM
 
 #if CONFIG_LIBDRM
     switch(formatModifier) {
-        case DRM_FORMAT_MOD_LINEAR:
-            layout = FBTILE_NONE;
-            break;
-        case I915_FORMAT_MOD_X_TILED:
-            layout = FBTILE_INTEL_XGEN9;
-            break;
-        case I915_FORMAT_MOD_Y_TILED:
-            layout = FBTILE_INTEL_YGEN9;
-            break;
-        case I915_FORMAT_MOD_Yf_TILED:
-            layout = FBTILE_INTEL_YF;
-            break;
-        default:
-            layout = FBTILE_UNKNOWN;
-            break;
+    case DRM_FORMAT_MOD_LINEAR:
+        layout = FBTILE_NONE;
+        break;
+    case I915_FORMAT_MOD_X_TILED:
+        layout = FBTILE_INTEL_XGEN9;
+        break;
+    case I915_FORMAT_MOD_Y_TILED:
+        layout = FBTILE_INTEL_YGEN9;
+        break;
+    case I915_FORMAT_MOD_Yf_TILED:
+        layout = FBTILE_INTEL_YF;
+        break;
+    default:
+        layout = FBTILE_UNKNOWN;
+        break;
     }
 #endif
-#ifdef DEBUG_FBTILE_FORMATMODIFIER_MAPPING
-    av_log(NULL, AV_LOG_DEBUG, "fbtile:drmformatmodifier[%lx] mapped to layout[%d]\n", formatModifier, layout);
-#endif
+    av_log(NULL, AV_LOG_VERBOSE, "fbtile:drmformatmodifier[%lx] mapped to layout[%d]\n", formatModifier, layout);
     return layout;
 }
 
@@ -373,18 +371,18 @@ SCOPEIN int fbtile_conv(enum FBTileOps op, enum FBTileLayout layout,
     static int logStateUnknown = 0;
 
     switch(layout) {
-        case FBTILE_NONE:
-            av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateNone, "fbtile:conv:FBTILE_NONE: not (de)tiling\n");
-            return FBT_ERR;
-        case FBTILE_INTEL_XGEN9:
-            return fbtile_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk);
-        case FBTILE_INTEL_YGEN9:
-            return fbtile_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk);
-        case FBTILE_INTEL_YF:
-            return fbtile_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
-        default:
-            av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateUnknown, "fbtile:conv: unknown layout [%d] specified, not (de)tiling\n", layout);
-            return FBT_ERR;
+    case FBTILE_NONE:
+        av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateNone, "fbtile:conv:FBTILE_NONE: not (de)tiling\n");
+        return FBT_ERR;
+    case FBTILE_INTEL_XGEN9:
+        return fbtile_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk);
+    case FBTILE_INTEL_YGEN9:
+        return fbtile_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk);
+    case FBTILE_INTEL_YF:
+        return fbtile_generic(op, w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
+    default:
+        av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateUnknown, "fbtile:conv: unknown layout [%d] specified, not (de)tiling\n", layout);
+        return FBT_ERR;
     }
 }
 
