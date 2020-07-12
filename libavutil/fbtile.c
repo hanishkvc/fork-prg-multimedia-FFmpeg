@@ -137,7 +137,7 @@ static struct FBTileWalk tyTileWalk = {
 /**
  * _fbtile_generic_simple tile/detile layout
  */
-static int _fbtile_generic_simple(enum FBTileOps op,
+static int _fbtile_generic_simple(enum FFFBTileOps op,
                                    const int w, const int h,
                                    uint8_t *dst, const int dstLineSize,
                                    uint8_t *src, const int srcLineSize,
@@ -153,7 +153,7 @@ static int _fbtile_generic_simple(enum FBTileOps op,
     int tldLineSize, linLineSize;
     const int subTileWidthBytes = subTileWidth*bytesPerPixel;
 
-    if (op == FBTILEOPS_TILE) {
+    if (op == FF_FBTILE_OPS_TILE) {
         lin = src;
         linLineSize = srcLineSize;
         tld = dst;
@@ -184,7 +184,7 @@ static int _fbtile_generic_simple(enum FBTileOps op,
 #endif
 
         for (int k = 0; k < subTileHeight; k++) {
-            if (op == FBTILEOPS_TILE) {
+            if (op == FF_FBTILE_OPS_TILE) {
                 memcpy(tld+tO+k*subTileWidthBytes, lin+lO+k*linLineSize, subTileWidthBytes);
             } else {
                 memcpy(lin+lO+k*linLineSize, tld+tO+k*subTileWidthBytes, subTileWidthBytes);
@@ -209,7 +209,7 @@ static int _fbtile_generic_simple(enum FBTileOps op,
 }
 
 
-SCOPEIN int fbtile_generic_simple(enum FBTileOps op,
+SCOPEIN int fbtile_generic_simple(enum FFFBTileOps op,
                            const int w, const int h,
                            uint8_t *dst, const int dstLineSize,
                            uint8_t *src, const int srcLineSize,
@@ -224,7 +224,7 @@ SCOPEIN int fbtile_generic_simple(enum FBTileOps op,
 }
 
 
-static int _fbtile_generic_opti(enum FBTileOps op,
+static int _fbtile_generic_opti(enum FFFBTileOps op,
                                  const int w, const int h,
                                  uint8_t *dst, const int dstLineSize,
                                  uint8_t *src, const int srcLineSize,
@@ -242,7 +242,7 @@ static int _fbtile_generic_opti(enum FBTileOps op,
     const int subTileWidthBytes = subTileWidth*bytesPerPixel;
     int parallel = 1;
 
-    if (op == FBTILEOPS_TILE) {
+    if (op == FF_FBTILE_OPS_TILE) {
         lin = src;
         linLineSize = srcLineSize;
         tld = dst;
@@ -285,7 +285,7 @@ static int _fbtile_generic_opti(enum FBTileOps op,
         // so this loop has been unrolled to be multiples of 4, and speed up a bit.
         // If this condition is not satisfied, esp along vert dir, then use fbtile_generic_simple.
         // (De)tile parallely and gain some speed by allowing reuse of some calcs and parallelism.
-        if (op == FBTILEOPS_DETILE) {
+        if (op == FF_FBTILE_OPS_DETILE) {
             for (int k = 0; k < subTileHeight; k+=4) {
                 for (int p = 0; p < parallel; p++) {
                     int pTldOffset = p*tileWidth*tileHeight*bytesPerPixel;
@@ -339,7 +339,7 @@ static int _fbtile_generic_opti(enum FBTileOps op,
 }
 
 
-SCOPEIN int fbtile_generic_opti(enum FBTileOps op,
+SCOPEIN int fbtile_generic_opti(enum FFFBTileOps op,
                          const int w, const int h,
                          uint8_t *dst, const int dstLineSize,
                          uint8_t *src, const int srcLineSize,
@@ -354,7 +354,7 @@ SCOPEIN int fbtile_generic_opti(enum FBTileOps op,
 }
 
 
-static int fbtile_conv(enum FBTileOps op, enum FBTileLayout layout,
+static int fbtile_conv(enum FFFBTileOps op, enum FBTileLayout layout,
                  int w, int h,
                  uint8_t *dst, int dstLineSize,
                  uint8_t *src, int srcLineSize,
@@ -393,7 +393,7 @@ SCOPEIN int fbtile_frame_copy(AVFrame *dst, enum FBTileLayout dstTileLayout, AVF
     if (dstTileLayout == FBTILE_NONE) {         // i.e DeTile
         err = fbtile_checkpixformats(src->format, dst->format);
         if (!err) {
-            err = fbtile_conv(FBTILEOPS_DETILE, srcTileLayout,
+            err = fbtile_conv(FF_FBTILE_OPS_DETILE, srcTileLayout,
                                 dst->width, dst->height,
                                 dst->data[0], dst->linesize[0],
                                 src->data[0], src->linesize[0], 4);
@@ -405,7 +405,7 @@ SCOPEIN int fbtile_frame_copy(AVFrame *dst, enum FBTileLayout dstTileLayout, AVF
     } else if (srcTileLayout == FBTILE_NONE) {  // i.e Tile
         err = fbtile_checkpixformats(src->format, dst->format);
         if (!err) {
-            err = fbtile_conv(FBTILEOPS_TILE, dstTileLayout,
+            err = fbtile_conv(FF_FBTILE_OPS_TILE, dstTileLayout,
                                 src->width, src->height,
                                 dst->data[0], dst->linesize[0],
                                 src->data[0], src->linesize[0], 4);

@@ -105,10 +105,10 @@ static const AVOption fbtiler_options[] = {
         { "intelx", "Intel Tile-X layout", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_INTEL_XGEN9}, INT_MIN, INT_MAX, FLAGS, "layout" },
         { "intely", "Intel Tile-Y layout", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_INTEL_YGEN9}, INT_MIN, INT_MAX, FLAGS, "layout" },
         { "intelyf", "Intel Tile-Yf layout", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_INTEL_YF}, INT_MIN, INT_MAX, FLAGS, "layout" },
-    { "op", "select framebuffer tiling operations i.e tile or detile", OFFSET(op), AV_OPT_TYPE_INT, {.i64=FBTILEOPS_NONE}, 0, FBTILEOPS_UNKNOWN-1, FLAGS, "op" },
-        { "None", "Nop", 0, AV_OPT_TYPE_CONST, {.i64=FBTILEOPS_NONE}, INT_MIN, INT_MAX, FLAGS, "op" },
-        { "tile", "Apply tiling operation", 0, AV_OPT_TYPE_CONST, {.i64=FBTILEOPS_TILE}, INT_MIN, INT_MAX, FLAGS, "op" },
-        { "detile", "Apply detiling operation", 0, AV_OPT_TYPE_CONST, {.i64=FBTILEOPS_DETILE}, INT_MIN, INT_MAX, FLAGS, "op" },
+    { "op", "select framebuffer tiling operations i.e tile|detile", OFFSET(op), AV_OPT_TYPE_INT, {.i64=FF_FBTILE_OPS_NONE}, 0, FF_FBTILE_OPS_UNKNOWN-1, FLAGS, "op" },
+        { "None", "Nop", 0, AV_OPT_TYPE_CONST, {.i64=FF_FBTILE_OPS_NONE}, INT_MIN, INT_MAX, FLAGS, "op" },
+        { "tile", "Apply tiling operation", 0, AV_OPT_TYPE_CONST, {.i64=FF_FBTILE_OPS_TILE}, INT_MIN, INT_MAX, FLAGS, "op" },
+        { "detile", "Apply detiling operation", 0, AV_OPT_TYPE_CONST, {.i64=FF_FBTILE_OPS_DETILE}, INT_MIN, INT_MAX, FLAGS, "op" },
     { NULL }
 };
 
@@ -118,11 +118,11 @@ static av_cold int init(AVFilterContext *ctx)
 {
     FBTilerContext *fbtiler = ctx->priv;
 
-    if (fbtiler->op == FBTILEOPS_NONE) {
+    if (fbtiler->op == FF_FBTILE_OPS_NONE) {
         av_log(ctx, AV_LOG_INFO, "init:Op: None, Pass through\n");
-    } else if (fbtiler->op == FBTILEOPS_TILE) {
+    } else if (fbtiler->op == FF_FBTILE_OPS_TILE) {
         av_log(ctx, AV_LOG_INFO, "init:Op: Apply tiling\n");
-    } else if (fbtiler->op == FBTILEOPS_DETILE) {
+    } else if (fbtiler->op == FF_FBTILE_OPS_DETILE) {
         av_log(ctx, AV_LOG_INFO, "init:Op: Apply detiling\n");
     } else {
         av_log(ctx, AV_LOG_ERROR, "init:Op: Unknown, shouldnt reach here\n");
@@ -175,7 +175,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     AVFrame *out;
     enum FBTileFrameCopyStatus status;
 
-    if ((fbtiler->op == FBTILEOPS_NONE) || (fbtiler->layout == FBTILE_NONE))
+    if ((fbtiler->op == FF_FBTILE_OPS_NONE) || (fbtiler->layout == FBTILE_NONE))
         return ff_filter_frame(outlink, in);
 
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
@@ -190,7 +190,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     uint64_t perfStart = __rdtscp(&tscArg);
 #endif
 
-    if (fbtiler->op == FBTILEOPS_DETILE)
+    if (fbtiler->op == FF_FBTILE_OPS_DETILE)
         fbtile_frame_copy(out, FBTILE_NONE, in, fbtiler->layout, &status);
     else
         fbtile_frame_copy(out, fbtiler->layout, in, FBTILE_NONE, &status);

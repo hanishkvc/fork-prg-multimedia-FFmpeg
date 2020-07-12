@@ -56,11 +56,11 @@
 /**
  * The FBTile related operations
  */
-enum FBTileOps {
-    FBTILEOPS_NONE,
-    FBTILEOPS_TILE,
-    FBTILEOPS_DETILE,
-    FBTILEOPS_UNKNOWN,
+enum FFFBTileOps {
+    FF_FBTILE_OPS_NONE,
+    FF_FBTILE_OPS_TILE,
+    FF_FBTILE_OPS_DETILE,
+    FF_FBTILE_OPS_UNKNOWN,
 };
 
 /**
@@ -175,7 +175,7 @@ int fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVP
 /**
  * Generic tile/detile simple version.
  */
-int fbtile_generic_simple(enum FBTileOps op,
+int fbtile_generic_simple(enum FFFBTileOps op,
                            const int w, const int h,
                            uint8_t *dst, const int dstLineSize,
                            uint8_t *src, const int srcLineSize,
@@ -185,7 +185,7 @@ int fbtile_generic_simple(enum FBTileOps op,
 /**
  * Generic tile/detile minimal optimised version.
  */
-int fbtile_generic_opti(enum FBTileOps op,
+int fbtile_generic_opti(enum FFFBTileOps op,
                          const int w, const int h,
                          uint8_t *dst, const int dstLineSize,
                          uint8_t *src, const int srcLineSize,
