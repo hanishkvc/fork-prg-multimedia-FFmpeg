@@ -198,12 +198,12 @@ static int drm_transfer_with_detile(const AVFrame *hwAVFrame, AVFrame *dst, cons
 {
     int err;
     uint64_t formatModifier;
-    enum FBTileLayout srcFBTileLayout, dstFBTileLayout;
+    enum FFFBTileLayout srcFBTileLayout, dstFBTileLayout;
     enum FBTileFrameCopyStatus status;
     AVDRMFrameDescriptor *drmFrame = NULL;
 
-    srcFBTileLayout = FBTILE_NONE;
-    dstFBTileLayout = FBTILE_NONE;
+    srcFBTileLayout = FF_FBTILE_NONE;
+    dstFBTileLayout = FF_FBTILE_NONE;
     if (hwAVFrame->format  == AV_PIX_FMT_DRM_PRIME) {
         drmFrame = (AVDRMFrameDescriptor*)hwAVFrame->data[0];
         formatModifier = drmFrame->objects[0].format_modifier;

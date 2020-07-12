@@ -28,28 +28,28 @@
 #endif
 
 
-SCOPEIN enum FBTileLayout ff_fbtile_getlayoutid(enum FFFBTileFamily family, uint64_t familyTileType)
+SCOPEIN enum FFFBTileLayout ff_fbtile_getlayoutid(enum FFFBTileFamily family, uint64_t familyTileType)
 {
-    enum FBTileLayout layout = FBTILE_UNKNOWN;
+    enum FFFBTileLayout layout = FF_FBTILE_UNKNOWN;
 
     switch(family) {
     case FF_FBTILE_FAMILY_DRM:
 #if CONFIG_LIBDRM
         switch(familyTileType) {
         case DRM_FORMAT_MOD_LINEAR:
-            layout = FBTILE_NONE;
+            layout = FF_FBTILE_NONE;
             break;
         case I915_FORMAT_MOD_X_TILED:
-            layout = FBTILE_INTEL_XGEN9;
+            layout = FF_FBTILE_INTEL_XGEN9;
             break;
         case I915_FORMAT_MOD_Y_TILED:
-            layout = FBTILE_INTEL_YGEN9;
+            layout = FF_FBTILE_INTEL_YGEN9;
             break;
         case I915_FORMAT_MOD_Yf_TILED:
-            layout = FBTILE_INTEL_YF;
+            layout = FF_FBTILE_INTEL_YF;
             break;
         default:
-            layout = FBTILE_UNKNOWN;
+            layout = FF_FBTILE_UNKNOWN;
             break;
         }
 #else
@@ -354,7 +354,7 @@ SCOPEIN int fbtile_generic_opti(enum FFFBTileOps op,
 }
 
 
-static int fbtile_conv(enum FFFBTileOps op, enum FBTileLayout layout,
+static int fbtile_conv(enum FFFBTileOps op, enum FFFBTileLayout layout,
                  int w, int h,
                  uint8_t *dst, int dstLineSize,
                  uint8_t *src, int srcLineSize,
@@ -364,14 +364,14 @@ static int fbtile_conv(enum FFFBTileOps op, enum FBTileLayout layout,
     static int logStateUnknown = 0;
 
     switch(layout) {
-    case FBTILE_NONE:
-        av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateNone, "fbtile:conv:FBTILE_NONE: not (de)tiling\n");
+    case FF_FBTILE_NONE:
+        av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateNone, "fbtile:conv:FF_FBTILE_NONE: not (de)tiling\n");
         return FBT_ERR;
-    case FBTILE_INTEL_XGEN9:
+    case FF_FBTILE_INTEL_XGEN9:
         return fbtile_generic_opti(op, w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk);
-    case FBTILE_INTEL_YGEN9:
+    case FF_FBTILE_INTEL_YGEN9:
         return fbtile_generic_opti(op, w, h, dst, dstLineSize, src, srcLineSize, &tyTileWalk);
-    case FBTILE_INTEL_YF:
+    case FF_FBTILE_INTEL_YF:
         return fbtile_generic_opti(op, w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
     default:
         av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateUnknown, "fbtile:conv: unknown layout [%d] specified, not (de)tiling\n", layout);
@@ -385,12 +385,12 @@ static int fbtile_conv(enum FFFBTileOps op, enum FBTileLayout layout,
  * NOTE: Either the Source or the Destination AVFrame (i.e one of them) should be linear.
  * NOTE: If the tiling layout is not understood, it will do a simple copy.
  */
-SCOPEIN int fbtile_frame_copy(AVFrame *dst, enum FBTileLayout dstTileLayout, AVFrame *src, enum FBTileLayout srcTileLayout,
+SCOPEIN int fbtile_frame_copy(AVFrame *dst, enum FFFBTileLayout dstTileLayout, AVFrame *src, enum FFFBTileLayout srcTileLayout,
                               enum FBTileFrameCopyStatus *status)
 {
     int err;
 
-    if (dstTileLayout == FBTILE_NONE) {         // i.e DeTile
+    if (dstTileLayout == FF_FBTILE_NONE) {         // i.e DeTile
         err = fbtile_checkpixformats(src->format, dst->format);
         if (!err) {
             err = fbtile_conv(FF_FBTILE_OPS_DETILE, srcTileLayout,
@@ -402,7 +402,7 @@ SCOPEIN int fbtile_frame_copy(AVFrame *dst, enum FBTileLayout dstTileLayout, AVF
                 return FBT_OK;
             }
         }
-    } else if (srcTileLayout == FBTILE_NONE) {  // i.e Tile
+    } else if (srcTileLayout == FF_FBTILE_NONE) {  // i.e Tile
         err = fbtile_checkpixformats(src->format, dst->format);
         if (!err) {
             err = fbtile_conv(FF_FBTILE_OPS_TILE, dstTileLayout,

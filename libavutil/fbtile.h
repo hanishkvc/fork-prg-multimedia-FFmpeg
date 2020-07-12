@@ -75,12 +75,12 @@ enum FFFBTileFamily {
  * The FBTile related Layouts
  * This identifies the supported tile layouts
  */
-enum FBTileLayout {
-    FBTILE_NONE,            // This also corresponds to linear layout
-    FBTILE_INTEL_XGEN9,
-    FBTILE_INTEL_YGEN9,
-    FBTILE_INTEL_YF,
-    FBTILE_UNKNOWN,
+enum FFFBTileLayout {
+    FF_FBTILE_NONE,            // This also corresponds to linear layout
+    FF_FBTILE_INTEL_XGEN9,
+    FF_FBTILE_INTEL_YGEN9,
+    FF_FBTILE_INTEL_YF,
+    FF_FBTILE_UNKNOWN,
 };
 
 
@@ -133,7 +133,7 @@ enum FBTileFrameCopyStatus {
  * @param formatModifier the format_modifier to map
  * @return the fbtile's equivalent internal mode
  */
-enum FBTileLayout ff_fbtile_getlayoutid(enum FFFBTileFamily family, uint64_t familyTileType);
+enum FFFBTileLayout ff_fbtile_getlayoutid(enum FFFBTileFamily family, uint64_t familyTileType);
 
 
 /**
@@ -204,8 +204,8 @@ int fbtile_generic_opti(enum FFFBTileOps op,
  *
  * @return 0 if copied.
  */
-int fbtile_frame_copy(AVFrame *dst, enum FBTileLayout dstTileLayout,
-                      AVFrame *src, enum FBTileLayout srcTileLayout,
+int fbtile_frame_copy(AVFrame *dst, enum FFFBTileLayout dstTileLayout,
+                      AVFrame *src, enum FFFBTileLayout srcTileLayout,
                       enum FBTileFrameCopyStatus *status);
 
 

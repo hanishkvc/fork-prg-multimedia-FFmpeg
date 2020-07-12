@@ -43,11 +43,11 @@ typedef struct HWDownloadContext {
 #define OFFSET(x) offsetof(HWDownloadContext, x)
 #define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM
 static const AVOption hwdownload_options[] = {
-    { "fbdetile", "set framebuffer detile layout info", OFFSET(fbdetile), AV_OPT_TYPE_INT, {.i64=FBTILE_NONE}, 0, FBTILE_UNKNOWN-1, FLAGS, "fbdetile" },
-        { "none", "Pass through", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_NONE}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
-        { "intelx", "Intel Tile-X layout", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_INTEL_XGEN9}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
-        { "intely", "Intel Tile-Y layout", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_INTEL_YGEN9}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
-        { "intelyf", "Intel Tile-Yf layout", 0, AV_OPT_TYPE_CONST, {.i64=FBTILE_INTEL_YF}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
+    { "fbdetile", "set framebuffer detile layout info", OFFSET(fbdetile), AV_OPT_TYPE_INT, {.i64=FF_FBTILE_NONE}, 0, FF_FBTILE_UNKNOWN-1, FLAGS, "fbdetile" },
+        { "none", "Pass through", 0, AV_OPT_TYPE_CONST, {.i64=FF_FBTILE_NONE}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
+        { "intelx", "Intel Tile-X layout", 0, AV_OPT_TYPE_CONST, {.i64=FF_FBTILE_INTEL_XGEN9}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
+        { "intely", "Intel Tile-Y layout", 0, AV_OPT_TYPE_CONST, {.i64=FF_FBTILE_INTEL_YGEN9}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
+        { "intelyf", "Intel Tile-Yf layout", 0, AV_OPT_TYPE_CONST, {.i64=FF_FBTILE_INTEL_YF}, INT_MIN, INT_MAX, FLAGS, "fbdetile" },
     { NULL }
 };
 
@@ -213,7 +213,7 @@ static int hwdownload_filter_frame(AVFilterLink *link, AVFrame *input)
 
     output2->width  = outlink->w;
     output2->height = outlink->h;
-    fbtile_frame_copy(output2, FBTILE_NONE, output, ctx->fbdetile, &status);
+    fbtile_frame_copy(output2, FF_FBTILE_NONE, output, ctx->fbdetile, &status);
 
     err = av_frame_copy_props(output2, input);
     if (err < 0)
