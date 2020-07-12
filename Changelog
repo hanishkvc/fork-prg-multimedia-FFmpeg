@@ -2,16 +2,16 @@ Entries are sorted chronologically from oldest to youngest within each release,
 releases are sorted from youngest to oldest.
 
 version <next>:
-- fbtiler cpu based framebuffer layout tile/detile video filter
-- hwdownload framebuffer layout detiling (Intel tile-x|y|yf layouts)
-- hwcontext_drm detiles non linear layouts, if possible
-- fbtile cpu based framebuffer tile/detile helpers
-- kmsgrab GetFB2 format_modifier, if user doesnt specify
 - AudioToolbox output device
 - MacCaption demuxer
 - PGX decoder
 - chromanr video filter
 - VDPAU accelerated HEVC 10/12bit decoding
+- kmsgrab GetFB2 format_modifier, if user doesnt specify
+- fbtile cpu based framebuffer tile/detile helpers (Intel TileX|Y|Yf)
+- hwcontext_drm detiles non linear layouts, if possible
+- hwdownload framebuffer layout detiling, if requested
+- fbtiler cpu based framebuffer layout tile/detile video filter
 
 
 version 4.3:
