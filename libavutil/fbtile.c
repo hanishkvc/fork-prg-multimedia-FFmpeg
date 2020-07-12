@@ -100,7 +100,7 @@ int ff_fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum 
  * Settings for Intel Tile-Yf framebuffer layout.
  * May need to swap the 4 pixel wide subtile, have to check doc bit more
  */
-static struct FFFBTileWalk tyfTileWalk = {
+static struct FBTileWalk tyfTileWalk = {
                     .bytesPerPixel = 4,
                     .subTileWidth = 4, .subTileHeight = 8,
                     .tileWidth = 32, .tileHeight = 32,
@@ -111,7 +111,7 @@ static struct FFFBTileWalk tyfTileWalk = {
 /**
  * Setting for Intel Tile-X framebuffer layout
  */
-static struct FFFBTileWalk txTileWalk = {
+static struct FBTileWalk txTileWalk = {
                     .bytesPerPixel = 4,
                     .subTileWidth = 128, .subTileHeight = 8,
                     .tileWidth = 128, .tileHeight = 8,
@@ -125,7 +125,7 @@ static struct FFFBTileWalk txTileWalk = {
  * dummy 256 posOffset entry. The pseudo parallel detiling based
  * opti logic requires to know about the Tile boundry.
  */
-static struct FFFBTileWalk tyTileWalk = {
+static struct FBTileWalk tyTileWalk = {
                     .bytesPerPixel = 4,
                     .subTileWidth = 4, .subTileHeight = 32,
                     .tileWidth = 32, .tileHeight = 32,
@@ -144,7 +144,7 @@ static int _fbtile_generic_simple(enum FFFBTileOps op,
                                    const int bytesPerPixel,
                                    const int subTileWidth, const int subTileHeight,
                                    const int tileWidth, const int tileHeight,
-                                   const int numDirChanges, const struct FFFBTWDirChange *dirChanges)
+                                   const int numDirChanges, const struct FBTWDirChange *dirChanges)
 {
     int tO, lO;
     int lX, lY;
@@ -213,7 +213,7 @@ int ff_fbtile_generic_simple(enum FFFBTileOps op,
                            const int w, const int h,
                            uint8_t *dst, const int dstLineSize,
                            uint8_t *src, const int srcLineSize,
-                           const struct FFFBTileWalk *tw)
+                           const struct FBTileWalk *tw)
 {
     return _fbtile_generic_simple(op, w, h,
                                    dst, dstLineSize, src, srcLineSize,
@@ -231,7 +231,7 @@ static int _fbtile_generic_opti(enum FFFBTileOps op,
                                  const int bytesPerPixel,
                                  const int subTileWidth, const int subTileHeight,
                                  const int tileWidth, const int tileHeight,
-                                 const int numDirChanges, const struct FFFBTWDirChange *dirChanges)
+                                 const int numDirChanges, const struct FBTWDirChange *dirChanges)
 {
     int tO, lO, tOPrev;
     int lX, lY;
@@ -343,7 +343,7 @@ int ff_fbtile_generic_opti(enum FFFBTileOps op,
                          const int w, const int h,
                          uint8_t *dst, const int dstLineSize,
                          uint8_t *src, const int srcLineSize,
-                         const struct FFFBTileWalk *tw)
+                         const struct FBTileWalk *tw)
 {
     return _fbtile_generic_opti(op, w, h,
                                  dst, dstLineSize, src, srcLineSize,

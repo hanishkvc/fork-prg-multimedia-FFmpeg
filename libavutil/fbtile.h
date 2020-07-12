@@ -78,7 +78,7 @@ enum FFFBTileLayout {
  * TileWalk Direction Change Entry
  * Used to specify the tile walking of subtiles within a tile.
  */
-struct FFFBTWDirChange {
+struct FBTWDirChange {
     int posOffset;
     int xDelta;
     int yDelta;
@@ -96,12 +96,12 @@ struct FFFBTWDirChange {
  * @field numDirChanges the number of dir changes involved in tile walk
  * @field dirChanges the array of dir changes for the tile walk required
  */
-struct FFFBTileWalk {
+struct FBTileWalk {
     int bytesPerPixel;
     int subTileWidth, subTileHeight;
     int tileWidth, tileHeight;
     int numDirChanges;
-    struct FFFBTWDirChange dirChanges[];
+    struct FBTWDirChange dirChanges[];
 };
 
 
@@ -166,7 +166,7 @@ int ff_fbtile_generic_simple(enum FFFBTileOps op,
                              const int w, const int h,
                              uint8_t *dst, const int dstLineSize,
                              uint8_t *src, const int srcLineSize,
-                             const struct FFFBTileWalk *tw);
+                             const struct FBTileWalk *tw);
 
 
 /**
@@ -176,7 +176,7 @@ int ff_fbtile_generic_opti(enum FFFBTileOps op,
                            const int w, const int h,
                            uint8_t *dst, const int dstLineSize,
                            uint8_t *src, const int srcLineSize,
-                           const struct FFFBTileWalk *tw);
+                           const struct FBTileWalk *tw);
 
 
 /**
