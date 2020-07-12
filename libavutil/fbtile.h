@@ -39,9 +39,6 @@
  */
 //#define DEBUG_FBTILE 1
 
-// Common return values
-#define FBT_OK 0
-#define FBT_ERR 1
 
 /**
  * The FBTile related operations
@@ -71,37 +68,6 @@ enum FFFBTileLayout {
     FF_FBTILE_INTEL_YGEN9,
     FF_FBTILE_INTEL_YF,
     FF_FBTILE_UNKNOWN,
-};
-
-
-/**
- * TileWalk Direction Change Entry
- * Used to specify the tile walking of subtiles within a tile.
- */
-struct FBTWDirChange {
-    int posOffset;
-    int xDelta;
-    int yDelta;
-};
-
-
-/**
- * TileWalk, Contains info required for a given tile walking.
- *
- * @field bytesPerPixel the bytes per pixel for the image
- * @field subTileWidth the width of subtile within the tile, in pixels
- * @field subTileHeight the height of subtile within the tile, in pixels
- * @field tileWidth the width of the tile, in pixels
- * @field tileHeight the height of the tile, in pixels
- * @field numDirChanges the number of dir changes involved in tile walk
- * @field dirChanges the array of dir changes for the tile walk required
- */
-struct FBTileWalk {
-    int bytesPerPixel;
-    int subTileWidth, subTileHeight;
-    int tileWidth, tileHeight;
-    int numDirChanges;
-    struct FBTWDirChange dirChanges[];
 };
 
 

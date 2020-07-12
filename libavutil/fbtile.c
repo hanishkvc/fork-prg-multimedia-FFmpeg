@@ -28,6 +28,13 @@
 #endif
 
 
+/**
+ * Internal Common return values
+ */
+#define FBT_OK 0
+#define FBT_ERR 1
+
+
 enum FFFBTileLayout ff_fbtile_getlayoutid(enum FFFBTileFamily family, uint64_t familyTileType)
 {
     enum FFFBTileLayout layout = FF_FBTILE_UNKNOWN;
@@ -95,6 +102,38 @@ int ff_fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum 
  * where there is possibly some additional bytes beyond the width in each line
  * of pixel data.
  */
+
+
+/**
+ * TileWalk Direction Change Entry
+ * Used to specify the tile walking of subtiles within a tile.
+ */
+struct FBTWDirChange {
+    int posOffset;
+    int xDelta;
+    int yDelta;
+};
+
+
+/**
+ * TileWalk, Contains info required for a given tile walking.
+ *
+ * @field bytesPerPixel the bytes per pixel for the image
+ * @field subTileWidth the width of subtile within the tile, in pixels
+ * @field subTileHeight the height of subtile within the tile, in pixels
+ * @field tileWidth the width of the tile, in pixels
+ * @field tileHeight the height of the tile, in pixels
+ * @field numDirChanges the number of dir changes involved in tile walk
+ * @field dirChanges the array of dir changes for the tile walk required
+ */
+struct FBTileWalk {
+    int bytesPerPixel;
+    int subTileWidth, subTileHeight;
+    int tileWidth, tileHeight;
+    int numDirChanges;
+    struct FBTWDirChange dirChanges[];
+};
+
 
 /**
  * Settings for Intel Tile-Yf framebuffer layout.
