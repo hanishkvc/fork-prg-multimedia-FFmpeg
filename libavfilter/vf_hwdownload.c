@@ -165,6 +165,7 @@ static int hwdownload_filter_frame(AVFilterLink *link, AVFrame *input)
     AVFrame *output = NULL;
     AVFrame *output2 = NULL;
     int err;
+    enum FBTileFrameCopyStatus status;
 
     if (!ctx->hwframes_ref || !input->hw_frames_ctx) {
         av_log(ctx, AV_LOG_ERROR, "Input frames must have hardware context.\n");
@@ -212,10 +213,7 @@ static int hwdownload_filter_frame(AVFilterLink *link, AVFrame *input)
 
     output2->width  = outlink->w;
     output2->height = outlink->h;
-    fbtile_conv(FBTILEOPS_DETILE, ctx->fbdetile,
-                 output2->width, output2->height,
-                 output2->data[0], output2->linesize[0],
-                 output->data[0], output->linesize[0], 4);
+    fbtile_frame_copy(output2, FBTILE_NONE, output, ctx->fbdetile, &status);
 
     err = av_frame_copy_props(output2, input);
     if (err < 0)

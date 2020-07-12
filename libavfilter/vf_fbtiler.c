@@ -173,6 +173,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     FBTilerContext *fbtiler = ctx->priv;
     AVFilterLink *outlink = ctx->outputs[0];
     AVFrame *out;
+    enum FBTileFrameCopyStatus status;
 
     if ((fbtiler->op == FBTILEOPS_NONE) || (fbtiler->layout == FBTILE_NONE))
         return ff_filter_frame(outlink, in);
@@ -189,10 +190,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     uint64_t perfStart = __rdtscp(&tscArg);
 #endif
 
-    fbtile_conv(fbtiler->op, fbtiler->layout,
-                 fbtiler->width, fbtiler->height,
-                 out->data[0], out->linesize[0],
-                 in->data[0], in->linesize[0], 4);
+    if (fbtiler->op == FBTILEOPS_DETILE)
+        fbtile_frame_copy(out, FBTILE_NONE, in, fbtiler->layout, &status);
+    else
+        fbtile_frame_copy(out, fbtiler->layout, in, FBTILE_NONE, &status);
 
 #ifdef DEBUG_PERF
     uint64_t perfEnd = __rdtscp(&tscArg);
