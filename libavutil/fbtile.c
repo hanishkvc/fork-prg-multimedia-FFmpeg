@@ -223,7 +223,7 @@ static int _fbtile_generic_simple(enum FFFBTileOps op,
     // To keep things sane and simple tile layout is assumed to be tightly packed,
     // so below check is a indirect logical assumption, even thou tldLineSize is not directly mappable at one level
     if (w*bytesPerPixel != tldLineSize) {
-        av_log(NULL, AV_LOG_ERROR, "fbtile:genericsimp: w%dxh%d, dL%d, sL%d\n", w, h, tldLineSize, linLineSize);
+        av_log(NULL, AV_LOG_ERROR, "fbtile:genericsimp: w%dxh%d, tldLineSize%d, linLineSize%d\n", w, h, tldLineSize, linLineSize);
         av_log(NULL, AV_LOG_ERROR, "fbtile:genericsimp: dont support tldLineSize | Pitch going beyond width\n");
         return FBT_ERR;
     }
@@ -313,7 +313,7 @@ static int _fbtile_generic_opti(enum FFFBTileOps op,
     }
 
     if (w*bytesPerPixel != tldLineSize) {
-        av_log(NULL, AV_LOG_ERROR, "fbtile:genericopti: w%dxh%d, dL%d, sL%d\n", w, h, linLineSize, tldLineSize);
+        av_log(NULL, AV_LOG_ERROR, "fbtile:genericopti: w%dxh%d, linLineSize%d, tldLineSize%d\n", w, h, linLineSize, tldLineSize);
         av_log(NULL, AV_LOG_ERROR, "fbtile:genericopti: dont support tldLineSize | Pitch going beyond width\n");
         return FBT_ERR;
     }
