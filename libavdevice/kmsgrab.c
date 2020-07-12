@@ -239,6 +239,9 @@ static av_cold int kmsgrab_read_header(AVFormatContext *avctx)
     drmModePlaneRes *plane_res = NULL;
     drmModePlane *plane = NULL;
     drmModeFB *fb = NULL;
+#if HAVE_DRM_GETFB2
+    drmModeFB2 *fb2 = NULL;
+#endif
     AVStream *stream;
     int err, i;
 
@@ -364,6 +367,28 @@ static av_cold int kmsgrab_read_header(AVFormatContext *avctx)
         goto fail;
     }
 
+#if HAVE_DRM_GETFB2
+    fb2 = drmModeGetFB2(ctx->hwctx->fd, plane->fb_id);
+    if (!fb2) {
+        err = errno;
+        av_log(avctx, AV_LOG_ERROR, "Failed to get "
+               "framebuffer2 %"PRIu32": %s.\n",
+               plane->fb_id, strerror(err));
+        err = AVERROR(err);
+        goto fail;
+    }
+
+    av_log(avctx, AV_LOG_INFO, "Template framebuffer2 is %"PRIu32": "
+           "%"PRIu32"x%"PRIu32", pixel_format: 0x%"PRIx32", format_modifier: 0x%"PRIx64".\n",
+           fb2->fb_id, fb2->width, fb2->height, fb2->pixel_format, fb2->modifier);
+
+    if (ctx->drm_format_modifier == DRM_FORMAT_MOD_INVALID)
+        ctx->drm_format_modifier  = fb2->modifier;
+#else
+    if (ctx->drm_format_modifier == DRM_FORMAT_MOD_INVALID)
+        ctx->drm_format_modifier  = DRM_FORMAT_MOD_NONE;
+#endif
+
     stream = avformat_new_stream(avctx, NULL);
     if (!stream) {
         err = AVERROR(ENOMEM);
@@ -408,6 +433,10 @@ fail:
         drmModeFreePlane(plane);
     if (fb)
         drmModeFreeFB(fb);
+#if HAVE_DRM_GETFB2
+    if (fb2)
+        drmModeFreeFB2(fb2);
+#endif
 
     return err;
 }
@@ -433,7 +462,7 @@ static const AVOption options[] = {
       { .i64 = AV_PIX_FMT_BGR0 }, 0, UINT32_MAX, FLAGS },
     { "format_modifier", "DRM format modifier for framebuffer",
       OFFSET(drm_format_modifier), AV_OPT_TYPE_INT64,
-      { .i64 = DRM_FORMAT_MOD_NONE }, 0, INT64_MAX, FLAGS },
+      { .i64 = DRM_FORMAT_MOD_INVALID}, 0, INT64_MAX, FLAGS },
     { "crtc_id", "CRTC ID to define capture source",
       OFFSET(source_crtc), AV_OPT_TYPE_INT64,
       { .i64 = 0 }, 0, UINT32_MAX, FLAGS },
