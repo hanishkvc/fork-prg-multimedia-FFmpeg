@@ -29,10 +29,9 @@
 
 
 /**
- * Internal Common return values
+ * Ok return value
  */
 #define FBT_OK 0
-#define FBT_ERR 1
 
 
 enum FFFBTileLayout ff_fbtile_getlayoutid(enum FFFBTileFamily family, uint64_t familyTileType)
@@ -225,7 +224,7 @@ static int _fbtile_generic_simple(enum FFFBTileOps op,
     if (w*bytesPerPixel != tldLineSize) {
         av_log(NULL, AV_LOG_ERROR, "fbtile:genericsimp: w%dxh%d, tldLineSize%d, linLineSize%d\n", w, h, tldLineSize, linLineSize);
         av_log(NULL, AV_LOG_ERROR, "fbtile:genericsimp: dont support tldLineSize | Pitch going beyond width\n");
-        return FBT_ERR;
+        return AVERROR(EINVAL);
     }
     tO = 0;
     lX = 0;
@@ -315,11 +314,11 @@ static int _fbtile_generic_opti(enum FFFBTileOps op,
     if (w*bytesPerPixel != tldLineSize) {
         av_log(NULL, AV_LOG_ERROR, "fbtile:genericopti: w%dxh%d, linLineSize%d, tldLineSize%d\n", w, h, linLineSize, tldLineSize);
         av_log(NULL, AV_LOG_ERROR, "fbtile:genericopti: dont support tldLineSize | Pitch going beyond width\n");
-        return FBT_ERR;
+        return AVERROR(EINVAL);
     }
     if (w%tileWidth != 0) {
         av_log(NULL, AV_LOG_ERROR, "fbtile:genericopti:NotSupported:Width being non-mult Of TileWidth: width%d, tileWidth%d\n", w, tileWidth);
-        return FBT_ERR;
+        return AVERROR(EINVAL);
     }
     tO = 0;
     tOPrev = 0;
@@ -424,7 +423,7 @@ static int fbtile_conv(enum FFFBTileOps op, enum FFFBTileLayout layout,
     switch(layout) {
     case FF_FBTILE_NONE:
         av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateNone, "fbtile:conv:FF_FBTILE_NONE: not (de)tiling\n");
-        return FBT_ERR;
+        return AVERROR(EALREADY);
     case FF_FBTILE_INTEL_XGEN9:
         return fbtile_generic_opti(op, w, h, dst, dstLineSize, src, srcLineSize, &txTileWalk);
     case FF_FBTILE_INTEL_YGEN9:
@@ -433,7 +432,7 @@ static int fbtile_conv(enum FFFBTileOps op, enum FFFBTileLayout layout,
         return fbtile_generic_opti(op, w, h, dst, dstLineSize, src, srcLineSize, &tyfTileWalk);
     default:
         av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logStateUnknown, "fbtile:conv: unknown layout [%d] specified, not (de)tiling\n", layout);
-        return FBT_ERR;
+        return AVERROR(EINVAL);
     }
 }
 
