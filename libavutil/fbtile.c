@@ -92,7 +92,7 @@ SCOPEIN int fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const 
  * Settings for Intel Tile-Yf framebuffer layout.
  * May need to swap the 4 pixel wide subtile, have to check doc bit more
  */
-SCOPEIN struct FBTileWalk tyfTileWalk = {
+static struct FBTileWalk tyfTileWalk = {
                     .bytesPerPixel = 4,
                     .subTileWidth = 4, .subTileHeight = 8,
                     .tileWidth = 32, .tileHeight = 32,
@@ -103,7 +103,7 @@ SCOPEIN struct FBTileWalk tyfTileWalk = {
 /**
  * Setting for Intel Tile-X framebuffer layout
  */
-SCOPEIN struct FBTileWalk txTileWalk = {
+static struct FBTileWalk txTileWalk = {
                     .bytesPerPixel = 4,
                     .subTileWidth = 128, .subTileHeight = 8,
                     .tileWidth = 128, .tileHeight = 8,
@@ -117,7 +117,7 @@ SCOPEIN struct FBTileWalk txTileWalk = {
  * dummy 256 posOffset entry. The pseudo parallel detiling based
  * opti logic requires to know about the Tile boundry.
  */
-SCOPEIN struct FBTileWalk tyTileWalk = {
+static struct FBTileWalk tyTileWalk = {
                     .bytesPerPixel = 4,
                     .subTileWidth = 4, .subTileHeight = 32,
                     .tileWidth = 32, .tileHeight = 32,
@@ -346,7 +346,7 @@ SCOPEIN int fbtile_generic_opti(enum FBTileOps op,
 }
 
 
-SCOPEIN int fbtile_conv(enum FBTileOps op, enum FBTileLayout layout,
+static int fbtile_conv(enum FBTileOps op, enum FBTileLayout layout,
                  int w, int h,
                  uint8_t *dst, int dstLineSize,
                  uint8_t *src, int srcLineSize,

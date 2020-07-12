@@ -150,14 +150,6 @@ int fbtile_checkpixformats(const enum AVPixelFormat srcPixFormat, const enum AVP
 
 
 /**
- * Tile Walk parameters for Tile-X, Tile-Y, Tile-Yf
- */
-extern struct FBTileWalk tyfTileWalk;
-extern struct FBTileWalk txTileWalk;
-extern struct FBTileWalk tyTileWalk;
-
-
-/**
  * Generic Logic to Tile/Detile between tiled and linear layout.
  *
  * @param op whether to tile or detile
@@ -191,28 +183,6 @@ int fbtile_generic_opti(enum FBTileOps op,
                          uint8_t *dst, const int dstLineSize,
                          uint8_t *src, const int srcLineSize,
                          const struct FBTileWalk *tw);
-
-
-/**
- * tile/detile demuxer.
- *
- * @param op todo tiling or todo detiling
- * @param layout specify the tile layout of dst/src framebuffer involved
- * @param w width of the image
- * @param h height of the image
- * @param dst the destination image buffer
- * @param dstLineSize the size of each row in dst image, in bytes
- * @param src the source image buffer
- * @param srcLineSize the size of each row in src image, in bytes
- * @param bytesPerPixel the bytes per pixel for the image
- *
- * @return 0 if detiled, 1 if not
- */
-int fbtile_conv(enum FBTileOps op, enum FBTileLayout layout,
-                 int w, int h,
-                 uint8_t *dst, int dstLineSize,
-                 uint8_t *src, int srcLineSize,
-                 int bytesPerPixel);
 
 
 /**
