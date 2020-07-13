@@ -234,7 +234,7 @@ static int _fbtile_generic_simple(enum FFFBTileOps op,
     }
     if (h%tileHeight != 0) {
         tH = (h/tileHeight)*tileHeight;
-        av_log_once(NULL, AV_LOG_INFO, AV_LOG_VERBOSE, &logState,
+        av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logState,
                     "fbtile:genericsimp:Limiting height [%d] to be a multiple of tileHeight [%d], new height[%d]\n", h, tileHeight, tH);
     } else {
         tH = h;
@@ -337,7 +337,7 @@ static int _fbtile_generic_opti(enum FFFBTileOps op,
     }
     if (h%tileHeight != 0) {
         tH = (h/tileHeight)*tileHeight;
-        av_log_once(NULL, AV_LOG_INFO, AV_LOG_VERBOSE, &logState,
+        av_log_once(NULL, AV_LOG_WARNING, AV_LOG_VERBOSE, &logState,
                     "fbtile:genericopti:Limiting height [%d] to be a multiple of tileHeight [%d], new height[%d]\n", h, tileHeight, tH);
     } else {
         tH = h;
