@@ -292,7 +292,7 @@ static int _fbtile_generic_opti(enum FFFBTileOps op,
 {
     int tO, lO, tOPrev;
     int lX, lY;
-    int cSTL, nSTLines;
+    int cSTL, nSTLines, cSTLPrev;
     int curTileInRow, nTilesInARow;
     uint8_t *tld, *lin;
     int tldLineSize, linLineSize;
@@ -331,11 +331,12 @@ static int _fbtile_generic_opti(enum FFFBTileOps op,
     }
     nSTLines = (w*h)/subTileWidth;  // numSubTileLines
     cSTL = 0;                       // curSubTileLine
+    cSTLPrev = 0;
     curTileInRow = 0;
     while (cSTL < nSTLines) {
         lO = lY*linLineSize + lX*bytesPerPixel;
 #ifdef DEBUG_FBTILE
-        av_log(NULL, AV_LOG_DEBUG, "fbtile:genericopti: lX%d lY%d; tO%d, lO%d; %d/%d\n", lX, lY, tO, lO, cSTL, nSTLines);
+        av_log(NULL, AV_LOG_INFO, "fbtile:genericopti: lX%d lY%d; tO%d, lO%d; %d/%d\n", lX, lY, tO, lO, cSTL, nSTLines);
 #endif
 
         // As many tiling layouts have subtile and walk sizes which are multiples of 4,
@@ -375,7 +376,9 @@ static int _fbtile_generic_opti(enum FFFBTileOps op,
                     curTileInRow += parallel;
                     lX = curTileInRow*tileWidth;
                     tO = tOPrev + tileWidth*tileHeight*bytesPerPixel*(parallel);
+                    cSTL = cSTLPrev + ((tileWidth*tileHeight)/(subTileWidth*subTileHeight))*subTileHeight*parallel;
                     tOPrev = tO;
+                    cSTLPrev = cSTL;
                 } else {
                     lX += dirChanges[i].xDelta;
                 }
