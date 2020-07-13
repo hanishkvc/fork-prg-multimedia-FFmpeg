@@ -882,6 +882,9 @@ static int dng_decode_jpeg(AVCodecContext *avctx, AVFrame *frame,
     int is_single_comp, is_u16, pixel_size;
     int ret;
 
+    if (tile_byte_count < 0 || tile_byte_count > bytestream2_get_bytes_left(&s->gb))
+        return AVERROR_INVALIDDATA;
+
     /* Prepare a packet and send to the MJPEG decoder */
     av_init_packet(&jpkt);
     jpkt.data = (uint8_t*)s->gb.buffer;
@@ -911,12 +914,23 @@ static int dng_decode_jpeg(AVCodecContext *avctx, AVFrame *frame,
             return 0;
     }
 
+    is_u16 = (s->bpp > 8);
+
     /* Copy the outputted tile's pixels from 'jpgframe' to 'frame' (final buffer) */
 
     /* See dng_blit for explanation */
-    is_single_comp = (s->avctx_mjpeg->width == w * 2 && s->avctx_mjpeg->height == h / 2);
+    if (s->avctx_mjpeg->width  == w * 2 &&
+        s->avctx_mjpeg->height == h / 2 &&
+        s->avctx_mjpeg->pix_fmt == AV_PIX_FMT_GRAY16LE) {
+        is_single_comp = 1;
+    } else if (s->avctx_mjpeg->width  == w &&
+               s->avctx_mjpeg->height == h &&
+               s->avctx_mjpeg->pix_fmt == (is_u16 ? AV_PIX_FMT_GRAY16 : AV_PIX_FMT_GRAY8)
+              ) {
+        is_single_comp = 0;
+    } else
+        return AVERROR_INVALIDDATA;
 
-    is_u16 = (s->bpp > 8);
     pixel_size = (is_u16 ? sizeof(uint16_t) : sizeof(uint8_t));
 
     if (is_single_comp && !is_u16) {

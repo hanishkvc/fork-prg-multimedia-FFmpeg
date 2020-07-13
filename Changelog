@@ -5,6 +5,8 @@ version <next>:
 - AudioToolbox output device
 - MacCaption demuxer
 - PGX decoder
+- chromanr video filter
+- VDPAU accelerated HEVC 10/12bit decoding
 
 
 version 4.3:
