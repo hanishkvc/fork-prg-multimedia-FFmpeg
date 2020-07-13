@@ -397,7 +397,7 @@ static int _fbtile_generic_opti(enum FFFBTileOps op,
             lX = 0;
             curTileInRow = 0;
             lY += tileHeight;
-            if (lY >= h) {
+            if (lY >= tH) {
                 break;
             }
         }
