@@ -88,7 +88,13 @@ function _test_fbtiler() {
 }
 
 function test_fbtiler() {
-	hkvc/hkvc-tile-image.py
+	rm -i /tmp/ssti.png
+	if [ -e /tmp/ssti.png ]; then
+		read -p "Using existing ssti.png"
+	else
+		read -p "Will use a new ssti.png"
+		hkvc/hkvc-tile-image.py
+	fi
 	_test_fbtiler "-vf fbtiler=op=0:layout=0" ssti.png t.png
 	_test_fbtiler "-vf fbtiler=op=1:layout=0" ssti.png t.png
 	_test_fbtiler "-vf fbtiler=op=2:layout=0" ssti.png t.png
