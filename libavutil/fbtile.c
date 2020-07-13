@@ -292,6 +292,7 @@ static int _fbtile_generic_opti(enum FFFBTileOps op,
 {
     int tO, lO, tOPrev;
     int lX, lY;
+    int tH;
     int cSTL, nSTLines, cSTLPrev;
     int curTileInRow, nTilesInARow;
     uint8_t *tld, *lin;
@@ -320,6 +321,12 @@ static int _fbtile_generic_opti(enum FFFBTileOps op,
         av_log(NULL, AV_LOG_ERROR, "fbtile:genericopti:NotSupported:Width being non-mult Of TileWidth: width%d, tileWidth%d\n", w, tileWidth);
         return AVERROR(EINVAL);
     }
+    if (h%tileHeight != 0) {
+        tH = (h/tileHeight)*tileHeight;
+        av_log(NULL, AV_LOG_INFO, "fbtile:genericopti:Limiting height [%d] to be a multiple of tileHeight [%d], new height[%d]\n", h, tileHeight, tH);
+    } else {
+        tH = h;
+    }
     tO = 0;
     tOPrev = 0;
     lX = 0;
@@ -329,7 +336,7 @@ static int _fbtile_generic_opti(enum FFFBTileOps op,
         if (nTilesInARow%parallel == 0)
             break;
     }
-    nSTLines = (w*h)/subTileWidth;  // numSubTileLines
+    nSTLines = (w*tH)/subTileWidth; // numSubTileLines
     cSTL = 0;                       // curSubTileLine
     cSTLPrev = 0;
     curTileInRow = 0;
