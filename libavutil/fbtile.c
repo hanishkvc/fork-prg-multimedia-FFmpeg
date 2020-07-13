@@ -299,6 +299,7 @@ static int _fbtile_generic_opti(enum FFFBTileOps op,
     int tldLineSize, linLineSize;
     const int subTileWidthBytes = subTileWidth*bytesPerPixel;
     int parallel = 1;
+    static int logState = 0;
 
     if (op == FF_FBTILE_OPS_TILE) {
         lin = src;
@@ -323,7 +324,8 @@ static int _fbtile_generic_opti(enum FFFBTileOps op,
     }
     if (h%tileHeight != 0) {
         tH = (h/tileHeight)*tileHeight;
-        av_log(NULL, AV_LOG_INFO, "fbtile:genericopti:Limiting height [%d] to be a multiple of tileHeight [%d], new height[%d]\n", h, tileHeight, tH);
+        av_log_once(NULL, AV_LOG_INFO, AV_LOG_VERBOSE, &logState,
+                    "fbtile:genericopti:Limiting height [%d] to be a multiple of tileHeight [%d], new height[%d]\n", h, tileHeight, tH);
     } else {
         tH = h;
     }
