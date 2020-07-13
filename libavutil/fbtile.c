@@ -202,10 +202,12 @@ static int _fbtile_generic_simple(enum FFFBTileOps op,
 {
     int tO, lO;
     int lX, lY;
+    int tH;
     int cSTL, nSTLines;
     uint8_t *tld, *lin;
     int tldLineSize, linLineSize;
     const int subTileWidthBytes = subTileWidth*bytesPerPixel;
+    static int logState = 0;
 
     if (op == FF_FBTILE_OPS_TILE) {
         lin = src;
@@ -226,10 +228,21 @@ static int _fbtile_generic_simple(enum FFFBTileOps op,
         av_log(NULL, AV_LOG_ERROR, "fbtile:genericsimp: dont support tldLineSize | Pitch going beyond width\n");
         return AVERROR(EINVAL);
     }
+    if (w%tileWidth != 0) {
+        av_log(NULL, AV_LOG_ERROR, "fbtile:genericsimp:NotSupported:Width being non-mult Of TileWidth: width%d, tileWidth%d\n", w, tileWidth);
+        return AVERROR(EINVAL);
+    }
+    if (h%tileHeight != 0) {
+        tH = (h/tileHeight)*tileHeight;
+        av_log_once(NULL, AV_LOG_INFO, AV_LOG_VERBOSE, &logState,
+                    "fbtile:genericsimp:Limiting height [%d] to be a multiple of tileHeight [%d], new height[%d]\n", h, tileHeight, tH);
+    } else {
+        tH = h;
+    }
     tO = 0;
     lX = 0;
     lY = 0;
-    nSTLines = (w*h)/subTileWidth;  // numSubTileLines
+    nSTLines = (w*tH)/subTileWidth; // numSubTileLines
     cSTL = 0;                       // curSubTileLine
     while (cSTL < nSTLines) {
         lO = lY*linLineSize + lX*bytesPerPixel;
